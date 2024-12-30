@@ -1,0 +1,89 @@
+# Environment and secrets
+.env
+*.env
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+.kube/
+*.lock
+charts/*/charts/
+charts/*/tmpcharts/
+charts/*/requirements.lock
+*.tgz
+
+# Helm
+.helm/
+
+# Ansible
+*.retry
+ansible/*.retry
+.vault_pass
+vault.key
+vault.txt
+inventory.yaml
+
+# Node (in case of any Node.js tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (in case of any Python scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Terraform (if used)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
