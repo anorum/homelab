@@ -76,14 +76,29 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-ingress
+  name: ingress-nginx
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: git@github.com:anorum/homelab.git
     targetRevision: HEAD
-    path: metallb
+    path: ingress-nginx
   destination:
     server: https://kubernetes.default.svc
-    namespace: metallb
+    namespace: ingress-nginx
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: prometheus
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prometheus
