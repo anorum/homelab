@@ -5,7 +5,6 @@ namespace: metallb
 
 resources:
   - namespace.yaml
-  - helmchart.yaml
   - ips.yaml
 
 labels:
@@ -15,3 +14,27 @@ labels:
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged
     pod-security.kubernetes.io/warn: privileged
+
+helmCharts:
+  - name: metallb
+    repo: https://metallb.github.io/metallb
+    version: 0.14.9
+    releaseName: metallb
+    namespace: metallb
+    valuesInline:
+      controller:
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+      speaker:
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
