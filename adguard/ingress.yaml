@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adguard
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-redirect-from: /
+    nginx.ingress.kubernetes.io/proxy-redirect-to: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: adguard.homelab
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: adguard-service
+                port:
+                  number: 80

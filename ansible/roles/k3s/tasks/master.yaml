@@ -1,0 +1,13 @@
+- name: Install k3s on master
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable=traefik,servicelb" sh
+
+- name: Retrieve k3s token
+  shell: "cat /var/lib/rancher/k3s/server/node-token"
+  register: k3s_token
+  become: true
+  run_once: true
+
+- name: Set token fact
+  set_fact:
+    k3s_token: "{{ k3s_token.stdout }}"

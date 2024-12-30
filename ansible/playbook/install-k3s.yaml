@@ -1,0 +1,17 @@
+- name: Configure Raspberry Pi for k3s
+  hosts: all
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/all.yaml"
+
+- name: Install k3s on master
+  hosts: master
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/master.yaml"
+
+- name: Install k3s on workers
+  hosts: workers
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/workers.yaml"

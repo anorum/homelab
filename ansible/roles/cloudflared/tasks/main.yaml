@@ -1,0 +1,51 @@
+---
+- name: Create cloudflared directory
+  file:
+    path: /etc/cloudflared
+    state: directory
+    mode: '0755'
+
+- name: Check if tunnel config exists
+  stat:
+    path: /etc/cloudflared/config.yaml
+  register: tunnel_config
+
+- name: Generate tunnel configuration
+  template:
+    src: config.yaml.j2
+    dest: /etc/cloudflared/config.yaml
+    mode: '0644'
+  when: not tunnel_config.stat.exists
+
+- name: Create tunnel configuration JSON
+  template:
+    src: tunnel.json.j2
+    dest: /etc/cloudflared/tunnel.json
+    mode: '0644'
+  when: not tunnel_config.stat.exists
+
+- name: Install cloudflared package
+  get_url:
+    url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+    dest: /tmp/cloudflared.deb
+  when: not tunnel_config.stat.exists
+
+- name: Install cloudflared
+  apt:
+    deb: /tmp/cloudflared.deb
+  when: not tunnel_config.stat.exists
+
+- name: Create cloudflared service
+  template:
+    src: cloudflared.service.j2
+    dest: /etc/systemd/system/cloudflared.service
+    mode: '0644'
+  when: not tunnel_config.stat.exists
+
+- name: Start and enable cloudflared service
+  systemd:
+    name: cloudflared
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  when: not tunnel_config.stat.exists

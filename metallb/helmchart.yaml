@@ -1,0 +1,30 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: metallb
+  namespace: metallb
+spec:
+  repo: https://metallb.github.io/metallb
+  chart: metallb
+  targetNamespace: metallb
+  version: 0.14.9
+  valuesContent: |-
+    # Default values for metallb
+    controller:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 50m
+          memory: 50Mi
+    speaker:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 50m
+          memory: 50Mi
+    # MetalLB configuration will be handled by a separate ConfigMap
+    # after installation for IP address pool configuration

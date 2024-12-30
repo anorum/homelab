@@ -1,0 +1,8 @@
+tunnel: {{ cloudflared_tunnel_id }}
+credentials-file: /etc/cloudflared/tunnel.json
+ingress:
+  - hostname: "*.alexnorum.com"
+    service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404

@@ -1,0 +1,47 @@
+provider: coredns
+coredns:
+  etcdEndpoints: "http://etcd-coredns:2379"
+
+# Modify these settings based on your setup
+domainFilters: 
+  - local
+
+# Deployment settings
+image:
+  repository: k8s.gcr.io/external-dns/external-dns
+  tag: v0.13.5
+
+serviceAccount:
+  create: true
+  name: external-dns
+
+rbac:
+  create: true
+
+resources:
+  limits:
+    memory: 50Mi
+  requests:
+    cpu: 10m
+    memory: 50Mi
+
+# Logging settings
+logLevel: info
+logFormat: text
+
+# Sync settings
+interval: "1m"
+policy: sync
+registry: txt
+txtOwnerId: "k8s"
+
+# Annotations filter
+annotationFilter: ""
+
+# Sources to watch
+sources:
+  - ingress
+  - service
+
+# Whether to publish DNS records for ClusterIP services
+publishInternalServices: false

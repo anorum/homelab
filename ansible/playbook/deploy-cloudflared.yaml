@@ -1,0 +1,15 @@
+---
+- name: Deploy Cloudflare Tunnel
+  hosts: master
+  become: yes
+  vars_prompt:
+    - name: cloudflared_tunnel_id
+      prompt: "Enter your Cloudflare tunnel ID"
+      private: no
+    
+    - name: cloudflared_tunnel_credentials
+      prompt: "Enter your Cloudflare tunnel credentials JSON"
+      private: yes
+
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/cloudflared/tasks/main.yaml"

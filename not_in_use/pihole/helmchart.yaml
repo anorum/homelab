@@ -1,0 +1,75 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: pihole
+  namespace: pihole
+spec:
+  repo: https://mojo2600.github.io/pihole-kubernetes/
+  chart: pihole
+  version: 2.27.0
+  targetNamespace: pihole
+  valuesContent: |-
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - dns.homelab
+
+
+    persistentVolumeClaim:
+      enabled: true
+
+    serviceWeb:
+      loadBalancerIP: 192.168.1.152
+      annotations:
+        metallb.universe.tf/allow-shared-ip: pihole-svc
+      type: LoadBalancer
+
+    serviceDns:
+      loadBalancerIP: 192.168.1.152
+      annotations:
+        metallb.universe.tf/allow-shared-ip: pihole-svc
+      type: LoadBalancer
+
+    serviceDhcp:
+      loadBalancerIP: 192.168.1.152
+      annotations:
+        metallb.universe.tf/allow-shared-ip: pihole-svc
+      type: LoadBalancer
+
+    podDnsConfig:
+      enabled: true
+      policy: "None"
+      nameservers:
+      - 127.0.0.1
+      - 8.8.8.8
+
+    #! use an existing secret in a prod env
+    adminPassword: "0n4BQ2l7Dbu3ViYgd4wu" # Not real password
+
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+    extraEnvVars: {
+      DNSMASQ_USER: "root"
+    }
+
+    dnsmasq:
+      customDnsEntries:
+        - address=/nas/192.168.1.152
+
+    serviceTCP:
+      loadBalancerIP: 192.168.1.152
+      annotations:
+        metallb.universe.tf/address-pool: cluster-pool
+        metallb.universe.tf/allow-shared-ip: pihole-svc
+    serviceUDP:
+      loadBalancerIP: 192.168.1.152
+      annotations:
+        metallb.universe.tf/address-pool: cluster-pool
+        metallb.universe.tf/allow-shared-ip: pihole-svc
