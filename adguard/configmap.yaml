@@ -31,6 +31,8 @@ data:
       rewrites:
         - domain: '*.homelab'
           answer: 192.168.1.151
+        - domain: 'homelab'
+          answer: 192.168.1.151
     tls:
       enabled: false
     log:
