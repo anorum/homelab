@@ -12,7 +12,7 @@ metadata:
     gethomepage.dev/group: Development
     gethomepage.dev/icon: argo.png
     gethomepage.dev/name: Argo CD
-    gethomepage.dev/widget.type: "argo"
+    gethomepage.dev/widget.type: "argocd"
     gethomepage.dev/widget.url: "argo.homelab"
 spec:
   ingressClassName: nginx

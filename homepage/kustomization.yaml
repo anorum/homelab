@@ -17,6 +17,9 @@ helmCharts:
     releaseName: homepage
     namespace: homepage
     valuesInline:
+      image:
+        repository: ghcr.io/gethomepage/homepage
+        tag: v0.10.6
       config:
         bookmarks:
           - Developer:
