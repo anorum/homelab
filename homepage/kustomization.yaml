@@ -37,26 +37,26 @@ helmCharts:
               - AdGuard:
                   href: http://adguard.homelab
                   description: DNS Ad Blocking
-                  icon: adguard.png
-                  ping: http://adguard.homelab
+                  icon: adblock
+                  ping: http://adguard-service.adguard.svc.cluster.local
                   weight: 1
               - Argo CD:
                   href: http://argo.homelab
                   description: GitOps Deployment Tool
-                  icon: argo.png
-                  ping: http://argo.homelab
+                  icon: git
+                  ping: http://argocd-server.argocd.svc.cluster.local
                   weight: 2
               - Uptime Kuma:
                   href: http://uptime.homelab
                   description: Internal Monitoring
                   icon: uptime-kuma.png
-                  ping: http://uptime.homelab
+                  ping: http://uptime-kuma.uptime-kuma.svc.cluster.local
                   weight: 3
               - Prometheus:
                   href: http://prometheus.homelab
                   description: Metrics & Monitoring
                   icon: prometheus.png
-                  ping: http://prometheus.homelab
+                  ping: http://prometheus-server.prometheus.svc.cluster.local
                   weight: 4
 
           - Media Services:
@@ -95,29 +95,13 @@ helmCharts:
                 memory: true
                 showLabel: true
                 label: "cluster"
-              nodes:
-                show: true
-                cpu: true
-                memory: true
-                showLabel: true
           - search:
               provider: google
               target: _blank
-          - weather:
-              latitude: 47.6062  # Seattle coordinates
-              longitude: -122.3321
-              provider: openweathermap
-              units: imperial
           - datetime:
               format:
                 timeStyle: "short"
                 dateStyle: "full"
-          - system:
-              display:
-                - cpu
-                - memory
-                - disk
-                - network
         kubernetes:
           mode: cluster
         settings:
