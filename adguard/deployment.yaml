@@ -5,28 +5,42 @@ metadata:
   namespace: adguard
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: adguard
   template:
-    replicas: 2
-    strategy:
-      type: RollingUpdate
-      rollingUpdate:
-        maxUnavailable: 0
     metadata:
       labels:
         app: adguard
     spec:
+      initContainers:
+      - name: init-config
+        image: alpine
+        imagePullPolicy: IfNotPresent
+        command:
+          - 'sh'
+          - '-c'
+          - |
+            if [[ ! -f /opt/adguardhome/conf/AdGuardHome.yaml ]]; then
+              cp /tmp/config/AdGuardHome.yaml /opt/adguardhome/conf/AdGuardHome.yaml
+            fi
+        volumeMounts:
+        - name: adguard-config
+          mountPath: /tmp/config
+        - name: adguard-conf
+          mountPath: /opt/adguardhome/conf
       containers:
       - name: adguard-home
-        image: adguard/adguardhome:latest
-        env:
-        - name: AGH_CONFIG
-          valueFrom:
-            configMapKeyRef:
-              name: adguard-config
-              key: AdGuardHome.yaml
+        image: adguard/adguardhome:v0.107.55
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "300m"
         ports:
         - containerPort: 53 #dns
           name: dns
@@ -39,7 +53,7 @@ spec:
         volumeMounts:
         - name: adguard-data
           mountPath: /opt/adguardhome/work
-        - name: adguard-config
+        - name: adguard-conf
           mountPath: /opt/adguardhome/conf
       volumes:
       - name: adguard-data
@@ -48,3 +62,5 @@ spec:
       - name: adguard-config
         configMap:
           name: adguard-config
+      - name: adguard-conf
+        emptyDir: {}

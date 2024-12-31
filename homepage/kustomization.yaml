@@ -22,17 +22,23 @@ helmCharts:
           - Developer:
               - Github:
                   - abbr: GH
-                    href: https://github.com/
+                    href: https://github.com/anorum/homelab
         services:
-          - My First Group:
-              - My First Service:
-                  href: http://localhost/
-                  description: Homepage is awesome
+          - Homelab:
+              - AdGuard:
+                  href: http://adguard.homelab
+                  description: Adguard DNS
 
-          - My Second Group:
-              - My Second Service:
-                  href: http://localhost/
-                  description: Homepage is the best
+          - Hoyt:
+              - Homepage:
+                  href: https://hoyt.lol
+                  description: Hoyt Dashboard
+              - Media:
+                  href: https://media.hoyt.lol
+                  description: Media
+              - Requests:
+                  href: https://requests.hoyt.ol
+                  description: Request Movies
 
           - My Third Group:
               - My Third Service:
@@ -53,7 +59,7 @@ helmCharts:
                 memory: true
                 showLabel: true
           - search:
-              provider: duckduckgo
+              provider: google
               target: _blank
         kubernetes:
           mode: cluster
