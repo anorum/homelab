@@ -11,6 +11,11 @@ metadata:
     external-dns.alpha.kubernetes.io/hostname: "status.alexnorum.com"
     external-dns.alpha.kubernetes.io/target: 4a9b9f83-631f-486f-9b9c-499065c203fe.cfargotunnel.com
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Uptime Monitoring
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: uptime-kuma.png
+    gethomepage.dev/name: Uptime Kuma
 spec:
   ingressClassName: nginx
   tls:
