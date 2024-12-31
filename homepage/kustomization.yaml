@@ -41,19 +41,16 @@ helmCharts:
                   href: https://hoyt.lol
                   description: Hoyt Dashboard
                   icon: home-assistant
-                  ping: https://hoyt.lol
                   weight: 1
               - Media:
                   href: https://media.hoyt.lol
                   description: Media Server
                   icon: plex.png
-                  ping: https://media.hoyt.lol
                   weight: 2
               - Requests:
                   href: https://requests.hoyt.lol
                   description: Request Movies & TV Shows
                   icon: overseerr.png
-                  ping: https://requests.hoyt.lol
                   weight: 3
 
           - External:
@@ -61,7 +58,7 @@ helmCharts:
                   href: https://status.alexnorum.com
                   description: External Status Monitor
                   icon: uptime-kuma.png
-                  ping: https://status.alexnorum.com
+                  siteMonitor: https://status.alexnorum.com
                   weight: 1
 
         widgets:
