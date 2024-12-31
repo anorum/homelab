@@ -9,6 +9,7 @@ spec:
     matchLabels:
       app: adguard
   template:
+    replicas: 2
     metadata:
       labels:
         app: adguard
