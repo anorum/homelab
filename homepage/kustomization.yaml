@@ -23,38 +23,71 @@ helmCharts:
               - Github:
                   - abbr: GH
                     href: https://github.com/anorum/homelab
+              - Docker Hub:
+                  - abbr: DH
+                    href: https://hub.docker.com
+              - Kubernetes:
+                  - abbr: K8S
+                    href: https://kubernetes.io/docs
+              - Helm Hub:
+                  - abbr: HELM
+                    href: https://artifacthub.io
         services:
-          - Homelab:
+          - Infrastructure:
               - AdGuard:
                   href: http://adguard.homelab
-                  description: Adguard DNS
+                  description: DNS Ad Blocking
+                  icon: adguard.png
+                  ping: http://adguard.homelab
+                  weight: 1
               - Argo CD:
                   href: http://argo.homelab
                   description: GitOps Deployment Tool
+                  icon: argo.png
+                  ping: http://argo.homelab
+                  weight: 2
               - Uptime Kuma:
                   href: http://uptime.homelab
-                  description: Internal Status Page
-              - Status:
-                  href: http://status.homelab
-                  description: Internal Status Page
+                  description: Internal Monitoring
+                  icon: uptime-kuma.png
+                  ping: http://uptime.homelab
+                  weight: 3
+              - Prometheus:
+                  href: http://prometheus.homelab
+                  description: Metrics & Monitoring
+                  icon: prometheus.png
+                  ping: http://prometheus.homelab
+                  weight: 4
 
-          - Hoyt:
+          - Media Services:
               - Homepage:
                   href: https://hoyt.lol
                   description: Hoyt Dashboard
+                  icon: dashboard.png
+                  ping: https://hoyt.lol
+                  weight: 1
               - Media:
                   href: https://media.hoyt.lol
-                  description: Media
+                  description: Media Server
+                  icon: plex.png
+                  ping: https://media.hoyt.lol
+                  weight: 2
               - Requests:
-                  href: https://requests.hoyt.ol
-                  description: Request Movies
+                  href: https://requests.hoyt.lol
+                  description: Request Movies & TV Shows
+                  icon: overseerr.png
+                  ping: https://requests.hoyt.lol
+                  weight: 3
 
           - External:
               - Status Page:
                   href: https://status.alexnorum.com
-                  description: Uptime Kuma External Status Page
+                  description: External Status Monitor
+                  icon: uptime-kuma.png
+                  ping: https://status.alexnorum.com
+                  weight: 1
+
         widgets:
-          # show the kubernetes widget, with the cluster summary and individual nodes
           - kubernetes:
               cluster:
                 show: true
@@ -70,16 +103,35 @@ helmCharts:
           - search:
               provider: google
               target: _blank
+          - weather:
+              latitude: 47.6062  # Seattle coordinates
+              longitude: -122.3321
+              provider: openweathermap
+              units: imperial
+          - datetime:
+              format:
+                timeStyle: "short"
+                dateStyle: "full"
+          - system:
+              display:
+                - cpu
+                - memory
+                - disk
+                - network
         kubernetes:
           mode: cluster
         settings:
+          title: "Homelab Dashboard"
+          theme: dark
+          colorScheme: blue
+          language: en
+          disableCollapse: true
+          headerStyle: clean
 
-      # The service account is necessary to allow discovery of other services
       serviceAccount:
         create: true
         name: homepage
 
-      # This enables the service account to access the necessary resources
       enableRbac: true
 
       ingress:
