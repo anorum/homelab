@@ -13,7 +13,7 @@ labels:
 
 helmCharts:
   - name: homepage
-    repo: https://kubernetes.github.io/homepage
+    repo: https://jameswynn.github.io/helm-charts
     releaseName: homepage
     namespace: homepage
     valuesInline:
