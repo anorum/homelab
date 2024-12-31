@@ -34,7 +34,7 @@ helmCharts:
             gethomepage.dev/name: Grafana
             gethomepage.dev/widget.type: "grafana"
             gethomepage.dev/widget.url: "grafana.homelab"
-            gethomepage.dev/pod-selector: "app.kubernetes.io/name: grafana"
+            gethomepage.dev/pod-selector: "app.kubernetes.io/name=grafana"
         persistence:
           type: pvc
           enabled: true
