@@ -89,7 +89,17 @@ helmCharts:
 
         widgets:
           - kubernetes:
-              mode: cluster
+              cluster:
+                show: true
+                cpu: true
+                memory: true
+                showLabel: true
+                label: "cluster"
+              nodes:
+                show: true
+                cpu: true
+                memory: true
+                showLabel: true
           - search:
               provider: google
               target: _blank
