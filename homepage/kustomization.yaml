@@ -28,6 +28,15 @@ helmCharts:
               - AdGuard:
                   href: http://adguard.homelab
                   description: Adguard DNS
+              - Argo CD:
+                  href: http://argo.homelab
+                  description: GitOps Deployment Tool
+              - Uptime Kuma:
+                  href: http://uptime.homelab
+                  description: Internal Status Page
+              - Status:
+                  href: http://status.homelab
+                  description: Internal Status Page
 
           - Hoyt:
               - Homepage:
@@ -40,10 +49,10 @@ helmCharts:
                   href: https://requests.hoyt.ol
                   description: Request Movies
 
-          - My Third Group:
-              - My Third Service:
-                  href: http://localhost/
-                  description: Homepage is 😎
+          - External:
+              - Status Page:
+                  href: https://status.alexnorum.com
+                  description: Uptime Kuma External Status Page
         widgets:
           # show the kubernetes widget, with the cluster summary and individual nodes
           - kubernetes:
