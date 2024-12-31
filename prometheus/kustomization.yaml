@@ -80,6 +80,13 @@ helmCharts:
           pathType: Prefix
           annotations:
             kubernetes.io/ingress.class: nginx
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/description: Metrics and Monitoring
+            gethomepage.dev/group: Monitoring
+            gethomepage.dev/icon: prometheus.png
+            gethomepage.dev/name: Prometheus
+            gethomepage.dev/widget.type: "prometheus"
+            gethomepage.dev/widget.url: "http://prometheus.homelab"
         thanosIngress:
           enabled: true
           hosts:
@@ -104,6 +111,13 @@ helmCharts:
           ingressClassName: nginx
           annotations:
             kubernetes.io/ingress.class: nginx
+            gethomepage.dev/enabled: "true"
+            gethomepage.dev/description: Alert Management
+            gethomepage.dev/group: Monitoring
+            gethomepage.dev/icon: alertmanager.png
+            gethomepage.dev/name: Alertmanager
+            gethomepage.dev/widget.type: "prometheus"
+            gethomepage.dev/widget.url: "http://alertmanager.homelab"
 
 patches:
   - patch: |-
