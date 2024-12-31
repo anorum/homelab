@@ -86,7 +86,7 @@ helmCharts:
             gethomepage.dev/icon: prometheus.png
             gethomepage.dev/name: Prometheus
             gethomepage.dev/widget.type: "prometheus"
-            gethomepage.dev/widget.url: "http://prometheus.homelab"
+            gethomepage.dev/widget.url: "prometheus.homelab"
         thanosIngress:
           enabled: true
           hosts:
@@ -117,7 +117,7 @@ helmCharts:
             gethomepage.dev/icon: alertmanager.png
             gethomepage.dev/name: Alertmanager
             gethomepage.dev/widget.type: "prometheus"
-            gethomepage.dev/widget.url: "http://alertmanager.homelab"
+            gethomepage.dev/widget.url: "alertmanager.homelab"
 
 patches:
   - patch: |-
