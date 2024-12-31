@@ -13,7 +13,7 @@ metadata:
     gethomepage.dev/icon: adguard.png
     gethomepage.dev/name: AdGuard
     gethomepage.dev/widget.type: "adguard"
-    gethomepage.dev/widget.url: "http://adguard.homelab"
+    gethomepage.dev/widget.url: "adguard.homelab"
 spec:
   ingressClassName: nginx
   rules:
