@@ -1,0 +1,83 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: homepage
+
+resources:
+  - namespace.yaml
+
+labels:
+- pairs:
+    app.kubernetes.io/name: homepage
+    app.kubernetes.io/instance: homepage
+
+helmCharts:
+  - name: homepage
+    repo: https://kubernetes.github.io/homepage
+    releaseName: homepage
+    namespace: homepage
+    valuesInline:
+      config:
+        bookmarks:
+          - Developer:
+              - Github:
+                  - abbr: GH
+                    href: https://github.com/
+        services:
+          - My First Group:
+              - My First Service:
+                  href: http://localhost/
+                  description: Homepage is awesome
+
+          - My Second Group:
+              - My Second Service:
+                  href: http://localhost/
+                  description: Homepage is the best
+
+          - My Third Group:
+              - My Third Service:
+                  href: http://localhost/
+                  description: Homepage is 😎
+        widgets:
+          # show the kubernetes widget, with the cluster summary and individual nodes
+          - kubernetes:
+              cluster:
+                show: true
+                cpu: true
+                memory: true
+                showLabel: true
+                label: "cluster"
+              nodes:
+                show: true
+                cpu: true
+                memory: true
+                showLabel: true
+          - search:
+              provider: duckduckgo
+              target: _blank
+        kubernetes:
+          mode: cluster
+        settings:
+
+      # The service account is necessary to allow discovery of other services
+      serviceAccount:
+        create: true
+        name: homepage
+
+      # This enables the service account to access the necessary resources
+      enableRbac: true
+
+      ingress:
+        main:
+          enabled: true
+          ingressClassName: nginx
+          annotations:
+            nginx.ingress.kubernetes.io/ssl-redirect: "false"
+            nginx.ingress.kubernetes.io/rewrite-target: /
+            nginx.ingress.kubernetes.io/proxy-redirect-from: /
+            nginx.ingress.kubernetes.io/proxy-redirect-to: /
+          hosts:
+            - host: homelab
+              paths:
+                - path: /
+                  pathType: Prefix

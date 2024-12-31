@@ -102,3 +102,18 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: prometheus
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homepage
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: homepage
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: homepage
