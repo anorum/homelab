@@ -38,32 +38,32 @@ helmCharts:
                   href: http://adguard.homelab
                   description: DNS Ad Blocking
                   icon: adblock
-                  ping: http://adguard-service.adguard.svc.cluster.local
+                  ping: http://adguard-service.adguard:80
                   weight: 1
               - Argo CD:
                   href: http://argo.homelab
                   description: GitOps Deployment Tool
                   icon: git
-                  ping: http://argocd-server.argocd.svc.cluster.local
+                  ping: http://argocd-server.argocd:80
                   weight: 2
               - Uptime Kuma:
                   href: http://uptime.homelab
                   description: Internal Monitoring
                   icon: uptime-kuma.png
-                  ping: http://uptime-kuma.uptime-kuma.svc.cluster.local
+                  ping: http://uptime-kuma.uptime-kuma:80
                   weight: 3
               - Prometheus:
                   href: http://prometheus.homelab
                   description: Metrics & Monitoring
                   icon: prometheus.png
-                  ping: http://prometheus-server.prometheus.svc.cluster.local
+                  ping: http://prometheus-server.prometheus:80
                   weight: 4
 
           - Media Services:
               - Homepage:
                   href: https://hoyt.lol
                   description: Hoyt Dashboard
-                  icon: dashboard.png
+                  icon: home-assistant
                   ping: https://hoyt.lol
                   weight: 1
               - Media:
@@ -89,12 +89,7 @@ helmCharts:
 
         widgets:
           - kubernetes:
-              cluster:
-                show: true
-                cpu: true
-                memory: true
-                showLabel: true
-                label: "cluster"
+              mode: cluster
           - search:
               provider: google
               target: _blank
