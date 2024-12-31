@@ -41,16 +41,19 @@ helmCharts:
                   href: https://hoyt.lol
                   description: Hoyt Dashboard
                   icon: home-assistant
+                  siteMonitor: https://hoyt.lol
                   weight: 1
               - Media:
                   href: https://media.hoyt.lol
                   description: Media Server
                   icon: plex.png
+                  siteMonitor: https://media.hoyt.lol
                   weight: 2
               - Requests:
                   href: https://requests.hoyt.lol
                   description: Request Movies & TV Shows
                   icon: overseerr.png
+                  siteMonitor: https://requests.hoyt.lol
                   weight: 3
 
           - External:
