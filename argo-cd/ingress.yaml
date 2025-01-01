@@ -10,7 +10,6 @@ metadata:
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: GitOps Deployment
     gethomepage.dev/group: Development
-    gethomepage.dev/icon: argo.png
     gethomepage.dev/name: Argo CD
     gethomepage.dev/widget.type: "argocd"
     gethomepage.dev/widget.url: "argo.homelab"
