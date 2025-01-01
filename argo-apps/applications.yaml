@@ -1,6 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: argo-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: argo-apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-apps
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: adguard
   namespace: argocd
 spec:
@@ -132,3 +147,18 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: homepage
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: external-secrets
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
