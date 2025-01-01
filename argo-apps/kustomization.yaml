@@ -5,6 +5,3 @@ namespace: argocd
 
 resources:
 - applications.yaml
-
-patches:
-- path: ./applications.yaml
