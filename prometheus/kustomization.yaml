@@ -32,11 +32,11 @@ helmCharts:
             gethomepage.dev/group: Monitoring
             gethomepage.dev/icon: grafana.png
             gethomepage.dev/name: Grafana
-            gethomepage.dev/widget.type: "grafana"
-            gethomepage.dev/widget.url: "grafana.homelab"
             gethomepage.dev/pod-selector: "app.kubernetes.io/name=grafana"
-            gethomepage.dev/username: "admin"
-            gethomepage.dev/password: "prom-operator" # only available locally and default 
+            gethomepage.dev/widget.type: "grafana"
+            gethomepage.dev/widget.url: "http://prometheus-grafana.prometheus.svc.cluster.local"
+            gethomepage.dev/widget.username: '{{`{{HOMEPAGE_VAR_GRAFANA_USERNAME}}`}}'
+            gethomepage.dev/widget.password: '{{`{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}`}}' # only available locally and default 
         persistence:
           type: pvc
           enabled: true
@@ -87,8 +87,9 @@ helmCharts:
             gethomepage.dev/group: Monitoring
             gethomepage.dev/icon: prometheus.png
             gethomepage.dev/name: Prometheus
+            gethomepage.dev/pod-selector: app.kubernetes.io/name=prometheus
             gethomepage.dev/widget.type: "prometheus"
-            gethomepage.dev/widget.url: "prometheus.homelab"
+            gethomepage.dev/widget.url: "http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090"
         thanosIngress:
           enabled: true
           hosts:
@@ -117,11 +118,9 @@ helmCharts:
             gethomepage.dev/description: Alert Management
             gethomepage.dev/group: Monitoring
             gethomepage.dev/icon: alertmanager.png
-            gethomepage.dev/name: Alertmanager
-            gethomepage.dev/widget.type: "prometheus"
-            gethomepage.dev/widget.url: "alertmanager.homelab"
-            gethomepage.dev/pod-selector: "alertmanager=prometheus-kube-prometheus-alertmanager"
-
+            gethomepage.dev/name: Alert Manager
+            gethomepage.dev/href: "alertmanager.homelab"
+            gethomepage.dev/pod-selector: "app.kubernetes.io/name=alertmanager"
 patches:
   - patch: |-
       apiVersion: apps/v1

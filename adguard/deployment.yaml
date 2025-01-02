@@ -25,9 +25,7 @@ spec:
           - 'sh'
           - '-c'
           - |
-            if [[ ! -f /opt/adguardhome/conf/AdGuardHome.yaml ]]; then
-              cp /tmp/config/AdGuardHome.yaml /opt/adguardhome/conf/AdGuardHome.yaml
-            fi
+            cp /tmp/config/AdGuardHome.yaml /opt/adguardhome/conf/AdGuardHome.yaml
         volumeMounts:
         - name: adguard-config
           mountPath: /tmp/config

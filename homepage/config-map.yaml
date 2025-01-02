@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage
+  namespace: homepage
+  labels:
+    app.kubernetes.io/name: homepage
+data:
+  kubernetes.yaml: |
+    mode: cluster
+  settings.yaml: |
+    title: "Homelab Dashboard"
+    theme: dark
+    colorScheme: blue
+    language: en
+    disableCollapse: true
+    headerStyle: clean
+  custom.css: ""
+  custom.js: ""
+  bookmarks.yaml: |
+    - Developer:
+      - Github:
+          - abbr: GH
+            href: https://github.com/anorum/homelab
+      - Docker Hub:
+          - abbr: DH
+            href: https://hub.docker.com
+      - Kubernetes:
+          - abbr: K8S
+            href: https://kubernetes.io/docs
+      - Helm Hub:
+          - abbr: HELM
+            href: https://artifacthub.io
+  services.yaml: |
+    - Media Services:
+      - Homepage:
+          href: https://hoyt.lol
+          description: Hoyt Dashboard
+          icon: home-assistant
+          siteMonitor: https://hoyt.lol
+          weight: 1
+      - Media:
+          href: https://media.hoyt.lol
+          description: Media Server
+          icon: plex.png
+          siteMonitor: https://media.hoyt.lol
+          weight: 2
+      - Requests:
+          href: https://requests.hoyt.lol
+          description: Request Movies & TV Shows
+          icon: overseerr.png
+          siteMonitor: https://requests.hoyt.lol
+          weight: 3
+    - External:
+      - Status Page:
+          href: https://status.alexnorum.com
+          description: External Status Monitor
+          icon: uptime-kuma.png
+          siteMonitor: https://status.alexnorum.com
+          weight: 1
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+    - resources:
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+        network: default
+    - search:
+        provider: google
+        target: _blank
+  docker.yaml: ""

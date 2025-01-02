@@ -9,11 +9,12 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-redirect-to: /
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: DNS Ad Blocking
-    gethomepage.dev/group: Network
-    gethomepage.dev/icon: adguard.png
+    gethomepage.dev/group: Homelab
     gethomepage.dev/name: AdGuard
     gethomepage.dev/widget.type: "adguard"
-    gethomepage.dev/widget.url: "adguard.homelab"
+    gethomepage.dev/widget.url: "http://adguard-service.adguard.svc.cluster.local"
+    gethomepage.dev/widget.username: "{{HOMEPAGE_VAR_ADGUARD_USERNAME}}"
+    gethomepage.dev/widget.password: "{{HOMEPAGE_VAR_ADGUARD_PASSWORD}}"
     gethomepage.dev/pod-selector: "app=adguard"
 spec:
   ingressClassName: nginx

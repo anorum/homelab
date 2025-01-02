@@ -5,112 +5,16 @@ namespace: homepage
 
 resources:
   - namespace.yaml
+  - cluster-role.yaml
+  - config-map.yaml
+  - deployment.yaml
+  - ingress.yaml
+  - secret.yaml
+  - service.yaml
+  - serviceaccount.yaml
+  - config-secrets.yaml
 
 labels:
 - pairs:
     app.kubernetes.io/name: homepage
     app.kubernetes.io/instance: homepage
-
-helmCharts:
-  - name: homepage
-    repo: https://jameswynn.github.io/helm-charts
-    releaseName: homepage
-    namespace: homepage
-    valuesInline:
-      image:
-        repository: ghcr.io/gethomepage/homepage
-        tag: v0.10.6
-      config:
-        bookmarks:
-          - Developer:
-              - Github:
-                  - abbr: GH
-                    href: https://github.com/anorum/homelab
-              - Docker Hub:
-                  - abbr: DH
-                    href: https://hub.docker.com
-              - Kubernetes:
-                  - abbr: K8S
-                    href: https://kubernetes.io/docs
-              - Helm Hub:
-                  - abbr: HELM
-                    href: https://artifacthub.io
-        services:
-          - Media Services:
-              - Homepage:
-                  href: https://hoyt.lol
-                  description: Hoyt Dashboard
-                  icon: home-assistant
-                  siteMonitor: https://hoyt.lol
-                  weight: 1
-              - Media:
-                  href: https://media.hoyt.lol
-                  description: Media Server
-                  icon: plex.png
-                  siteMonitor: https://media.hoyt.lol
-                  weight: 2
-              - Requests:
-                  href: https://requests.hoyt.lol
-                  description: Request Movies & TV Shows
-                  icon: overseerr.png
-                  siteMonitor: https://requests.hoyt.lol
-                  weight: 3
-
-          - External:
-              - Status Page:
-                  href: https://status.alexnorum.com
-                  description: External Status Monitor
-                  icon: uptime-kuma.png
-                  siteMonitor: https://status.alexnorum.com
-                  weight: 1
-
-        widgets:
-          - kubernetes:
-              cluster:
-                show: true
-                cpu: true
-                memory: true
-                showLabel: true
-                label: "cluster"
-              nodes:
-                show: true
-                cpu: true
-                memory: true
-                showLabel: true
-          - search:
-              provider: google
-              target: _blank
-          - datetime:
-              format:
-                timeStyle: "short"
-                dateStyle: "full"
-        kubernetes:
-          mode: cluster
-        settings:
-          title: "Homelab Dashboard"
-          theme: dark
-          colorScheme: blue
-          language: en
-          disableCollapse: true
-          headerStyle: clean
-
-      serviceAccount:
-        create: true
-        name: homepage
-
-      enableRbac: true
-
-      ingress:
-        main:
-          enabled: true
-          ingressClassName: nginx
-          annotations:
-            nginx.ingress.kubernetes.io/ssl-redirect: "false"
-            nginx.ingress.kubernetes.io/rewrite-target: /
-            nginx.ingress.kubernetes.io/proxy-redirect-from: /
-            nginx.ingress.kubernetes.io/proxy-redirect-to: /
-          hosts:
-            - host: homelab
-              paths:
-                - path: /
-                  pathType: Prefix
