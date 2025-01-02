@@ -12,7 +12,7 @@ resources:
   - secret.yaml
   - service.yaml
   - serviceaccount.yaml
-  - config-secrets.yaml
+  - sealed-secrets.yaml
 
 labels:
 - pairs:
