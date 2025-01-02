@@ -12,3 +12,8 @@ configMapGenerator:
     behavior: merge
     literals:
       - kustomize.buildOptions=--enable-helm
+      - accounts.readonly=apiKey
+  - name: argocd-rbac-cm
+    behavior: merge
+    literals:
+      - policy.csv="g, readonly, role:readonly"
