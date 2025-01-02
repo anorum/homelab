@@ -14,6 +14,7 @@ metadata:
     gethomepage.dev/name: AdGuard
     gethomepage.dev/widget.type: "adguard"
     gethomepage.dev/widget.url: "adguard.homelab"
+    gethomepage.dev/pod-selector: "app=adguard"
 spec:
   ingressClassName: nginx
   rules:

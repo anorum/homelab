@@ -13,6 +13,7 @@ metadata:
     gethomepage.dev/name: Argo CD
     gethomepage.dev/widget.type: "argocd"
     gethomepage.dev/widget.url: "argo.homelab"
+    gethomepage.dev/pod-selector: "app.kubernetes.io/name=argocd-server"
 spec:
   ingressClassName: nginx
   tls:
