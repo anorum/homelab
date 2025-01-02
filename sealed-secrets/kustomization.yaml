@@ -9,3 +9,5 @@ helmCharts:
     version: v2.17.0
     releaseName: sealed-secrets
     namespace: kube-system
+    valuesInline:
+      fullnameOverride: sealed-secrets-controller
