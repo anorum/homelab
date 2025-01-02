@@ -12,7 +12,7 @@ metadata:
     gethomepage.dev/group: Development
     gethomepage.dev/name: Argo CD
     gethomepage.dev/widget.type: "argocd"
-    gethomepage.dev/widget.url: "http://argocd-server.argocd.svc.cluster.local"
+    gethomepage.dev/widget.url: "https://argocd-server.argocd.svc.cluster.local"
     gethomepage.dev/pod-selector: "app.kubernetes.io/name=argocd-server"
     gethomepage.dev/widget.key: "{{HOMEPAGE_VAR_ARGOCD_KEY}}"
 spec:
