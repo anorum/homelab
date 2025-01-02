@@ -18,7 +18,7 @@ metadata:
     gethomepage.dev/name: Uptime Kuma
     gethomepage.dev/widget.type: uptimekuma
     gethomepage.dev/widget.url: "http://uptime-kuma.uptime-kuma.svc.cluster.local"
-    gethomepage.dev/widget.statusslug: "/status/hoyt"
+    gethomepage.dev/widget.statusslug: "hoyt"
 spec:
   ingressClassName: nginx
   tls:
