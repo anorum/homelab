@@ -12,8 +12,10 @@ metadata:
     gethomepage.dev/group: Development
     gethomepage.dev/name: Argo CD
     gethomepage.dev/widget.type: "argocd"
-    gethomepage.dev/widget.url: "argo.homelab"
+    gethomepage.dev/widget.url: "argocd-server.argocd.svc.cluster.local"
     gethomepage.dev/pod-selector: "app.kubernetes.io/name=argocd-server"
+    gethomepage.dev/widget.username: "{{HOMEPAGE_VAR_ARGOCD_USERNAME}}"
+    gethomepage.dev/widget.password: "{{HOMEPAGE_VAR_ARGOCD_PASSWORD}}"
 spec:
   ingressClassName: nginx
   tls:
