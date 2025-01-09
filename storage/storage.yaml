@@ -26,7 +26,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - cluster.local  # Replace with the name of your node
+          - cluster  # Replace with the name of your node
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -56,4 +56,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - cluster.local  # Replace with the name of your node
+          - cluster  # Replace with the name of your node

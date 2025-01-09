@@ -47,7 +47,7 @@ spec:
               - key: kubernetes.io/hostname
                 operator: In
                 values:
-                - cluster.local
+                - cluster
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
@@ -59,12 +59,12 @@ spec:
         - name: TZ
           value: "America/Los_Angeles"
         volumeMounts:
-        # - name: config
-        #   mountPath: /config
+        - name: config
+          mountPath: /config
         - name: media
           mountPath: /data/movies
-        # - name: downloads
-        #   mountPath: /data/downloads
+        - name: downloads
+          mountPath: /data/downloads
         ports:
         - containerPort: 7878
       volumes:
