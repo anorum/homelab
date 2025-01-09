@@ -42,9 +42,9 @@ spec:
         image: lscr.io/linuxserver/radarr:latest
         env:
         - name: PUID
-          value: "1000"
+          value: "1057"  
         - name: PGID
-          value: "1000"
+          value: "1056" 
         - name: TZ
           value: "America/Los_Angeles"
         volumeMounts:
