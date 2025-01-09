@@ -39,6 +39,15 @@ spec:
       labels:
         app: radarr
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - cluster.local
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
@@ -50,15 +59,12 @@ spec:
         - name: TZ
           value: "America/Los_Angeles"
         volumeMounts:
-        - name: config
-          mountPath: /config
+        # - name: config
+        #   mountPath: /config
         - name: media
           mountPath: /data/movies
-          securityContext:
-            runAsUser: 1000       # Set to match the abc user UID
-            runAsGroup: 1000 
-        - name: downloads
-          mountPath: /data/downloads
+        # - name: downloads
+        #   mountPath: /data/downloads
         ports:
         - containerPort: 7878
       volumes:
