@@ -37,14 +37,18 @@ spec:
       labels:
         app: radarr
     spec:
+      securityContext:
+          fsGroup: 1001
+          runAsUser: 1001
+          runAsGroup: 1001
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
         env:
         - name: PUID
-          value: "1057"  
+          value: "1001"  
         - name: PGID
-          value: "1056" 
+          value: "1001" 
         - name: TZ
           value: "America/Los_Angeles"
         volumeMounts:
