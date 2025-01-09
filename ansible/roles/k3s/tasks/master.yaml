@@ -1,6 +1,30 @@
+- name: Read current cmdline
+  slurp:
+    path: /boot/firmware/cmdline.txt
+  register: cmdline_content
+
+- name: Configure cgroups on master
+  copy:
+    dest: /boot/firmware/cmdline.txt
+    content: "{{ cmdline_content.content | b64decode | regex_replace('\\n$', '') }} cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset systemd.unified_cgroup_hierarchy=1\n"
+  register: cmdline_modified
+
+- name: Reboot if cmdline.txt was modified
+  reboot:
+  when: cmdline_modified.changed
+
 - name: Install k3s on master
   shell: |
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable=traefik,servicelb" sh
+  register: k3s_master_install
+  failed_when: k3s_master_install.rc != 0
+
+- name: Wait for k3s to be ready
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    state: present
+    delay: 10
+    timeout: 300
 
 - name: Retrieve k3s token
   shell: "cat /var/lib/rancher/k3s/server/node-token"
@@ -11,3 +35,53 @@
 - name: Set token fact
   set_fact:
     k3s_token: "{{ k3s_token.stdout }}"
+
+- name: Check if PCIe settings exist
+  command: grep -E "dtparam=(pciex1|nvme|pciex1_gen=3)" /boot/firmware/config.txt
+  register: pcie_check
+  changed_when: false
+  failed_when: false
+
+- name: Add PCIe settings comment
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: "# Enable the PCIe External connector."
+  when: pcie_check.rc != 0
+
+- name: Enable PCIe connector
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: "dtparam=pciex1"
+  when: pcie_check.rc != 0
+  register: pcie_modified
+
+- name: Enable NVME
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: "dtparam=nvme"
+  when: pcie_check.rc != 0
+  register: nvme_modified
+
+- name: Enable PCIe Gen 3.0 speed
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: "dtparam=pciex1_gen=3"
+  when: pcie_check.rc != 0
+  register: pcie_gen_modified
+
+- name: Check current EEPROM config
+  command: rpi-eeprom-config
+  register: eeprom_config
+  changed_when: false
+
+- name: Configure PSU max current in EEPROM
+  command: rpi-eeprom-config -e PSU_MAX_CURRENT=5000
+  when: "'PSU_MAX_CURRENT=5000' not in eeprom_config.stdout"
+  register: eeprom_modified
+
+- name: Reboot if config was modified
+  reboot:
+  when: (pcie_modified.changed | default(false)) or 
+        (nvme_modified.changed | default(false)) or 
+        (pcie_gen_modified.changed | default(false)) or
+        (eeprom_modified.changed | default(false))

@@ -1,5 +1,1 @@
-- name: Update cmdline.txt for cgroup configuration
-  lineinfile:
-    path: /boot/firmware/cmdline.txt
-    line: "cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1"
-    insertafter: EOF
+# Common tasks for all nodes can be added here if needed
