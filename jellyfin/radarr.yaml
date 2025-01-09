@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-hdd-storage
+  storageClassName: local-ssd-storage
   resources:
     requests:
       storage: 1Gi
