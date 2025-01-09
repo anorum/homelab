@@ -7,6 +7,8 @@ resources:
   - namespace.yaml
   - jellyseerr.yaml
   - jellyseerr-ingress.yaml
+  - radarr.yaml
+  - radarr-ingress.yaml
 
 labels:
 - pairs:
