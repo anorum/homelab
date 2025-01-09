@@ -37,6 +37,8 @@ spec:
       labels:
         app: radarr
     spec:
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
@@ -52,6 +54,9 @@ spec:
           mountPath: /config
         - name: media
           mountPath: /data/movies
+          securityContext:
+            runAsUser: 1000       # Set to match the abc user UID
+            runAsGroup: 1000 
         - name: downloads
           mountPath: /data/downloads
         ports:
