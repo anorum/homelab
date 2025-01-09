@@ -18,9 +18,10 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: local-hdd-storage
   resources:
     requests:
-      storage: 400Gi
+      storage: 1Ti
 ---
 apiVersion: apps/v1
 kind: Deployment
