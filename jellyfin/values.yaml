@@ -93,7 +93,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-redirect-from: /
     nginx.ingress.kubernetes.io/proxy-redirect-to: /
   hosts:
-    - host: jellyfin.local
+    - host: jellyfin.homelab
       paths:
         - path: /
           pathType: ImplementationSpecific
