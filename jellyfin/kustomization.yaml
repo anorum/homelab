@@ -5,6 +5,8 @@ namespace: jellyfin
 
 resources:
   - namespace.yaml
+  - jellyseerr.yaml
+  - jellyseerr-ingress.yaml
 
 labels:
 - pairs:
