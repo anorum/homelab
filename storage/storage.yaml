@@ -1,0 +1,29 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-hdd-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: hdd-pv
+spec:
+  capacity:
+    storage: 12Ti  # Size of your HDD
+  accessModes:
+    - ReadWriteOnce  # Local storage usually only supports RWO
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-hdd-storage  # Matches the StorageClass
+  local:
+    path: /mnt/hd  # Path to your mounted HDD
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - cluster.local  # Replace with the name of your node
