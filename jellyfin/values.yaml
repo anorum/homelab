@@ -179,11 +179,11 @@ persistence:
     # -- set to false to use emptyDir
     enabled: true
     accessMode: ReadWriteOnce
-    size: 25Gi
+    size: 1Ti
     # -- Custom annotations to be added to the PVC
     annotations: {}
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
-    storageClass: ''
+    storageClass: 'local-hdd-storage'
     ## -- Use an existing PVC for this mount
     # existingClaim: ''
 
