@@ -58,7 +58,7 @@ spec:
             - name: PUID
               value: "1000"
             - name: TZ
-              value: "Europe/Dublin"
+              value: "America/Los_Angeles"
           volumeMounts:
             - name: prowlarr-config
               mountPath: /config
