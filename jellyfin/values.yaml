@@ -145,13 +145,22 @@ volumeMounts: []
 #   readOnly: true
 
 # -- Node selector for pod scheduling.
-nodeSelector: {}
+nodeSelector:
+  kubernetes.io/hostname: cluster
 
 # -- Tolerations for pod scheduling.
 tolerations: []
 
 # -- Affinity rules for pod scheduling.
-affinity: {}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - cluster
 
 jellyfin:
   # -- Enable DLNA. Requires host network. See: https://jellyfin.org/docs/general/networking/dlna.html
@@ -172,7 +181,7 @@ persistence:
     # -- Custom annotations to be added to the PVC
     annotations: {}
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
-    storageClass: ''
+    storageClass: 'local-path'
     ## -- Use an existing PVC for this mount
     # existingClaim: ''
   media:

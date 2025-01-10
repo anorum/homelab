@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-ssd-storage
+  storageClassName: local-path
   resources:
     requests:
       storage: 1Gi
@@ -39,15 +39,8 @@ spec:
       labels:
         app: radarr
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - cluster
+      nodeSelector:
+        kubernetes.io/hostname: cluster
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest

@@ -39,6 +39,28 @@ reclaimPolicy: Retain
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  name: downloads-pv
+spec:
+  capacity:
+    storage: 12Ti  # Size of your HDD
+  accessModes:
+    - ReadWriteOnce  # Local storage usually only supports RWO
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-hdd-storage  # Matches the StorageClass
+  local:
+    path: /mnt/hd  # Path to your mounted HDD
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - cluster
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
   name: ssd-pv
 spec:
   capacity:
