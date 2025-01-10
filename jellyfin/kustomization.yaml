@@ -9,6 +9,7 @@ resources:
   - jellyseerr-ingress.yaml
   - radarr.yaml
   - radarr-ingress.yaml
+  - prowlarr.yaml
 
 labels:
 - pairs:
