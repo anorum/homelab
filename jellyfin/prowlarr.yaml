@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prowlarr-config
+  namespace: jellyfin
+spec:
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: jellyfin
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+    spec:
+      volumes:
+        - name: prowlarr-config
+          persistentVolumeClaim:
+            claimName: prowlarr-config
+      containers:
+        - name: prowlarr
+          image: docker.io/linuxserver/prowlarr:1.29.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "4Gi"
+              cpu: "4"
+          ports:
+            - containerPort: 9696
+              name: http
+              protocol: TCP
+          env:
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Dublin"
+          volumeMounts:
+            - name: prowlarr-config
+              mountPath: /config
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            failureThreshold: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            failureThreshold: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  namespace: jellyfin
+  labels:
+    app: prowlarr
+spec:
+  selector:
+    app: prowlarr
+  ports:
+    - port: 9696
+      targetPort: 9696
+      name: http
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prowlarr
+  namespace: jellyfin
+  labels:
+    app: prowlarr
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-redirect-from: /
+    nginx.ingress.kubernetes.io/proxy-redirect-to: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "prowlarr.homelab"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prowlarr
+                port:
+                  number: 9696
