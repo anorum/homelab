@@ -42,7 +42,7 @@ spec:
         - name: config
           mountPath: /config
         - name: media
-          mountPath: /data/
+          mountPath: /data/movies
         ports:
         - containerPort: 7878
       volumes:
@@ -50,9 +50,8 @@ spec:
         persistentVolumeClaim:
           claimName: radarr-config
       - name: media
-        hostPath:
-          path: /mnt/hd/media/
-          type: Directory
+        persistentVolumeClaim:
+          claimName: jellyfin-media
 ---
 apiVersion: v1
 kind: Service
