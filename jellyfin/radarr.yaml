@@ -11,19 +11,6 @@ spec:
     requests:
       storage: 1Gi
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: downloads
-  namespace: jellyfin
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-hdd-storage
-  resources:
-    requests:
-      storage: 1Ti
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,9 +42,7 @@ spec:
         - name: config
           mountPath: /config
         - name: media
-          mountPath: /data/movies
-        - name: downloads
-          mountPath: /data/downloads
+          mountPath: /data/
         ports:
         - containerPort: 7878
       volumes:
@@ -65,11 +50,8 @@ spec:
         persistentVolumeClaim:
           claimName: radarr-config
       - name: media
-        persistentVolumeClaim:
-          claimName: jellyfin-media
-      - name: downloads
-        persistentVolumeClaim:
-          claimName: downloads
+        hostPath:
+          path: /mnt/hd/media/
 ---
 apiVersion: v1
 kind: Service
