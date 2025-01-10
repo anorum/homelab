@@ -28,18 +28,14 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: cluster
-      securityContext:
-        fsGroup: 1000
-        runAsUser: 1000
-        runAsGroup: 1000
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
         env:
         - name: PUID
-          value: "1000"  
+          value: "0"  
         - name: PGID
-          value: "1000" 
+          value: "0" 
         - name: TZ
           value: "America/Los_Angeles"
         volumeMounts:
