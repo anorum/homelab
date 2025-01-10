@@ -31,6 +31,10 @@ spec:
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
         env:
         - name: PUID
           value: "1000"  
