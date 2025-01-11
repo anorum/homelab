@@ -12,7 +12,6 @@ resources:
   - prowlarr.yaml
   - qbittorrent.yaml
   - kavita.yaml
-  - storage.yaml
   - sonarr.yaml
 
 labels:
