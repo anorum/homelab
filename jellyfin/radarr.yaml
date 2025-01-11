@@ -43,7 +43,7 @@ spec:
           mountPath: /config
         - name: media
           mountPath: /movies
-        - name: downloads
+        - name: media
           mountPath: /downloads
         ports:
         - containerPort: 7878
@@ -54,9 +54,6 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: jellyfin-media
-      - name: downloads
-        persistentVolumeClaim:
-          claimName: downloads-pvc
 ---
 apiVersion: v1
 kind: Service

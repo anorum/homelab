@@ -50,13 +50,10 @@ spec:
               mountPath: /config
             - name: media
               mountPath: /tv
-            - name: downloads
+            - name: media
               mountPath: /downloads
 
       volumes:
-        - name: downloads
-          persistentVolumeClaim:
-            claimName: downloads-pvc
         - name: media
           persistentVolumeClaim:
             claimName: jellyfin-media
