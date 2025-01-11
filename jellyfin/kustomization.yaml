@@ -11,7 +11,7 @@ resources:
   - radarr-ingress.yaml
   - prowlarr.yaml
   - qbittorrent.yaml
-  - kavita
+  - kavita.yaml
 
 labels:
 - pairs:
