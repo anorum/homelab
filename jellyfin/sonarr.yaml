@@ -60,6 +60,9 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: jellyfin-media
+        - name: sonarr-config
+          persistentVolumeClaim:
+            claimName: sonarr-config
 ---
 apiVersion: v1
 kind: Service
