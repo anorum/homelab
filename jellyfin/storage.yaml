@@ -4,6 +4,7 @@ metadata:
   name: downloads-pvc
 spec:
   storageClassName: local-hdd-storage
+  volumeName: hdd-pv
   accessModes:
     - ReadWriteOnce
   resources:
