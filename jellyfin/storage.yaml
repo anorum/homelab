@@ -6,7 +6,7 @@ spec:
   storageClassName: local-hdd-storage
   volumeName: hdd-pv
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Ti

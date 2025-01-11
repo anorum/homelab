@@ -187,7 +187,7 @@ persistence:
   media:
     # -- set to false to use emptyDir
     enabled: true
-    accessMode: ReadWriteOnce
+    accessMode: ReadWriteMany
     size: 1Ti
     # -- Custom annotations to be added to the PVC
     annotations: {}
