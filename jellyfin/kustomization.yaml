@@ -13,6 +13,7 @@ resources:
   - qbittorrent.yaml
   - kavita.yaml
   - sonarr.yaml
+  - storage.yaml
 
 labels:
 - pairs:
