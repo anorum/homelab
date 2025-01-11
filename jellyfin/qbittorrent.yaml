@@ -57,15 +57,15 @@ spec:
           volumeMounts:
             - name: qbittorrent-config
               mountPath: /config
-            - name: data
-              mountPath: /data/
+            - name: downloads
+              mountPath: /downloads/
       volumes:
         - name: qbittorrent-config
           persistentVolumeClaim:
             claimName: qbittorrent-config
-        - name: data
+        - name: downloads
           persistentVolumeClaim:
-            claimName: jellyfin-media
+            claimName: downloads-pvc
 ---
 apiVersion: v1
 kind: Service
