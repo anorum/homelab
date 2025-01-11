@@ -15,6 +15,7 @@ spec:
     storage: 12Ti  # Size of your HDD
   accessModes:
     - ReadWriteOnce  # Local storage usually only supports RWO
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-hdd-storage  # Matches the StorageClass
   local:
