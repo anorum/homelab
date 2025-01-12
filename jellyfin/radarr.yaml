@@ -42,9 +42,7 @@ spec:
         - name: config
           mountPath: /config
         - name: media
-          mountPath: /movies
-        - name: media
-          mountPath: /downloads
+          mountPath: /data
         ports:
         - containerPort: 7878
       volumes:

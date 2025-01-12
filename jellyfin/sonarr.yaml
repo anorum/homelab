@@ -49,9 +49,7 @@ spec:
             - name: sonarr-config
               mountPath: /config
             - name: media
-              mountPath: /tv
-            - name: media
-              mountPath: /downloads
+              mountPath: /data
 
       volumes:
         - name: media
