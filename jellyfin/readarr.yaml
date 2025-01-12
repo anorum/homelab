@@ -22,7 +22,7 @@ spec:
   type: ClusterIP
   ports:
     - protocol: TCP
-      port: 80
+      port: 8787
       targetPort: 8787
   selector:
     app.kubernetes.io/name: readarr
