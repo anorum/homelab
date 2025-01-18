@@ -65,9 +65,10 @@ helmCharts:
             volumeClaimTemplate:
               spec:
                 accessModes: [ "ReadWriteOnce" ]
+                storageClassName: local-ssd-storage
                 resources:
                   requests:
-                    storage: 1Gi
+                    storage: 10Gi
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
           securityContext:
