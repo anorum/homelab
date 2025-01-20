@@ -59,7 +59,7 @@ deploymentStrategy:
 
 service:
   # -- Service type (ClusterIP, NodePort, or LoadBalancer).
-  type: ClusterIP
+  type: LoadBalancer
   # -- Configure dual-stack IP family policy. See: https://kubernetes.io/docs/concepts/services-networking/dual-stack/
   ipFamilyPolicy: ""
   # -- Supported IP families (IPv4, IPv6).
