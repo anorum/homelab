@@ -10,3 +10,16 @@ spec:
       storage: 6Ti
   storageClassName: local-hdd-storage
   volumeName: hdd-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 6Ti
+  storageClassName: local-hdd-storage
+  volumeName: hdd-pv
