@@ -29,7 +29,7 @@ helmCharts:
     releaseName: jellyfin
     namespace: jellyfin
     valuesFile: values.yaml
-  - name: plex
+  - name: plex-media-server
     repo: https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages
     releaseName: plex
     namespace: jellyfin
