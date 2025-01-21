@@ -232,13 +232,21 @@ extraEnv: {}
 
 
 # -- Optionally specify additional volume mounts for the PMS and init containers.
-extraVolumeMounts: []
+extraVolumeMounts:
+  - name: media
+    mountPath: /mnt/disks/library/videos
+    subPath: ./media
+
+
 # extraVolumeMounts:
 #   - name: dev-dri
 #     mountPath: /dev/dri
 
 # -- Optionally specify additional volumes for the pod.
-extraVolumes: []
+extraVolumes:
+- name: media
+  persistentVolumeClaim:
+    claimName: media
 # extraVolumes:
 #   - name: dev-dri
 #     hostPath:
