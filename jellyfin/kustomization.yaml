@@ -31,5 +31,6 @@ helmCharts:
     valuesFile: values.yaml
   - name: plex-media-server
     repo: https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages
+    releaseName: homelab
     namespace: jellyfin
     valuesFile: plex-values.yaml
