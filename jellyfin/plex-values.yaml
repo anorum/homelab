@@ -32,14 +32,14 @@ ingress:
 pms:
   # -- The storage class to use when provisioning the pms config volume
   # this needs to be created manually, null will use the default
-  storageClassName: null
+  storageClassName: local-path
 
   # -- The volume size to provision for the PMS database
   configStorage: 2Gi
 
   # -- Name of an existing `PersistentVolumeClaim` for the PMS database
   # NOTE: When set, 'configStorage' and 'storageClassName' are ignored.
-  configExistingClaim: "media"
+  configExistingClaim: 
 
   # Enabling this will add nvidia.com/gpu: 1 to limits, and will set
   # environment for the nvidia operator
