@@ -234,9 +234,7 @@ extraEnv: {}
 # -- Optionally specify additional volume mounts for the PMS and init containers.
 extraVolumeMounts:
   - name: media
-    mountPath: /movies
-    subPath: ./media
-
+    mountPath: /mymedia
 
 # extraVolumeMounts:
 #   - name: dev-dri
