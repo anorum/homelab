@@ -17,6 +17,7 @@ resources:
   - flaresolverr.yaml
   - audiobookshelf.yaml
   - readarr.yaml
+  - plex-ingress.yaml
 
 labels:
 - pairs:
