@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: jellyfin
+
+resources:
+  - namespace.yaml
+  - jellyseerr.yaml
+  - jellyseerr-ingress.yaml
+  - radarr.yaml
+  - radarr-ingress.yaml
+  - prowlarr.yaml
+  - qbittorrent.yaml
+  - kavita.yaml
+  - sonarr.yaml
+  - storage.yaml
+  - flaresolverr.yaml
+  - audiobookshelf.yaml
+  - readarr.yaml
+  - plex-ingress.yaml
+
+labels:
+- pairs:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/instance: jellyfin
+
+helmCharts:
+  - name: jellyfin
+    repo: https://jellyfin.github.io/jellyfin-helm
+    releaseName: jellyfin
+    namespace: jellyfin
+    valuesFile: values.yaml
+  - name: plex-media-server
+    repo: https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages
+    releaseName: homelab
+    namespace: jellyfin
+    valuesFile: plex-values.yaml
