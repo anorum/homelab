@@ -234,7 +234,7 @@ extraEnv: {}
 # -- Optionally specify additional volume mounts for the PMS and init containers.
 extraVolumeMounts:
   - name: media
-    mountPath: /mnt/disks/library/videos
+    mountPath: /movies
     subPath: ./media
 
 
