@@ -72,7 +72,7 @@ spec:
             claimName: readarr-config
         - name: media
           persistentVolumeClaim:
-            claimName: jellyfin-media
+            claimName: media
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

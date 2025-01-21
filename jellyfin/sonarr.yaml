@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: media
           persistentVolumeClaim:
-            claimName: jellyfin-media
+            claimName: media
         - name: sonarr-config
           persistentVolumeClaim:
             claimName: sonarr-config

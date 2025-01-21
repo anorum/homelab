@@ -39,7 +39,7 @@ pms:
 
   # -- Name of an existing `PersistentVolumeClaim` for the PMS database
   # NOTE: When set, 'configStorage' and 'storageClassName' are ignored.
-  configExistingClaim: "plex"
+  configExistingClaim: "media"
 
   # Enabling this will add nvidia.com/gpu: 1 to limits, and will set
   # environment for the nvidia operator

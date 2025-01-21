@@ -34,7 +34,7 @@ spec:
             claimName: audiobookshelf-config
         - name: media
           persistentVolumeClaim:
-            claimName: jellyfin-media
+            claimName: media
       containers:
         - name: audiobookshelf
           image: ghcr.io/advplyr/audiobookshelf:2.17.7

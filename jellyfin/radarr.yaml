@@ -51,7 +51,7 @@ spec:
           claimName: radarr-config
       - name: media
         persistentVolumeClaim:
-          claimName: jellyfin-media
+          claimName: media
 ---
 apiVersion: v1
 kind: Service
