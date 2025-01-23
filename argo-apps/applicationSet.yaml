@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  annotations:
+    akuity.io/refreshedAt: "25"
+  name: airflow-pr
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: anorum
+          repo: homelab
+          labels:
+            - prenv
+        requeueAfterSeconds: 1800
+  template:
+    metadata:
+      name: airflow-ephenv-{{number}}
+    spec:
+      destination:
+        namespace: test
+        server: https://kubernetes.default.svc
+      project: default
+
+      sources:
+        - repoURL: git@github.com:anorum/homelab.git
+          path: airflow
+          kustomize:
+            commonLabels:
+              app.kubernetes.io/instance: "pull_request-{{number}}"
+            namePrefix: "pr{{number}}-"
+      syncPolicy: {}

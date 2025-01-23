@@ -207,3 +207,26 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: home-assistant
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: git@github.com:anorum/homelab.git
+      targetRevision: HEAD
+      path: home-assistant
+    - repoURL: https://airflow.apache.org
+      targetRevision: 1.15.0  # Specify the chart version
+      chart: airflow
+      helm:
+        values: |
+          images:
+            airflow:
+              repository: artifactory.legalzoom.com/docker/data-engineering/airflow
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test
