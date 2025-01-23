@@ -10,9 +10,12 @@ spec:
         github:
           owner: anorum
           repo: homelab
+          tokenRef:
+            secretName: github-token
+            key: token
           labels:
             - prenv
-        requeueAfterSeconds: 1800
+        requeueAfterSeconds: 60
   template:
     metadata:
       name: airflow-ephenv-{{number}}
