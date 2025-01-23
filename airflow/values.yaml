@@ -2,7 +2,7 @@ nameOverride: ""
 fullnameOverride: ""
 config:
   metrics:
-    statsd_datadog_enabled: True
+    statsd_datadog_enabled: false
     statsd_port: 8125
 
 postgresql:
