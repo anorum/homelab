@@ -27,9 +27,22 @@ spec:
 
       sources:
         - repoURL: git@github.com:anorum/homelab.git
+          ref: values
           path: airflow
           kustomize:
             commonLabels:
               app.kubernetes.io/instance: "pull_request-{{number}}"
             namePrefix: "pr{{number}}-"
+        - repoURL: https://airflow.apache.org
+          targetRevision: 1.15.0  
+          chart: airflow
+          helm:
+            releaseName: pr
+            valueFiles:
+              - $values/values-common.yaml
+            values: |
+              extraEnv: |-
+                - name: "AIRFLOW__WEBSERVER__INSTANCE_NAME"
+                  value: "TESTING PR{{number}}"
+
       syncPolicy: {}
