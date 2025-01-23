@@ -227,7 +227,7 @@ pgbouncer:
 ### INGRESS ###
 
 ingress:
-  enabled: true
+  enabled: false
   apiVersion: networking.k8s.io/v1
   web:
     host: pr{{number}}.airflow.homelab
