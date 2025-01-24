@@ -12,4 +12,4 @@ helmCharts:
     releaseName: authentik
     namespace: kube-system
     includeCRDs: true
-    valuesFile: values.ymal
+    valuesFile: values.yaml
