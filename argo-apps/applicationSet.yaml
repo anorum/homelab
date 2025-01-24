@@ -25,6 +25,20 @@ spec:
         server: https://kubernetes.default.svc
       project: default
 
+      # source:
+      #   helm:
+      #     parameters:
+      #       - name: "images.airflow.tag"
+      #         value: "{{head_sha}}"
+      #       - name:  "ingress.web.annotations.external-dns.alpha.kubernetes.io/hostname"
+      #         value:  pr{{number}}.airflow.homelab
+      #       - name: "ingress.web.host"
+      #         value: pr{{number}}.airflow.homelab
+      #   ## what path should argo look at in your manifest repo for deployment
+      #   path: airflow
+      #   ## Your deployment repo, where your k8/kustomize manifests are located
+      #   repoURL: git@github.com:anorum/homelab.git
+
       sources:
         - repoURL: git@github.com:anorum/homelab.git
           ref: values
@@ -39,9 +53,13 @@ spec:
           helm:
             releaseName: pr
             valueFiles:
-              - $values/values-common.yaml
+              - $values/airflow/values-common.yaml
             values: |
-              extraEnv: |-
+              scheduler:
+                replicas: 1
+              env:
+                - name: "AIRFLOW__WEBSERVER__BASE_URL"
+                  value: "pr{{number}}.airflow.homelab"
                 - name: "AIRFLOW__WEBSERVER__INSTANCE_NAME"
                   value: "TESTING PR{{number}}"
 
