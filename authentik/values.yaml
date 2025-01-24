@@ -17,8 +17,9 @@ server:
 
 postgresql:
     enabled: true
-    persistence:
-        storageClass: local-ssd-storage
+    primary:
+        persistence:
+            storageClass: local-ssd-storage
     auth:
         password: "ThisIsNotASecurePassword"
 redis:
