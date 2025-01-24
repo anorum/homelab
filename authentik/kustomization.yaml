@@ -10,6 +10,6 @@ helmCharts:
     repo: https://charts.goauthentik.io
     version: 2024.12.1
     releaseName: authentik
-    namespace: kube-system
+    namespace: authentik
     includeCRDs: true
     valuesFile: values.yaml
