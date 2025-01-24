@@ -10,3 +10,12 @@ labels:
 - pairs:
     app.kubernetes.io/name: airflow
     app.kubernetes.io/instance: airflow
+
+helmCharts:
+- includeCRDs: true
+  name: airflow
+  namespace: airflow
+  releaseName: lz
+  repo: https://airflow.apache.org
+  valuesFile: common-values.yaml
+  version: 1.15.0
