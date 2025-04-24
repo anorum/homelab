@@ -48,5 +48,6 @@ spec:
           periodSeconds: 30
       volumes:
       - name: registry-data
-        persistentVolumeClaim:
-          claimName: registry-pvc
+        hostPath:
+          path: /mnt/hd/registry
+          type: DirectoryOrCreate
