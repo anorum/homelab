@@ -222,3 +222,18 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: registry
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: registry
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: registry

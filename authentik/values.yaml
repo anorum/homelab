@@ -19,6 +19,7 @@ postgresql:
     enabled: true
     primary:
         persistence:
+            enabled: true
             storageClass: local-ssd-storage
     auth:
         password: "ThisIsNotASecurePassword"
