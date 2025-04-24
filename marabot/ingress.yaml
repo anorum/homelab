@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: marabot
+  namespace: marabot
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Marabot Python Application
+    gethomepage.dev/group: Applications
+    gethomepage.dev/icon: python.png
+    gethomepage.dev/name: Marabot
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: marabot.homelab
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: marabot
+                port:
+                  number: 8000

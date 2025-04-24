@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marabot
+  namespace: marabot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marabot
+  template:
+    metadata:
+      labels:
+        app: marabot
+    spec:
+      containers:
+      - name: marabot
+        image: registry.registry.svc.cluster.local:5000/marabot:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi

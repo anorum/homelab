@@ -237,3 +237,18 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: registry
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: marabot
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: marabot
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: marabot
