@@ -13,10 +13,18 @@ spec:
       labels:
         app: marabot
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: marabot
-        image: registry.registry.svc.cluster.local:5000/marabot:latest
+        image: anorum/marabot:latest
         imagePullPolicy: IfNotPresent
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: marabot-secrets
+              key: openai-api-key
         ports:
         - containerPort: 8000
           name: http

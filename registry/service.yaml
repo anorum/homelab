@@ -6,6 +6,8 @@ metadata:
   labels:
     app: registry
 spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.153
   ports:
   - port: 5000
     targetPort: 5000

@@ -24,6 +24,14 @@ spec:
           value: /var/lib/registry
         - name: REGISTRY_HTTP_ADDR
           value: :5000
+        - name: REGISTRY_HTTP_TLS_CERTIFICATE
+          value: ""
+        - name: REGISTRY_HTTP_TLS_KEY
+          value: ""
+        - name: REGISTRY_HTTP_SECRET
+          value: "registry-secret"
+        - name: REGISTRY_HTTP_HOST
+          value: "registry.homelab"
         resources:
           limits:
             cpu: 500m
