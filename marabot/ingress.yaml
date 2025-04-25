@@ -4,7 +4,7 @@ metadata:
   name: marabot
   namespace: marabot
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: Marabot Python Application
     gethomepage.dev/group: Applications
