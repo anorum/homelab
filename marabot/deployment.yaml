@@ -37,19 +37,19 @@ spec:
             path: /
             port: 8000
           initialDelaySeconds: 180
-          periodSeconds: 10
+          periodSeconds: 30
           timeoutSeconds: 5
           successThreshold: 1
-          failureThreshold: 3
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /
             port: 8000
           initialDelaySeconds: 240
-          periodSeconds: 15
+          periodSeconds: 30
           timeoutSeconds: 5
           successThreshold: 1
-          failureThreshold: 3
+          failureThreshold: 5
         resources:
           limits:
             cpu: 500m
