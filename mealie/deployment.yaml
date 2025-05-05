@@ -34,7 +34,7 @@ spec:
             - name: TZ
               value: "America/Los_Angeles"
             - name: BASE_URL
-              value: "https://mealie.homelab"
+              value: "https://mealie.alexnorum.com"
             # SQLite specific configuration
             - name: DB_ENGINE
             # OpenAI
