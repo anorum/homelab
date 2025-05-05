@@ -34,7 +34,7 @@ spec:
             - name: TZ
               value: "America/Los_Angeles"
             - name: BASE_URL
-              value: "https://mealie.yourdomain.com"
+              value: "https://mealie.homelab"
             # SQLite specific configuration
             - name: DB_ENGINE
               value: "sqlite"
