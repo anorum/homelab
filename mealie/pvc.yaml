@@ -10,4 +10,4 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: local-hdd-storage
-  volumeName: hdd-pv
+  volumeName: mealie-pv
