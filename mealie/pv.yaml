@@ -8,9 +8,9 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-hdd-storage
+  storageClassName: local-ssd-storage
   local:
-    path: /mnt/hd/mealie
+    path: /mnt/ssd/mealie
   nodeAffinity:
     required:
       nodeSelectorTerms:

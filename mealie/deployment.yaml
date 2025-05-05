@@ -37,7 +37,12 @@ spec:
               value: "https://mealie.homelab"
             # SQLite specific configuration
             - name: DB_ENGINE
-              value: "sqlite"
+            # OpenAI
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-mealie-key
+                  key: openai-api-key
           volumeMounts:
             - name: mealie-data
               mountPath: /app/data
