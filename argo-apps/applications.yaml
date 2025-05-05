@@ -252,3 +252,18 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: marabot
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mealie
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: mealie
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mealie
