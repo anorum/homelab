@@ -24,47 +24,52 @@ spec:
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: openai-api-key
+              key: OPENAI_API_KEY
         - name: SPOTIFY_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: spotify-client-id
+              key: SPOTIFY_CLIENT_ID
         - name: SPOTIFY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: spotify-client-secret
+              key: SPOTIFY_CLIENT_SECRET
         - name: SPOTIFY_REFRESH_TOKEN
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: spotify-refresh-token
+              key: SPOTIFY_REFRESH_TOKEN
         - name: STRAVA_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: strava-client-id
+              key: STRAVA_CLIENT_ID
         - name: STRAVA_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: strava-client-secret
+              key: STRAVA_CLIENT_SECRET
         - name: STRAVA_ACCESS_TOKEN
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: strava-access-token
+              key: STRAVA_ACCESS_TOKEN
         - name: STRAVA_REFRESH_TOKEN
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: strava-refresh-token
+              key: STRAVA_REFRESH_TOKEN
         - name: API_KEY
           valueFrom:
             secretKeyRef:
               name: alex-api-secrets
-              key: api-key
+              key: API_KEY
+        - name: GITHUB_PAT
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: GITHUB_PAT
         ports:
         - containerPort: 8000
           name: http
