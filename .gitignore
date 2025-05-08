@@ -61,6 +61,8 @@ wheels/
 .installed.cfg
 *.egg
 
+# Hide Secrets.yaml
+secrets.yaml
 # OS generated files
 .DS_Store
 .DS_Store?

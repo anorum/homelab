@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alex-api
+  namespace: alex-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alex-api
+  template:
+    metadata:
+      labels:
+        app: alex-api
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: alex-api
+        image: ghcr.io/anorum/alex-api:latest
+        imagePullPolicy: Always
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: openai-api-key
+        - name: SPOTIFY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: spotify-client-id
+        - name: SPOTIFY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: spotify-client-secret
+        - name: SPOTIFY_REFRESH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: spotify-refresh-token
+        - name: STRAVA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: strava-client-id
+        - name: STRAVA_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: strava-client-secret
+        - name: STRAVA_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: strava-access-token
+        - name: STRAVA_REFRESH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: strava-refresh-token
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: alex-api-secrets
+              key: api-key
+        ports:
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
