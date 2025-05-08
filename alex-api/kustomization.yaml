@@ -5,7 +5,6 @@ namespace: alex-api
 
 resources:
   - namespace.yaml
-  - secrets.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
