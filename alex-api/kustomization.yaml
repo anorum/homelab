@@ -9,14 +9,6 @@ resources:
   - service.yaml
   - ingress.yaml
 
-secretGenerator:
-  - name: alex-api-secrets
-    envs:
-      - .env
-    options:
-      annotations:
-        argocd.argoproj.io/sync-options: Prune=false
-
 labels:
 - pairs:
     app.kubernetes.io/name: alex-api
