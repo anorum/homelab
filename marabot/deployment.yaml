@@ -25,6 +25,11 @@ spec:
             secretKeyRef:
               name: marabot-secrets
               key: openai-api-key
+        - name: ALEX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: marabot-secrets
+              key: alex-api-key
         - name: CHAINLIT_HOST
           value: "0.0.0.0"
         - name: CHAINLIT_PORT
