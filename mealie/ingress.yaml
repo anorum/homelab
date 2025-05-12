@@ -4,7 +4,6 @@ metadata:
   name: mealie
   namespace: mealie
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: Recipe Manager & Meal Planner
     gethomepage.dev/group: Home
