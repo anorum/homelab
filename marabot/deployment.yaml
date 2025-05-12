@@ -20,6 +20,8 @@ spec:
         image: anorum/marabot:latest
         imagePullPolicy: Always
         env:
+        - name: API_BASE_URL
+          value: https://api.alexnorum.com/api/v1
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
