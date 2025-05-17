@@ -46,7 +46,7 @@ spec:
         - name: API_BASE_URL
           value: "http://alex-api.alex-api.svc.cluster.local:8000"
         - name: MARABOT_URL
-          value: "http://marabot.marabot.svc.cluster.local:8000"
+          value: "https://mara.alexnorum.com"
         - name: ALEX_API_KEY
           valueFrom:
             secretKeyRef:
