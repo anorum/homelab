@@ -65,11 +65,3 @@ spec:
   - port: 80
     targetPort: 4321
   type: ClusterIP
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: alex-website-config
-  namespace: alex-website
-data:
-  API_BASE_URL: "http://alex-api.alex-api.svc.cluster.local:8000"
