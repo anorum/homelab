@@ -4,6 +4,10 @@ kind: Kustomization
 namespace: alex-website
 
 resources:
-  - namespace.yaml
-  - deployment.yaml
-  - ingress.yaml
+- namespace.yaml
+- deployment.yaml
+- ingress.yaml
+images:
+- name: ghcr.io/anorum/alex-website:latest
+  newName: ghcr.io/anorum/alex-website
+  newTag: sha-dcf032a
