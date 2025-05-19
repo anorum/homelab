@@ -10,4 +10,4 @@ resources:
 images:
 - name: ghcr.io/anorum/alex-website:latest
   newName: ghcr.io/anorum/alex-website
-  newTag: sha-dcf032a
+  newTag: sha-4be8c2e
