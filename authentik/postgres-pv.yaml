@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-ssd-storage
   local:
-    path: /mnt/ssd/authentik/postgresql  # This path needs to exist on your node
+    path: /authentik/postgresql  # This path needs to exist on your node
   nodeAffinity:
     required:
       nodeSelectorTerms:
