@@ -66,7 +66,10 @@ postgresql:
     username: authentik
     database: authentik
     existingSecret: authentik-secrets
-    passwordSecretKey: postgresql-password
+    secretKeys:
+      adminPasswordKey: postgresql-password
+      userPasswordKey: postgresql-password
+      replicationPasswordKey: postgresql-password
 redis:
   enabled: true
   auth:
