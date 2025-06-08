@@ -60,7 +60,7 @@ postgresql:
   enabled: true
   primary:
     persistence:
-      enabled: true
+      enabled: false
       storageClass: local-ssd-storage
   auth:
     username: authentik
