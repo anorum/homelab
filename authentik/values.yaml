@@ -7,17 +7,17 @@ authentik:
     env:
         - name: AUTHENTIK_SECRET_KEY
           valueFrom:
-            secretKeyRef:
+          secretKeyRef:
               name: authentik-secrets
               key: secret_key
         - name: AUTHENTIK_POSTGRESQL__PASSWORD
           valueFrom:
-            secretKeyRef:
+          secretKeyRef:
               name: authentik-secrets
               key: postgresql-password
         - name: AUTHENTIK_REDIS__PASSWORD
           valueFrom:
-            secretKeyRef:
+          secretKeyRef:
               name: authentik-secrets
               key: redis-password
     postgresql:
