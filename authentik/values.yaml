@@ -1,9 +1,5 @@
-authentik:
-  # This sends anonymous usage-data, stack traces on errors and
-  # performance data to sentry.io, and is fully opt-in
-  error_reporting:
-    enabled: false
-  # Use environment variables from a secret for configuration
+global:
+    # Use environment variables from a secret for configuration
   env:
     - name: AUTHENTIK_SECRET_KEY
       valueFrom:
@@ -20,6 +16,12 @@ authentik:
       secretKeyRef:
         name: authentik-secrets
         key: redis-password
+authentik:
+  # This sends anonymous usage-data, stack traces on errors and
+  # performance data to sentry.io, and is fully opt-in
+  error_reporting:
+    enabled: false
+
   postgresql:
     # PostgreSQL Database host
     host: "{{ .Release.Name }}-postgresql"
