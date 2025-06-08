@@ -3,37 +3,37 @@ global:
   env:
     - name: AUTHENTIK_SECRET_KEY
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: secret_key
+        secretKeyRef:
+          name: authentik-secrets
+          key: secret_key
     - name: AUTHENTIK_POSTGRESQL__PASSWORD
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: postgresql-password
+        secretKeyRef:
+          name: authentik-secrets
+          key: postgresql-password
     - name: AUTHENTIK_REDIS__PASSWORD
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: redis-password
+        secretKeyRef:
+          name: authentik-secrets
+          key: redis-password
 authentik:
   secret_key: env://AUTHENTIK_SECRET_KEY
-  env:
+  envFrom:
     - name: AUTHENTIK_SECRET_KEY
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: secret_key
+        secretKeyRef:
+          name: authentik-secrets
+          key: secret_key
     - name: AUTHENTIK_POSTGRESQL__PASSWORD
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: postgresql-password
+        secretKeyRef:
+          name: authentik-secrets
+          key: postgresql-password
     - name: AUTHENTIK_REDIS__PASSWORD
       valueFrom:
-      secretKeyRef:
-        name: authentik-secrets
-        key: redis-password
+        secretKeyRef:
+          name: authentik-secrets
+          key: redis-password
   # This sends anonymous usage-data, stack traces on errors and
   # performance data to sentry.io, and is fully opt-in
   error_reporting:
