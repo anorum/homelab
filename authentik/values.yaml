@@ -1,56 +1,56 @@
 authentik:
-    # This sends anonymous usage-data, stack traces on errors and
-    # performance data to sentry.io, and is fully opt-in
-    error_reporting:
-        enabled: false
-    # Use environment variables from a secret for configuration
-    env:
-        - name: AUTHENTIK_SECRET_KEY
-          valueFrom:
-          secretKeyRef:
-              name: authentik-secrets
-              key: secret_key
-        - name: AUTHENTIK_POSTGRESQL__PASSWORD
-          valueFrom:
-          secretKeyRef:
-              name: authentik-secrets
-              key: postgresql-password
-        - name: AUTHENTIK_REDIS__PASSWORD
-          valueFrom:
-          secretKeyRef:
-              name: authentik-secrets
-              key: redis-password
-    postgresql:
-        # PostgreSQL Database host
-        host: "{{ .Release.Name }}-postgresql"
-        # PostgreSQL Database name
-        name: "authentik"
-        # PostgreSQL Database user
-        user: "authentik"
-        port: 5432
+  # This sends anonymous usage-data, stack traces on errors and
+  # performance data to sentry.io, and is fully opt-in
+  error_reporting:
+    enabled: false
+  # Use environment variables from a secret for configuration
+  env:
+    - name: AUTHENTIK_SECRET_KEY
+      valueFrom:
+      secretKeyRef:
+        name: authentik-secrets
+        key: secret_key
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+      secretKeyRef:
+        name: authentik-secrets
+        key: postgresql-password
+    - name: AUTHENTIK_REDIS__PASSWORD
+      valueFrom:
+      secretKeyRef:
+        name: authentik-secrets
+        key: redis-password
+  postgresql:
+    # PostgreSQL Database host
+    host: "{{ .Release.Name }}-postgresql"
+    # PostgreSQL Database name
+    name: "authentik"
+    # PostgreSQL Database user
+    user: "authentik"
+    port: 5432
 
 server:
-    ingress:
-        # Specify kubernetes ingress controller class name
-        ingressClassName: nginx
-        enabled: true
-        hosts:
-            - authentik.homelab
+  ingress:
+    # Specify kubernetes ingress controller class name
+    ingressClassName: nginx
+    enabled: true
+    hosts:
+      - authentik.homelab
 
 postgresql:
-    enabled: true
-    primary:
-        persistence:
-            enabled: true
-            storageClass: local-ssd-storage
-    auth:
-        username: authentik
-        database: authentik
-        existingSecret: authentik-secrets
-        passwordSecretKey: postgresql-password
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      storageClass: local-ssd-storage
+  auth:
+    username: authentik
+    database: authentik
+    existingSecret: authentik-secrets
+    passwordSecretKey: postgresql-password
 redis:
+  enabled: true
+  auth:
     enabled: true
-    auth:
-        enabled: true
-        existingSecret: authentik-secrets
-        existingSecretPasswordKey: redis-password
+    existingSecret: authentik-secrets
+    existingSecretPasswordKey: redis-password
