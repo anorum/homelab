@@ -61,7 +61,6 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      existingClaim: authentik-postgresql-pvc
   auth:
     username: authentik
     database: authentik
