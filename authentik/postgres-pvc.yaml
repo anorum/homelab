@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: authentik-postgresql-pvc
+  namespace: authentik
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-ssd-storage
+  resources:
+    requests:
+      storage: 8Gi
+  volumeName: authentik-postgresql-pv
