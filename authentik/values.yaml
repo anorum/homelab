@@ -62,6 +62,8 @@ postgresql:
     persistence:
       enabled: true
       storageClass: local-ssd-storage
+      size: 8Gi
+      volumeName: authentik-postgresql-pv
   auth:
     username: authentik
     database: authentik

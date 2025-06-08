@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: authentik
 resources:
 - namespace.yaml
+- postgres-pv.yaml
 
 helmCharts:
   - name: authentik
