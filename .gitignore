@@ -63,6 +63,7 @@ wheels/
 
 # Hide Secrets.yaml
 secrets.yaml
+**/secrets.yaml
 # OS generated files
 .DS_Store
 .DS_Store?
