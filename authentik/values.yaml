@@ -53,8 +53,9 @@ server:
     # Specify kubernetes ingress controller class name
     ingressClassName: nginx
     enabled: true
+    https: true
     hosts:
-      - authentik.homelab
+      - sso.alexnorum.com
 
 postgresql:
   enabled: true
