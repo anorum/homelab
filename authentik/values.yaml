@@ -38,6 +38,10 @@ authentik:
   # performance data to sentry.io, and is fully opt-in
   error_reporting:
     enabled: false
+    
+  # Set theme preference to dark mode
+  # Options: light, dark, automatic (follows browser preference)
+  theme: dark
 
   postgresql:
     # PostgreSQL Database host
@@ -56,12 +60,35 @@ server:
     https: true
     hosts:
       - sso.alexnorum.com
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+worker:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 
 postgresql:
   enabled: true
   primary:
     persistence:
       enabled: true
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
   auth:
     username: authentik
     database: authentik
@@ -76,3 +103,11 @@ redis:
     enabled: true
     existingSecret: authentik-secrets
     existingSecretPasswordKey: redis-password
+  master:
+    resources:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
