@@ -60,28 +60,36 @@ server:
     https: true
     hosts:
       - sso.alexnorum.com
-  probes:
-    startup:
-      enabled: true
-      initialDelaySeconds: 60
-      periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 6
-      successThreshold: 1
-    liveness:
-      enabled: true
-      initialDelaySeconds: 30
-      periodSeconds: 30
-      timeoutSeconds: 10
-      failureThreshold: 3
-      successThreshold: 1
-    readiness:
-      enabled: true
-      initialDelaySeconds: 10
-      periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
-      successThreshold: 1
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
+  startupProbe:
+    failureThreshold: 60
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
   resources:
     limits:
       cpu: 1000m
@@ -91,28 +99,36 @@ server:
       memory: 512Mi
 
 worker:
-  probes:
-    startup:
-      enabled: true
-      initialDelaySeconds: 60
-      periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 6
-      successThreshold: 1
-    liveness:
-      enabled: true
-      initialDelaySeconds: 30
-      periodSeconds: 30
-      timeoutSeconds: 10
-      failureThreshold: 3
-      successThreshold: 1
-    readiness:
-      enabled: true
-      initialDelaySeconds: 10
-      periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
-      successThreshold: 1
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
+  startupProbe:
+    failureThreshold: 60
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 10
+    exec:
+      command:
+        - ak
+        - healthcheck
   resources:
     limits:
       cpu: 500m
