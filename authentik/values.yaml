@@ -53,6 +53,9 @@ authentik:
     port: 5432
 
 server:
+  env:
+   - name: TMPDIR
+     value: /tmp
   ingress:
     # Specify kubernetes ingress controller class name
     ingressClassName: nginx
@@ -69,6 +72,9 @@ server:
       memory: 512Mi
 
 worker:
+  env:
+    - name: TMPDIR
+      value: /tmp
   livenessProbe:
     initialDelaySeconds: 180
   readinessProbe:
