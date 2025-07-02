@@ -53,6 +53,8 @@ authentik:
     port: 5432
 
 server:
+  containerPorts:
+    https: 9000
   env:
    - name: TMPDIR
      value: /tmp
