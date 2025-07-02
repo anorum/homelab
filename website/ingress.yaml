@@ -18,7 +18,7 @@ spec:
             name: alex-website
             port:
               number: 80
-  - host: alexnorum.com
+  - host: www.alexnorum.com
     http:
       paths:
       - path: /
