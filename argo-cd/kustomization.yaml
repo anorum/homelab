@@ -40,10 +40,13 @@ configMapGenerator:
       - kustomize.buildOptions=--enable-helm
       - accounts.readonly=apiKey
       - url=https://argo.homelab
-      - usersAnonymousEnabled=false
-      - loglevel=debug
+      - admin.enabled=false
+      - application.instanceLabelKey=argocd.argoproj.io/instance
+      - timeout.reconciliation=180s
+      - exec.enabled=true
       - "dex.config=connectors:\n  - type: oidc\n    id: authentik\n    name: authentik\n    config:\n      issuer: https://sso.alexnorum.com/application/o/argo-cd/\n      clientID: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0\n      clientSecret: $dex.authentik.clientSecret\n      insecureEnableGroups: true\n      scopes:\n        - openid\n        - profile\n        - email\n        - groups"
   - name: argocd-rbac-cm
     behavior: merge
     literals:
-      - policy.csv="g, readonly, role:readonly\ng, ArgoCD Admins, role:admin\ng, ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD Admins, role:admin\ng, authentik:ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD-Admins, role:admin\ng, authentik:ArgoCD-Viewers, role:readonly\ng, ArgoCD-Admins, role:admin\ng, ArgoCD-Viewers, role:readonly"
+      - policy.default=role:admin
+      - "policy.csv=g, readonly, role:readonly\ng, ArgoCD Admins, role:admin\ng, ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD Admins, role:admin\ng, authentik:ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD-Admins, role:admin\ng, authentik:ArgoCD-Viewers, role:readonly\ng, ArgoCD-Admins, role:admin\ng, ArgoCD-Viewers, role:readonly\ng, authentik Admins, role:admin\ng, anorum, role:admin\np, role:org-admin, applications, *, */*, allow\np, role:org-admin, clusters, get, *, allow\np, role:org-admin, repositories, get, *, allow\np, role:org-admin, repositories, create, *, allow\np, role:org-admin, repositories, update, *, allow\np, role:org-admin, repositories, delete, *, allow"
