@@ -35,6 +35,33 @@ spec:
               value: "America/Los_Angeles"
             - name: BASE_URL
               value: "https://mealie.alexnorum.com"
+            # Authentik OIDC Configuration
+            - name: OIDC_AUTH_ENABLED
+              value: "True"
+            - name: OIDC_PROVIDER_NAME
+              value: "authentik"
+            - name: OIDC_CONFIGURATION_URL
+              value: "https://sso.alexnorum.com/application/o/mealie/.well-known/openid-configuration"
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mealie-authentik-creds
+                  key: client-id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mealie-authentik-creds
+                  key: client-secret
+            - name: OIDC_SIGNUP_ENABLED
+              value: "true"
+            - name: OIDC_USER_GROUP
+              value: "mealie-users"
+            - name: OIDC_ADMIN_GROUP
+              value: "mealie-admins"
+            - name: OIDC_AUTO_REDIRECT
+              value: "false"
+            - name: OIDC_REMEMBER_ME
+              value: "true"
             # SQLite specific configuration
             - name: DB_ENGINE
             # OpenAI
