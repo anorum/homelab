@@ -40,8 +40,10 @@ configMapGenerator:
       - kustomize.buildOptions=--enable-helm
       - accounts.readonly=apiKey
       - url=https://argo.homelab
-      - "dex.config=connectors:\n  - type: oidc\n    id: authentik\n    name: authentik\n    config:\n      issuer: https://sso.alexnorum.com/application/o/argo-cd/\n      clientID: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0\n      clientSecret: $dex.authentik.clientSecret\n      insecureEnableGroups: true\n      scopes:\n        - openid\n        - profile\n        - email"
+      - usersAnonymousEnabled=false
+      - loglevel=debug
+      - "dex.config=connectors:\n  - type: oidc\n    id: authentik\n    name: authentik\n    config:\n      issuer: https://sso.alexnorum.com/application/o/argo-cd/\n      clientID: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0\n      clientSecret: $dex.authentik.clientSecret\n      insecureEnableGroups: true\n      scopes:\n        - openid\n        - profile\n        - email\n        - groups"
   - name: argocd-rbac-cm
     behavior: merge
     literals:
-      - policy.csv="g, readonly, role:readonly\ng, ArgoCD Admins, role:admin\ng, ArgoCD Viewers, role:readonly"
+      - policy.csv="g, readonly, role:readonly\ng, ArgoCD Admins, role:admin\ng, ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD Admins, role:admin\ng, authentik:ArgoCD Viewers, role:readonly\ng, authentik:ArgoCD-Admins, role:admin\ng, authentik:ArgoCD-Viewers, role:readonly\ng, ArgoCD-Admins, role:admin\ng, ArgoCD-Viewers, role:readonly"
