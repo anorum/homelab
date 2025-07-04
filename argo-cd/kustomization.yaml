@@ -43,4 +43,4 @@ configMapGenerator:
   - name: argocd-rbac-cm
     behavior: merge
     literals:
-      - policy.csv="g, readonly, role:readonly\ng, Argo Admins, role:admin\ng, Argo Viewers, role:readonly"
+      - policy.csv="g, readonly, role:readonly\ng, ArgoCD Admins, role:admin\ng, ArgoCD Viewers, role:readonly"
