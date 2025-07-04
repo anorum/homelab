@@ -53,6 +53,11 @@ authentik:
     port: 5432
 
 server:
+  containerPorts:
+    https: 9000
+  env:
+   - name: TMPDIR
+     value: /tmp
   ingress:
     # Specify kubernetes ingress controller class name
     ingressClassName: nginx
@@ -63,19 +68,30 @@ server:
   resources:
     limits:
       cpu: 1000m
-      memory: 1Gi
+      memory: 2Gi
     requests:
       cpu: 200m
       memory: 512Mi
 
 worker:
+  env:
+    - name: TMPDIR
+      value: /tmp
+  livenessProbe:
+    initialDelaySeconds: 180
+  readinessProbe:
+    initialDelaySeconds: 180
+  
+  startupProbe:
+    initialDelaySeconds: 180
+
   resources:
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 2Gi
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
 
 postgresql:
   enabled: true
