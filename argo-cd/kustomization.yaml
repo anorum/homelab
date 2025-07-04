@@ -31,6 +31,7 @@ resources:
 - https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
 - ingress.yaml
 - sealed-repo-secrets.yaml
+- sealed-oidc-secret.yaml
 
 configMapGenerator:
   - name: argocd-cm
@@ -38,7 +39,8 @@ configMapGenerator:
     literals:
       - kustomize.buildOptions=--enable-helm
       - accounts.readonly=apiKey
+      - "dex.config=connectors:\n  - type: oidc\n    id: authentik\n    name: authentik\n    config:\n      issuer: https://sso.alexnorum.com/application/o/argocd/\n      clientID: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0\n      clientSecret: $dex.authentik.clientSecret\n      insecureEnableGroups: true\n      scopes:\n        - openid\n        - profile\n        - email"
   - name: argocd-rbac-cm
     behavior: merge
     literals:
-      - policy.csv="g, readonly, role:readonly"
+      - policy.csv="g, readonly, role:readonly\ng, Argo Admins, role:admin\ng, Argo Viewers, role:readonly"
