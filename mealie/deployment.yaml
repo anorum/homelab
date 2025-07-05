@@ -27,6 +27,8 @@ spec:
           env:
             - name: ALLOW_SIGNUP
               value: "false"
+            - name: ALLOW_PASSWORD_LOGIN
+              value: "false"
             - name: PUID
               value: "1000"
             - name: PGID
