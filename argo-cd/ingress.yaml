@@ -19,10 +19,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - argo.homelab
+    - argo.alexnorum.com
     secretName: argocd-secret
   rules:
-  - host: argo.homelab
+  - host: argo.alexnorum.com
     http:
       paths:
       - path: /

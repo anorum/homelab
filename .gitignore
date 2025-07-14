@@ -61,6 +61,7 @@ wheels/
 .installed.cfg
 *.egg
 
+*.log
 # Hide Secrets.yaml
 secrets.yaml
 **/secrets.yaml
