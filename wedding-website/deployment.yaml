@@ -22,7 +22,7 @@ spec:
         image: ghcr.io/anorum/wedding-website:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 4321
+        - containerPort: 80
         resources:
           requests:
             cpu: 200m
@@ -33,13 +33,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 4321
+            port: 80
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 4321
+            port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -53,5 +53,5 @@ spec:
     app: wedding-website
   ports:
   - port: 80
-    targetPort: 4321
+    targetPort: 80
   type: ClusterIP
