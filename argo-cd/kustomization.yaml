@@ -39,7 +39,7 @@ configMapGenerator:
     literals:
       - kustomize.buildOptions=--enable-helm
       - accounts.readonly=apiKey
-      - url=https://argo.homelab
+      - url=https://argo.alexnorum.com
       - admin.enabled=false
       - application.instanceLabelKey=argocd.argoproj.io/instance
       - timeout.reconciliation=180s
