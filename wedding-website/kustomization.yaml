@@ -7,7 +7,6 @@ resources:
 - namespace.yaml
 - deployment.yaml
 - ingress.yaml
-- secrets.yaml
 images:
 - name: ghcr.io/anorum/wedding-website:latest
   newName: ghcr.io/anorum/wedding-website
