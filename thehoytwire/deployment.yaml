@@ -42,12 +42,6 @@ spec:
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
-        env:
-        - name: REACT_APP_OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: thehoytwire-secrets
-              key: REACT_APP_OPENAI_API_KEY
 ---
 apiVersion: v1
 kind: Service
