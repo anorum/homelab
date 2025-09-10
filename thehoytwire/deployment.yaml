@@ -22,7 +22,7 @@ spec:
         image: ghcr.io/anorum/thehoytwire:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 4321
         resources:
           requests:
             cpu: 200m
@@ -33,13 +33,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 4321
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 4321
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -53,5 +53,5 @@ spec:
     app: thehoytwire
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 4321
   type: ClusterIP
