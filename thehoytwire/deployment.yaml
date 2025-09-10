@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thehoytwire
+  namespace: thehoytwire
+  labels:
+    app: thehoytwire
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: thehoytwire
+  template:
+    metadata:
+      labels:
+        app: thehoytwire
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: thehoytwire
+        image: ghcr.io/anorum/thehoytwire:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        - name: REACT_APP_OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: thehoytwire-secrets
+              key: REACT_APP_OPENAI_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thehoytwire
+  namespace: thehoytwire
+spec:
+  selector:
+    app: thehoytwire
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
