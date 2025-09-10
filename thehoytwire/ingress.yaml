@@ -18,3 +18,13 @@ spec:
             name: thehoytwire
             port:
               number: 80
+  - host: thehoytwire.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: thehoytwire
+            port:
+              number: 80
