@@ -1,0 +1,12 @@
+# Input number helpers for Home Assistant
+# Add these via Settings > Devices & Services > Helpers > Create Helper > Number
+# Or include this file in your configuration.yaml:
+#   input_number: !include input_numbers.yaml
+
+bedroom_light_selector:
+  name: Bedroom Light Selector
+  min: 0
+  max: 2
+  step: 1
+  mode: slider
+  icon: mdi:lightbulb-group

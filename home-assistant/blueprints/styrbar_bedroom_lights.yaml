@@ -1,0 +1,262 @@
+# IKEA STYRBAR Remote - Bedroom Light Selector
+#
+# Controls 3 lights with left/right cycling and on/off/brightness.
+# Designed for ZHA integration.
+#
+# SETUP:
+#   1. Create an input_number helper (see ../input_numbers.yaml)
+#   2. Import this blueprint into HA:
+#      Settings > Automations > Blueprints > Import Blueprint
+#      (or copy to config/blueprints/automation/styrbar_bedroom_lights.yaml)
+#   3. Create one automation per remote using this blueprint
+#
+# VERIFY YOUR EVENTS:
+#   Go to Developer Tools > Events > Listen to "zha_event",
+#   press each button on your STYRBAR, and confirm the command names match.
+#   If your left/right arrows fire different commands than "press" with
+#   args [257,13,0]/[256,13,0], update the conditions below.
+
+blueprint:
+  name: "STYRBAR Bedroom Light Selector"
+  description: >
+    Cycle through 3 bedroom lights with left/right arrows (selected light
+    flashes to confirm). On/off buttons control power. Hold on/off to
+    adjust brightness. Works with IKEA STYRBAR E2001/E2002 via ZHA.
+  domain: automation
+  input:
+    remote:
+      name: STYRBAR Remote
+      description: The IKEA STYRBAR remote device
+      selector:
+        device:
+          integration: zha
+          manufacturer: IKEA of Sweden
+    light_1:
+      name: Light 1
+      description: First light in the cycle
+      selector:
+        entity:
+          domain: light
+    light_2:
+      name: Light 2
+      description: Second light in the cycle
+      selector:
+        entity:
+          domain: light
+    light_3:
+      name: Light 3
+      description: Third light in the cycle
+      selector:
+        entity:
+          domain: light
+    selected_light_helper:
+      name: Selected Light Helper
+      description: >
+        An input_number helper to track which light is selected.
+        Must be configured with min=0, max=2, step=1.
+      selector:
+        entity:
+          domain: input_number
+    brightness_step:
+      name: Brightness Step
+      description: Brightness change per hold event (percentage)
+      default: 20
+      selector:
+        number:
+          min: 5
+          max: 50
+          step: 5
+          unit_of_measurement: "%"
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  # First variable block: resolve blueprint inputs
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      raw_args: "{{ trigger.event.data.args | default([]) }}"
+      helper_entity: !input selected_light_helper
+      light_1: !input light_1
+      light_2: !input light_2
+      light_3: !input light_3
+      step_pct: !input brightness_step
+
+  # Second variable block: derive state from the first
+  - variables:
+      selected: "{{ states(helper_entity) | float(0) | int }}"
+      current_light: >
+        {% if states(helper_entity) | float(0) | int == 0 %}{{ light_1 }}
+        {% elif states(helper_entity) | float(0) | int == 1 %}{{ light_2 }}
+        {% else %}{{ light_3 }}{% endif %}
+
+  - choose:
+      # ── Right arrow: select next light ──
+      - conditions: >
+          {{ command == 'press' and raw_args == [256, 13, 0] }}
+        sequence:
+          - variables:
+              new_index: "{{ [selected + 1, 2] | min }}"
+              new_light: >
+                {% set idx = [selected + 1, 2] | min %}
+                {% if idx == 0 %}{{ light_1 }}
+                {% elif idx == 1 %}{{ light_2 }}
+                {% else %}{{ light_3 }}{% endif %}
+          - service: input_number.set_value
+            target:
+              entity_id: !input selected_light_helper
+            data:
+              value: "{{ new_index }}"
+          # Soft blink: remember state, blink off briefly, restore
+          - variables:
+              was_on: "{{ is_state(new_light, 'on') }}"
+              prev_brightness: "{{ state_attr(new_light, 'brightness') | int(255) }}"
+          - if: "{{ was_on }}"
+            then:
+              # Light is on: blink off then restore
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  transition: 0
+              - delay:
+                  milliseconds: 200
+              - service: light.turn_on
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  brightness: "{{ prev_brightness }}"
+                  transition: 0
+            else:
+              # Light is off: flash on at 15% then turn back off
+              - service: light.turn_on
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  brightness_pct: 5
+                  transition: 0
+              - delay:
+                  milliseconds: 250
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  transition: 0
+
+      # ── Left arrow: select previous light ──
+      - conditions: >
+          {{ command == 'press' and raw_args == [257, 13, 0] }}
+        sequence:
+          - variables:
+              new_index: "{{ [selected - 1, 0] | max }}"
+              new_light: >
+                {% set idx = [selected - 1, 0] | max %}
+                {% if idx == 0 %}{{ light_1 }}
+                {% elif idx == 1 %}{{ light_2 }}
+                {% else %}{{ light_3 }}{% endif %}
+          - service: input_number.set_value
+            target:
+              entity_id: !input selected_light_helper
+            data:
+              value: "{{ new_index }}"
+          # Soft blink: remember state, blink off briefly, restore
+          - variables:
+              was_on: "{{ is_state(new_light, 'on') }}"
+              prev_brightness: "{{ state_attr(new_light, 'brightness') | int(255) }}"
+          - if: "{{ was_on }}"
+            then:
+              # Light is on: blink off then restore
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  transition: 0
+              - delay:
+                  milliseconds: 200
+              - service: light.turn_on
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  brightness: "{{ prev_brightness }}"
+                  transition: 0
+            else:
+              # Light is off: flash on at 15% then turn back off
+              - service: light.turn_on
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  brightness_pct: 5
+                  transition: 0
+              - delay:
+                  milliseconds: 250
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ new_light }}"
+                data:
+                  transition: 0
+
+      # ── On button: turn on selected light ──
+      - conditions: "{{ command == 'on' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ current_light }}"
+
+      # ── Off button: turn off selected light ──
+      - conditions: "{{ command == 'off' }}"
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id: "{{ current_light }}"
+
+      # ── Hold on button: brightness up (loops until release) ──
+      - conditions: "{{ command == 'move_with_on_off' }}"
+        sequence:
+          - repeat:
+              while: "{{ true }}"
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: "{{ current_light }}"
+                  data:
+                    brightness_step_pct: "{{ step_pct }}"
+                - delay:
+                    milliseconds: 300
+
+      # ── Hold off button: brightness down (loops until release, min 1%) ──
+      - conditions: "{{ command == 'move' }}"
+        sequence:
+          - repeat:
+              while: >
+                {{ state_attr(current_light, 'brightness') | float(0) | int > 5 }}
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: "{{ current_light }}"
+                  data:
+                    brightness_pct: >
+                      {{ [((state_attr(current_light, 'brightness') | int(255)) / 2.55) | round(0) - step_pct, 1] | max }}
+                - delay:
+                    milliseconds: 300
+
+      # ── Hold right arrow: turn ALL lights on ──
+      - conditions: >
+          {{ command == 'hold' and raw_args == [3328, 0] }}
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ [light_1, light_2, light_3] }}"
+
+      # ── Hold left arrow: turn ALL lights off ──
+      - conditions: >
+          {{ command == 'hold' and raw_args == [3329, 0] }}
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id: "{{ [light_1, light_2, light_3] }}"
