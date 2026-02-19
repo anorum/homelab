@@ -245,18 +245,37 @@ action:
                 - delay:
                     milliseconds: 300
 
-      # ── Hold right arrow: turn ALL lights on ──
+      # ── Hold right arrow: all off + stop music ──
       - conditions: >
           {{ command == 'hold' and raw_args == [3328, 0] }}
         sequence:
-          - service: light.turn_on
+          - action: light.turn_off
             target:
-              entity_id: "{{ [light_1, light_2, light_3] }}"
+              entity_id:
+                - light.alex
+                - light.globe
+                - light.mel
+          - action: media_player.media_stop
+            target:
+              area_id: bedroom
 
-      # ── Hold left arrow: turn ALL lights off ──
+      # ── Hold left arrow: sleep mode ──
       - conditions: >
           {{ command == 'hold' and raw_args == [3329, 0] }}
         sequence:
-          - service: light.turn_off
+          - action: media_player.play_media
+            data:
+              media_content_type: SPOTIFY
+              media_content_id: spotify:playlist:sleep
             target:
-              entity_id: "{{ [light_1, light_2, light_3] }}"
+              area_id: bedroom
+          - action: light.turn_on
+            target:
+              entity_id: light.alex
+            data:
+              brightness_pct: 1
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.globe
+                - light.mel
