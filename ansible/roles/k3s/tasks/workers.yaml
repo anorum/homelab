@@ -1,26 +1,21 @@
-- name: Read current cmdline
-  slurp:
-    path: /boot/cmdline.txt
-  register: cmdline_content
+- name: Check if k3s agent is already installed
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
 
-- name: Configure cgroups on workers
-  copy:
-    dest: /boot/cmdline.txt
-    content: "{{ cmdline_content.content | b64decode | regex_replace('\\n$', '') }} cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset systemd.unified_cgroup_hierarchy=1\n"
-  register: cmdline_modified
-
-- name: Reboot if cmdline.txt was modified
-  reboot:
-  when: cmdline_modified.changed
+- name: Uninstall existing k3s agent if present
+  shell: /usr/local/bin/k3s-agent-uninstall.sh
+  when: k3s_binary.stat.exists and (force_reinstall | default(false))
+  ignore_errors: true
 
 - name: Install k3s on workers
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" K3S_URL=https://{{ hostvars['master']['ansible_host'] }}:6443 K3S_TOKEN={{ hostvars['master']['k3s_token'] }} sh
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" K3S_URL=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:6443 K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token'] }} sh
   register: k3s_worker_install
   failed_when: k3s_worker_install.rc != 0
-  changed_when: true
+  when: not k3s_binary.stat.exists or (force_reinstall | default(false))
 
 - name: Debug k3s worker installation
   debug:
     var: k3s_worker_install
-  when: k3s_worker_install.rc != 0
+  when: k3s_worker_install is defined and k3s_worker_install.rc | default(0) != 0

@@ -1,1 +1,29 @@
-# Common tasks for all nodes can be added here if needed
+- name: Check if cmdline.txt is at /boot/firmware/cmdline.txt
+  stat:
+    path: /boot/firmware/cmdline.txt
+  register: firmware_cmdline
+
+- name: Set cmdline path
+  set_fact:
+    cmdline_path: "{{ '/boot/firmware/cmdline.txt' if firmware_cmdline.stat.exists else '/boot/cmdline.txt' }}"
+
+- name: Read current cmdline
+  slurp:
+    path: "{{ cmdline_path }}"
+  register: cmdline_content
+
+- name: Check if cgroups already configured
+  set_fact:
+    cgroups_configured: "{{ 'cgroup_memory=1' in (cmdline_content.content | b64decode) }}"
+
+- name: Configure cgroups
+  copy:
+    dest: "{{ cmdline_path }}"
+    content: "{{ cmdline_content.content | b64decode | regex_replace('\\n$', '') }} cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset systemd.unified_cgroup_hierarchy=1\n"
+  when: not cgroups_configured
+  register: cmdline_modified
+
+- name: Reboot if cmdline.txt was modified
+  reboot:
+    reboot_timeout: 300
+  when: cmdline_modified.changed | default(false)

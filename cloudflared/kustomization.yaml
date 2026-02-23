@@ -6,4 +6,6 @@ namespace: cloudflared
 resources:
   - namespace.yaml
   - deployment.yaml
-  - sealed-cloudflared-token.yaml
+
+generators:
+  - secret-generator.yaml

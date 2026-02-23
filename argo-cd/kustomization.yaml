@@ -30,14 +30,15 @@ resources:
 - namespace.yaml
 - https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
 - ingress.yaml
-- sealed-repo-secrets.yaml
-- sealed-argocd-secret.yaml
+
+patchesStrategicMerge:
+- ksops-patch.yaml
 
 configMapGenerator:
   - name: argocd-cm
     behavior: merge
     literals:
-      - kustomize.buildOptions=--enable-helm
+      - kustomize.buildOptions=--enable-helm --enable-alpha-plugins --enable-exec
       - accounts.readonly=apiKey
       - url=https://argo.alexnorum.com
       - admin.enabled=false

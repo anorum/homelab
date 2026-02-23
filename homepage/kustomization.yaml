@@ -12,7 +12,9 @@ resources:
   - secret.yaml
   - service.yaml
   - serviceaccount.yaml
-  - sealed-secrets.yaml
+
+generators:
+  - secret-generator.yaml
 
 labels:
 - pairs:

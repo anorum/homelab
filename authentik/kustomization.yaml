@@ -5,6 +5,9 @@ namespace: authentik
 resources:
 - namespace.yaml
 
+generators:
+- secret-generator.yaml
+
 helmCharts:
   - name: authentik
     repo: https://charts.goauthentik.io

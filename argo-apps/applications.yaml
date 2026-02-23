@@ -106,36 +106,6 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: sealed-secrets
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: kube-system
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: jellyfin
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: jellyfin
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: jellyfin
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: storage
   namespace: argocd
 spec:
@@ -181,36 +151,6 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: registry
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: registry
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: registry
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: marabot
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: marabot
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: marabot
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: mealie
   namespace: argocd
 spec:
@@ -222,63 +162,3 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: mealie
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: alex-api
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: alex-api
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: alex-api
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: alex-website
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: website
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: alex-website
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: wedding-website
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: wedding-website
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: wedding-website
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: thehoytwire
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: thehoytwire
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: thehoytwire

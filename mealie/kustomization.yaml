@@ -8,4 +8,6 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
-  - sealed-authentik-secret.yaml
+
+generators:
+  - secret-generator.yaml

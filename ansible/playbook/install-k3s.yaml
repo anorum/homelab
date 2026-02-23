@@ -1,17 +1,36 @@
-- name: Configure Raspberry Pi for k3s
+- name: Configure all Raspberry Pi nodes for k3s
   hosts: all
   become: yes
   tasks:
     - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/all.yaml"
 
 - name: Install k3s on master
-  hosts: master
+  hosts: masters
   become: yes
   tasks:
     - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/master.yaml"
+
+- name: Gather k3s token from master (needed for workers)
+  hosts: masters
+  become: yes
+  tasks:
+    - name: Retrieve k3s token
+      shell: cat /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+      changed_when: false
+
+    - name: Set token fact
+      set_fact:
+        k3s_token: "{{ k3s_token.stdout }}"
 
 - name: Install k3s on workers
   hosts: workers
   become: yes
   tasks:
     - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/workers.yaml"
+
+- name: Fetch kubeconfig to local machine
+  hosts: masters
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/k3s/tasks/fetch-kubeconfig.yaml"

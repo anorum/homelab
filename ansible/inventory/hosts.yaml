@@ -1,14 +1,17 @@
 all:
+  vars:
+    ansible_user: anorum
+    ansible_ssh_private_key_file: ~/.ssh/rpi_key
   hosts:
-    master:
+    swagman-1:
       ansible_host: 192.168.1.101
-      ansible_user: anorum
-    worker1:
+    swagman-2:
       ansible_host: 192.168.1.102
-      ansible_user: anorum
-  
+
   children:
+    masters:
+      hosts:
+        swagman-1:
     workers:
       hosts:
-        worker1:
-        worker2:
+        swagman-2:
