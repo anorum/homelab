@@ -106,21 +106,6 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: storage
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: git@github.com:anorum/homelab.git
-    targetRevision: HEAD
-    path: storage
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: storage
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: home-assistant
   namespace: argocd
 spec:

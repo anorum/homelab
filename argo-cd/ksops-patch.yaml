@@ -2,12 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd-repo-server
-  namespace: argocd
 spec:
   template:
     spec:
       # Mount the age key for SOPS decryption
       volumes:
+        - name: custom-tools
+          emptyDir: {}
         - name: sops-age-key
           secret:
             secretName: sops-age-key

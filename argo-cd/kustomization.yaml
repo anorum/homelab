@@ -25,14 +25,15 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 2
+- path: ksops-patch.yaml
+  target:
+    kind: Deployment
+    name: argocd-repo-server
 
 resources:
 - namespace.yaml
 - https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
 - ingress.yaml
-
-patchesStrategicMerge:
-- ksops-patch.yaml
 
 configMapGenerator:
   - name: argocd-cm

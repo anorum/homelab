@@ -21,7 +21,12 @@ echo ""
 echo "Checking prerequisites..."
 command -v kubectl >/dev/null 2>&1 || { echo "ERROR: kubectl not found"; exit 1; }
 command -v sops >/dev/null 2>&1 || { echo "ERROR: sops not found"; exit 1; }
-command -v kustomize >/dev/null 2>&1 || { echo "WARNING: kustomize not found, will use kubectl -k"; }
+command -v kustomize >/dev/null 2>&1 || { echo "ERROR: kustomize not found (brew install kustomize)"; exit 1; }
+
+# Helper: build with kustomize (helm-enabled) and apply
+kustomize_apply() {
+    kustomize build --enable-helm "$1" | kubectl apply -f -
+}
 
 if [ ! -f "$AGE_KEY_FILE" ]; then
     echo "ERROR: Age key not found at $AGE_KEY_FILE"
@@ -34,22 +39,29 @@ echo ""
 
 # Step 1: Deploy MetalLB
 echo "=== Step 1: Deploying MetalLB ==="
-kubectl apply -k "$REPO_DIR/metallb/"
+kustomize_apply "$REPO_DIR/metallb/" || true
+echo "Waiting for MetalLB CRDs to register..."
+sleep 15
+# Re-apply to pick up CRs that failed on first pass
+kustomize_apply "$REPO_DIR/metallb/" || true
 echo "Waiting for MetalLB to be ready..."
 kubectl -n metallb wait --for=condition=ready pod -l app.kubernetes.io/name=metallb --timeout=120s 2>/dev/null || true
-sleep 10
 echo ""
 
 # Step 2: Deploy Ingress-Nginx
 echo "=== Step 2: Deploying Ingress-Nginx ==="
-kubectl apply -k "$REPO_DIR/ingress-nginx/"
+kustomize_apply "$REPO_DIR/ingress-nginx/"
 echo "Waiting for Ingress-Nginx to be ready..."
 kubectl -n ingress-nginx wait --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx --timeout=120s 2>/dev/null || true
 echo ""
 
-# Step 3: Deploy Storage
+# Step 3: Deploy Storage (skip if not configured)
 echo "=== Step 3: Deploying Storage PVs ==="
-kubectl apply -k "$REPO_DIR/storage/"
+if [ -d "$REPO_DIR/storage/" ] && [ ! -f "$REPO_DIR/storage/.skip" ]; then
+    kustomize_apply "$REPO_DIR/storage/" || echo "WARNING: Storage deployment failed, continuing..."
+else
+    echo "  Skipping storage (not configured or .skip file present)"
+fi
 echo ""
 
 # Step 4: Deploy ArgoCD
@@ -71,7 +83,7 @@ sops -d "$REPO_DIR/argo-cd/secret.enc.yaml" | kubectl apply -f -
 sops -d "$REPO_DIR/argo-cd/repo-secret.enc.yaml" | kubectl apply -f -
 
 # Deploy ArgoCD itself
-kubectl apply -k "$REPO_DIR/argo-cd/"
+kustomize_apply "$REPO_DIR/argo-cd/"
 echo "Waiting for ArgoCD to be ready..."
 kubectl -n argocd wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server --timeout=300s 2>/dev/null || true
 echo ""
