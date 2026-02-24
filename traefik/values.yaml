@@ -1,0 +1,14 @@
+providers:
+  kubernetesGateway:
+    enabled: true
+
+service:
+  type: LoadBalancer
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.1.151"
+
+resources:
+  limits:
+    memory: "256Mi"
+  requests:
+    memory: "64Mi"

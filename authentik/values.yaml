@@ -90,6 +90,8 @@ worker:
 
 postgresql:
   enabled: true
+  image:
+    tag: 17.4.0-debian-12-r0
   primary:
     persistence:
       enabled: true
@@ -110,6 +112,8 @@ postgresql:
       replicationPasswordKey: postgresql-password
 redis:
   enabled: true
+  image:
+    tag: 7.4.2-debian-12-r0
   auth:
     enabled: true
     existingSecret: authentik-secrets

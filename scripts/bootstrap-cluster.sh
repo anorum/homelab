@@ -54,19 +54,19 @@ echo "Waiting for MetalLB to be ready..."
 kubectl -n metallb wait --for=condition=ready pod -l app.kubernetes.io/name=metallb --timeout=120s 2>/dev/null || true
 echo ""
 
-# Step 2: Deploy Gateway API CRDs + Envoy Gateway
+# Step 2: Deploy Gateway API CRDs + Traefik
 echo "=== Step 2: Deploying Gateway API CRDs ==="
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 echo "Waiting for Gateway API CRDs to register..."
 sleep 5
 
-echo "=== Step 2b: Deploying Envoy Gateway ==="
-kustomize_apply "$REPO_DIR/envoy-gateway/" || true
+echo "=== Step 2b: Deploying Traefik ==="
+kustomize_apply "$REPO_DIR/traefik/" || true
 sleep 10
 # Re-apply to pick up Gateway resource after controller is ready
-kustomize_apply "$REPO_DIR/envoy-gateway/" || true
-echo "Waiting for Envoy Gateway to be ready..."
-kubectl -n envoy-gateway-system wait --for=condition=ready pod -l app.kubernetes.io/name=gateway-helm --timeout=120s 2>/dev/null || true
+kustomize_apply "$REPO_DIR/traefik/" || true
+echo "Waiting for Traefik to be ready..."
+kubectl -n traefik wait --for=condition=ready pod -l app.kubernetes.io/name=traefik --timeout=120s 2>/dev/null || true
 echo ""
 
 # Step 3: Deploy Storage (skip if not configured)
@@ -135,12 +135,12 @@ echo "=== Bootstrap Complete ==="
 echo ""
 echo "Next steps:"
 echo "  1. Check ArgoCD: kubectl -n argocd get pods"
-echo "  2. Check Envoy Gateway: kubectl -n envoy-gateway-system get gateway"
+echo "  2. Check Traefik: kubectl -n traefik get gateway"
 echo "  3. Check HTTPRoutes: kubectl get httproute -A"
 echo "  4. Port-forward ArgoCD: kubectl -n argocd port-forward svc/argocd-server 8080:80"
 echo "  5. Configure Authentik OIDC providers after Authentik is running"
 echo "  6. Update Homepage secrets with real API keys after services are up"
-echo "  7. Update Cloudflare Tunnel to point to Envoy Gateway IP (192.168.1.151)"
+echo "  7. Update Cloudflare Tunnel to point to Traefik IP (192.168.1.151)"
 echo ""
 echo "IMPORTANT: Back up your age key!"
 echo "  cp ~/.config/sops/age/keys.txt <somewhere-safe>"

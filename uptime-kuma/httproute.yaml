@@ -16,8 +16,8 @@ metadata:
 spec:
   parentRefs:
     - name: homelab-gateway
-      namespace: envoy-gateway-system
-      sectionName: http
+      namespace: traefik
+      sectionName: web
   hostnames:
     - uptime.homelab
     - status.homelab

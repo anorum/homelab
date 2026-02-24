@@ -61,17 +61,17 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: envoy-gateway
+  name: traefik
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: git@github.com:anorum/homelab.git
     targetRevision: HEAD
-    path: envoy-gateway
+    path: traefik
   destination:
     server: https://kubernetes.default.svc
-    namespace: envoy-gateway-system
+    namespace: traefik
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
