@@ -1,12 +1,9 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: adguard
+  namespace: adguard
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/proxy-redirect-from: /
-    nginx.ingress.kubernetes.io/proxy-redirect-to: /
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: DNS Ad Blocking
     gethomepage.dev/group: Homelab
@@ -17,15 +14,17 @@ metadata:
     gethomepage.dev/widget.password: "{{HOMEPAGE_VAR_ADGUARD_PASSWORD}}"
     gethomepage.dev/pod-selector: "app=adguard"
 spec:
-  ingressClassName: nginx
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - adguard.homelab
   rules:
-    - host: adguard.homelab
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: adguard-service
-                port:
-                  number: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: adguard-service
+          port: 80

@@ -6,7 +6,7 @@ namespace: alex-website
 resources:
 - namespace.yaml
 - deployment.yaml
-- ingress.yaml
+- httproute.yaml
 images:
 - name: ghcr.io/anorum/alex-website:latest
   newName: ghcr.io/anorum/alex-website

@@ -22,10 +22,16 @@ echo "Checking prerequisites..."
 command -v kubectl >/dev/null 2>&1 || { echo "ERROR: kubectl not found"; exit 1; }
 command -v sops >/dev/null 2>&1 || { echo "ERROR: sops not found"; exit 1; }
 command -v kustomize >/dev/null 2>&1 || { echo "ERROR: kustomize not found (brew install kustomize)"; exit 1; }
+command -v helm >/dev/null 2>&1 || { echo "ERROR: helm not found (brew install helm)"; exit 1; }
 
 # Helper: build with kustomize (helm-enabled) and apply
 kustomize_apply() {
     kustomize build --enable-helm "$1" | kubectl apply -f -
+}
+
+# Helper: build with kustomize and apply with server-side apply (for large CRDs)
+kustomize_apply_ssa() {
+    kustomize build --enable-helm "$1" | kubectl apply --server-side --force-conflicts -f -
 }
 
 if [ ! -f "$AGE_KEY_FILE" ]; then
@@ -48,11 +54,19 @@ echo "Waiting for MetalLB to be ready..."
 kubectl -n metallb wait --for=condition=ready pod -l app.kubernetes.io/name=metallb --timeout=120s 2>/dev/null || true
 echo ""
 
-# Step 2: Deploy Ingress-Nginx
-echo "=== Step 2: Deploying Ingress-Nginx ==="
-kustomize_apply "$REPO_DIR/ingress-nginx/"
-echo "Waiting for Ingress-Nginx to be ready..."
-kubectl -n ingress-nginx wait --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx --timeout=120s 2>/dev/null || true
+# Step 2: Deploy Gateway API CRDs + Envoy Gateway
+echo "=== Step 2: Deploying Gateway API CRDs ==="
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+echo "Waiting for Gateway API CRDs to register..."
+sleep 5
+
+echo "=== Step 2b: Deploying Envoy Gateway ==="
+kustomize_apply "$REPO_DIR/envoy-gateway/" || true
+sleep 10
+# Re-apply to pick up Gateway resource after controller is ready
+kustomize_apply "$REPO_DIR/envoy-gateway/" || true
+echo "Waiting for Envoy Gateway to be ready..."
+kubectl -n envoy-gateway-system wait --for=condition=ready pod -l app.kubernetes.io/name=gateway-helm --timeout=120s 2>/dev/null || true
 echo ""
 
 # Step 3: Deploy Storage (skip if not configured)
@@ -64,7 +78,7 @@ else
 fi
 echo ""
 
-# Step 4: Deploy ArgoCD
+# Step 4: Deploy ArgoCD (v3.x requires server-side apply for large CRDs)
 echo "=== Step 4: Deploying ArgoCD ==="
 
 # Create argocd namespace first
@@ -82,8 +96,8 @@ echo "Deploying ArgoCD secrets..."
 sops -d "$REPO_DIR/argo-cd/secret.enc.yaml" | kubectl apply -f -
 sops -d "$REPO_DIR/argo-cd/repo-secret.enc.yaml" | kubectl apply -f -
 
-# Deploy ArgoCD itself
-kustomize_apply "$REPO_DIR/argo-cd/"
+# Deploy ArgoCD itself (server-side apply required for v3.x)
+kustomize_apply_ssa "$REPO_DIR/argo-cd/"
 echo "Waiting for ArgoCD to be ready..."
 kubectl -n argocd wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server --timeout=300s 2>/dev/null || true
 echo ""
@@ -120,12 +134,13 @@ echo ""
 echo "=== Bootstrap Complete ==="
 echo ""
 echo "Next steps:"
-echo "  1. Add the deploy key to GitHub: cat /tmp/homelab-deploy-key.pub"
-echo "  2. Check ArgoCD: kubectl -n argocd get pods"
-echo "  3. Get ArgoCD admin password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
-echo "  4. Port-forward ArgoCD: kubectl -n argocd port-forward svc/argocd-server 8080:443"
+echo "  1. Check ArgoCD: kubectl -n argocd get pods"
+echo "  2. Check Envoy Gateway: kubectl -n envoy-gateway-system get gateway"
+echo "  3. Check HTTPRoutes: kubectl get httproute -A"
+echo "  4. Port-forward ArgoCD: kubectl -n argocd port-forward svc/argocd-server 8080:80"
 echo "  5. Configure Authentik OIDC providers after Authentik is running"
 echo "  6. Update Homepage secrets with real API keys after services are up"
+echo "  7. Update Cloudflare Tunnel to point to Envoy Gateway IP (192.168.1.151)"
 echo ""
 echo "IMPORTANT: Back up your age key!"
 echo "  cp ~/.config/sops/age/keys.txt <somewhere-safe>"

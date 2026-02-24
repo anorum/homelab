@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alex-website
+  namespace: alex-website
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - dev.alexnorum.com
+    - www.alexnorum.com
+    - alexnorum.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: alex-website
+          port: 80

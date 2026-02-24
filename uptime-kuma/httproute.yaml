@@ -1,0 +1,32 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: uptime-kuma
+  namespace: uptime-kuma
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Uptime Monitoring
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: uptime-kuma.png
+    gethomepage.dev/name: Uptime Kuma
+    gethomepage.dev/widget.type: uptimekuma
+    gethomepage.dev/widget.url: "http://uptime-kuma.uptime-kuma.svc.cluster.local"
+    gethomepage.dev/widget.slug: "hoyt"
+    gethomepage.dev/pod-selector: "app=uptime-kuma"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - uptime.homelab
+    - status.homelab
+    - status.alexnorum.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: uptime-kuma
+          port: 80

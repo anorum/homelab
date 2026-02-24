@@ -1,0 +1,110 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: prometheus
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Grafana Monitoring
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: grafana.png
+    gethomepage.dev/name: Grafana
+    gethomepage.dev/pod-selector: "app.kubernetes.io/name=grafana"
+    gethomepage.dev/widget.type: "grafana"
+    gethomepage.dev/widget.url: "http://prometheus-grafana.prometheus.svc.cluster.local"
+    gethomepage.dev/widget.username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+    gethomepage.dev/widget.password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - grafana.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: prometheus-grafana
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prometheus
+  namespace: prometheus
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Metrics and Monitoring
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: prometheus.png
+    gethomepage.dev/name: Prometheus
+    gethomepage.dev/pod-selector: app.kubernetes.io/name=prometheus
+    gethomepage.dev/widget.type: "prometheus"
+    gethomepage.dev/widget.url: "http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - prometheus.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: prometheus-kube-prometheus-prometheus
+          port: 9090
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alertmanager
+  namespace: prometheus
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Alert Management
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: alertmanager.png
+    gethomepage.dev/name: Alert Manager
+    gethomepage.dev/pod-selector: "app.kubernetes.io/name=alertmanager"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - alertmanager.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: prometheus-kube-prometheus-alertmanager
+          port: 9093
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: thanos
+  namespace: prometheus
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - thanos.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: prometheus-kube-prometheus-thanos-discovery
+          port: 10901

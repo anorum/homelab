@@ -1,0 +1,27 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alex-api
+  namespace: alex-api
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Alex's FastAPI Application
+    gethomepage.dev/group: Applications
+    gethomepage.dev/icon: api.png
+    gethomepage.dev/name: Alex API
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: envoy-gateway-system
+      sectionName: http
+  hostnames:
+    - api.homelab
+    - api.alexnorum.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: alex-api
+          port: 8000

@@ -8,6 +8,7 @@ metadata:
 data:
   kubernetes.yaml: |
     mode: cluster
+    gateway: true
   settings.yaml: |
     title: "Homelab Dashboard"
     theme: dark

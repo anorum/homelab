@@ -59,12 +59,7 @@ server:
    - name: TMPDIR
      value: /tmp
   ingress:
-    # Specify kubernetes ingress controller class name
-    ingressClassName: nginx
-    enabled: true
-    https: true
-    hosts:
-      - sso.alexnorum.com
+    enabled: false
   resources:
     limits:
       cpu: 1000m

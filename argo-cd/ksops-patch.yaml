@@ -14,7 +14,7 @@ spec:
             secretName: sops-age-key
       initContainers:
         - name: install-ksops
-          image: viaductoss/ksops:v4.3.2
+          image: viaductoss/ksops:v4.4.0
           command: ["/bin/sh", "-c"]
           args:
             - echo "Installing KSOPS...";
@@ -31,6 +31,10 @@ spec:
               value: /.config
             - name: SOPS_AGE_KEY_FILE
               value: /.config/sops/age/keys.txt
+            - name: KUSTOMIZE_PLUGIN_HOME
+              value: /.config/kustomize/plugin
+            - name: PATH
+              value: /custom-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           volumeMounts:
             - mountPath: /custom-tools
               name: custom-tools
