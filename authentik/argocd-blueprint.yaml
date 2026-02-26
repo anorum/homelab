@@ -30,9 +30,15 @@ data:
           client_id: !Context argocd_client_id
           client_secret: !Context argocd_client_secret
           client_type: confidential
-          # redirect_uris must be a list of objects with url and matching_mode
+          # redirect_uris - allow both http/https and different callback paths
           redirect_uris:
             - url: https://argo.alexnorum.com/api/dex/callback
+              matching_mode: strict
+            - url: http://argo.alexnorum.com/api/dex/callback
+              matching_mode: strict
+            - url: https://argo.alexnorum.com/auth/callback
+              matching_mode: strict
+            - url: http://argo.alexnorum.com/auth/callback
               matching_mode: strict
           include_claims_in_id_token: true
           sub_mode: hashed_user_id
