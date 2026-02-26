@@ -37,6 +37,7 @@ authentik:
 blueprints:
   configMaps:
     - argocd-blueprint
+    - google-oauth-blueprint
 
 server:
   containerPorts:
@@ -62,6 +63,16 @@ worker:
       valueFrom:
         secretKeyRef:
           name: argocd-oauth-secret
+          key: clientSecret
+    - name: GOOGLE_OAUTH_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: google-oauth-secret
+          key: clientId
+    - name: GOOGLE_OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: google-oauth-secret
           key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180

@@ -6,10 +6,12 @@ resources:
 - namespace.yaml
 - httproute.yaml
 - argocd-blueprint.yaml
+- google-oauth-blueprint.yaml
 
 generators:
 - secret-generator.yaml
 - argocd-oauth-secret-generator.yaml
+- google-oauth-secret-generator.yaml
 
 helmCharts:
   - name: authentik

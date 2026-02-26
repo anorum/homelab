@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: google-oauth-blueprint
+  namespace: authentik
+data:
+  google-oauth.yaml: |
+    version: 1
+    metadata:
+      name: Google OAuth Source
+      labels:
+        blueprints.goauthentik.io/instantiate: "true"
+    context:
+      google_client_id: !Env GOOGLE_OAUTH_CLIENT_ID
+      google_client_secret: !Env GOOGLE_OAUTH_CLIENT_SECRET
+    entries:
+      # Google OAuth Source - Login only (no auto-enrollment)
+      - model: authentik_sources_oauth.oauthsource
+        state: present
+        identifiers:
+          slug: google
+        attrs:
+          name: Google
+          provider_type: google
+          consumer_key: !Context google_client_id
+          consumer_secret: !Context google_client_secret
+          # Use the default authentication flow
+          authentication_flow: !Find [authentik_flows.flow, [slug, default-source-authentication]]
+          # IMPORTANT: No enrollment flow - users must be pre-created
+          # This prevents random people from signing up
+          enrollment_flow: null
+          # Policy engine - require user to exist
+          policy_engine_mode: any
+          # Enable the source
+          enabled: true
+          # User matching - match by email
+          user_matching_mode: email_deny
