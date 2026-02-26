@@ -28,7 +28,6 @@ data:
           client_type: confidential
           redirect_uris:
             - https://argo.alexnorum.com/api/dex/callback
-          signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
           include_claims_in_id_token: true
           sub_mode: hashed_user_id
           issuer_mode: per_provider
