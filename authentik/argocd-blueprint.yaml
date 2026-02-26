@@ -12,7 +12,7 @@ data:
         blueprints.goauthentik.io/instantiate: "true"
     context:
       argocd_client_id: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0
-      argocd_client_secret: !Env [ARGOCD_OAUTH_CLIENT_SECRET]
+      argocd_client_secret: !Env ARGOCD_OAUTH_CLIENT_SECRET
     entries:
       - model: authentik_providers_oauth2.oauth2provider
         id: argocd-provider
