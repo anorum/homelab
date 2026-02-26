@@ -17,7 +17,7 @@ metadata:
 spec:
   parentRefs:
     - name: homelab-gateway
-      namespace: envoy-gateway-system
+      namespace: traefik
       sectionName: http
   hostnames:
     - grafana.homelab
@@ -47,7 +47,7 @@ metadata:
 spec:
   parentRefs:
     - name: homelab-gateway
-      namespace: envoy-gateway-system
+      namespace: traefik
       sectionName: http
   hostnames:
     - prometheus.homelab
@@ -75,7 +75,7 @@ metadata:
 spec:
   parentRefs:
     - name: homelab-gateway
-      namespace: envoy-gateway-system
+      namespace: traefik
       sectionName: http
   hostnames:
     - alertmanager.homelab
@@ -96,7 +96,7 @@ metadata:
 spec:
   parentRefs:
     - name: homelab-gateway
-      namespace: envoy-gateway-system
+      namespace: traefik
       sectionName: http
   hostnames:
     - thanos.homelab
