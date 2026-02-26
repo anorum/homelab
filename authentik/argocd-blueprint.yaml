@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-blueprint
+  namespace: authentik
+data:
+  argocd.yaml: |
+    version: 1
+    metadata:
+      name: ArgoCD OAuth2 Provider
+      labels:
+        blueprints.goauthentik.io/instantiate: "true"
+    context:
+      argocd_client_id: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0
+      argocd_client_secret: "!Env [ARGOCD_OAUTH_CLIENT_SECRET]"
+    entries:
+      # OAuth2 Provider for ArgoCD
+      - model: authentik_providers_oauth2.oauth2provider
+        id: argocd-provider
+        identifiers:
+          name: ArgoCD
+        attrs:
+          authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+          client_id: "!Context argocd_client_id"
+          client_secret: "!Context argocd_client_secret"
+          client_type: confidential
+          redirect_uris: |
+            https://argo.alexnorum.com/api/dex/callback
+          property_mappings:
+            - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+            - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+            - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+          include_claims_in_id_token: true
+          sub_mode: hashed_user_id
+          issuer_mode: per_provider
+
+      # Application entry for ArgoCD
+      - model: authentik_core.application
+        identifiers:
+          slug: argo-cd
+        attrs:
+          name: ArgoCD
+          provider: !KeyOf argocd-provider
+          meta_launch_url: https://argo.alexnorum.com
+          policy_engine_mode: any
+
+      # ArgoCD Admins Group
+      - model: authentik_core.group
+        identifiers:
+          name: ArgoCD Admins
+        attrs:
+          is_superuser: false
+
+      # ArgoCD Viewers Group
+      - model: authentik_core.group
+        identifiers:
+          name: ArgoCD Viewers
+        attrs:
+          is_superuser: false

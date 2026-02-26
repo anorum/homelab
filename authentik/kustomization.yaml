@@ -5,7 +5,7 @@ namespace: authentik
 resources:
 - namespace.yaml
 - httproute.yaml
-- authentik-provider.yaml
+- argocd-blueprint.yaml
 
 generators:
 - secret-generator.yaml

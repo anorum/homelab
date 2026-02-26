@@ -22,6 +22,10 @@ authentik:
     user: "authentik"
     port: 5432
 
+blueprints:
+  configMaps:
+    - argocd-blueprint
+
 server:
   containerPorts:
     https: 9000
@@ -42,6 +46,11 @@ worker:
   env:
     - name: TMPDIR
       value: /tmp
+    - name: ARGOCD_OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: argocd-oauth-secret
+          key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
   readinessProbe:
