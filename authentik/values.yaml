@@ -24,6 +24,9 @@ authentik:
   secret_key: env://AUTHENTIK_SECRET_KEY
   error_reporting:
     enabled: false
+  # Override the detected URL for browser API calls
+  host: https://sso.alexnorum.com
+  host_browser: https://sso.alexnorum.com
 
   postgresql:
     host: "{{ .Release.Name }}-postgresql"
