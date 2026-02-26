@@ -38,34 +38,23 @@ helmCharts:
             root_url: http://grafana.homelab
       prometheus:
         thanosService:
-          enabled: true
+          enabled: false
         thanosServiceExternal:
-          enabled: true
+          enabled: false
         prometheusSpec:
           replicas: 1
-          alertingEndpoints:
-            - namespace: prometheus
-              name: prometheus-kube-prometheus-alertmanager
-              port: http-web
-              pathPrefix: "/"
+          retention: 7d
           storageSpec:
             volumeClaimTemplate:
               spec:
-                accessModes: [ "ReadWriteOnce" ]
-                storageClassName: local-ssd-storage
+                accessModes: ["ReadWriteOnce"]
+                storageClassName: local-path
                 resources:
                   requests:
-                    storage: 10Gi
+                    storage: 5Gi
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
-          securityContext:
-            runAsNonRoot: false
-            runAsGroup: 0
-            runAsUser: 0
-            fsGroup: 0
         ingress:
-          enabled: false
-        thanosIngress:
           enabled: false
       kubeEtcd:
         enabled: true

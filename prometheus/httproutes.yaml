@@ -87,24 +87,3 @@ spec:
       backendRefs:
         - name: prometheus-kube-prometheus-alertmanager
           port: 9093
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: thanos
-  namespace: prometheus
-spec:
-  parentRefs:
-    - name: homelab-gateway
-      namespace: traefik
-      sectionName: http
-  hostnames:
-    - thanos.homelab
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
-      backendRefs:
-        - name: prometheus-kube-prometheus-thanos-discovery
-          port: 10901
