@@ -16,6 +16,7 @@ data:
     entries:
       # Google OAuth Source - Login only (no auto-enrollment)
       - model: authentik_sources_oauth.oauthsource
+        id: google-source
         state: present
         identifiers:
           slug: google
@@ -35,3 +36,36 @@ data:
           enabled: true
           # User matching - match by email
           user_matching_mode: email_deny
+
+      # Add Google source to the default identification stage
+      - model: authentik_stages_identification.identificationstage
+        state: present
+        identifiers:
+          name: default-authentication-identification
+        attrs:
+          sources:
+            - !KeyOf google-source
+
+      # Admin user - can log in via Google OAuth
+      - model: authentik_core.user
+        state: present
+        identifiers:
+          username: anorum
+        attrs:
+          email: alexandernorum@gmail.com
+          name: Alex Norum
+          is_active: true
+          # Make this user a superuser (full admin access)
+          is_superuser: true
+          # Assign to ArgoCD Admins group
+          groups:
+            - !Find [authentik_core.group, [name, ArgoCD Admins]]
+
+      # Deactivate akadmin to prevent password-based login attacks
+      # This user can be reactivated via database if needed for recovery
+      - model: authentik_core.user
+        state: present
+        identifiers:
+          username: akadmin
+        attrs:
+          is_active: false
