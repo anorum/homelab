@@ -9,12 +9,14 @@ resources:
 
 helmCharts:
   - name: kube-prometheus-stack
-    includeCRDs: true
+    includeCRDs: false
     repo: https://prometheus-community.github.io/helm-charts
     version: 82.2.1
     releaseName: prometheus
     namespace: prometheus
     valuesInline:
+      crds:
+        enabled: false
       grafana:
         enabled: true
         service:
