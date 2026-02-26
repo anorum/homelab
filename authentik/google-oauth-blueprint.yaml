@@ -34,8 +34,8 @@ data:
           policy_engine_mode: any
           # Enable the source
           enabled: true
-          # User matching - match by email
-          user_matching_mode: email_deny
+          # User matching - match by email and auto-link existing users
+          user_matching_mode: email_link
 
       # Add Google source to the default identification stage
       - model: authentik_stages_identification.identificationstage
@@ -55,10 +55,9 @@ data:
           email: alexandernorum@gmail.com
           name: Alex Norum
           is_active: true
-          # Make this user a superuser (full admin access)
-          is_superuser: true
-          # Assign to ArgoCD Admins group
+          # Assign to admin groups (authentik Admins grants superuser via group)
           groups:
+            - !Find [authentik_core.group, [name, authentik Admins]]
             - !Find [authentik_core.group, [name, ArgoCD Admins]]
 
       # Deactivate akadmin to prevent password-based login attacks
