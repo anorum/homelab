@@ -12,13 +12,13 @@ metadata:
   name: hdd-pv
 spec:
   capacity:
-    storage: 12Ti  # Size of your HDD
+    storage: 11Ti
   accessModes:
-    - ReadWriteOnce  # Local storage usually only supports RWO
+    - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-hdd-storage  # Matches the StorageClass
+  storageClassName: local-hdd-storage
   local:
-    path: /mnt/hd  # Path to your mounted HDD
+    path: /mnt/hd
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -26,34 +26,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - cluster  # Replace with the name of your node
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: local-ssd-storage
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
-reclaimPolicy: Retain
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: ssd-pv
-spec:
-  capacity:
-    storage: 2Ti  # Size of your SSD
-  accessModes:
-    - ReadWriteOnce  # Local storage usually only supports RWO
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-ssd-storage  # Matches the StorageClass
-  local:
-    path: /mnt/ssd  # Path to your mounted HDD
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - cluster  # Replace with the name of your node
+          - swagman-2

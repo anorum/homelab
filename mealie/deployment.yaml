@@ -66,12 +66,7 @@ spec:
               value: "true"
             # SQLite specific configuration
             - name: DB_ENGINE
-            # OpenAI
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: openai-mealie-key
-                  key: openai-api-key
+              value: "sqlite"
           volumeMounts:
             - name: mealie-data
               mountPath: /app/data

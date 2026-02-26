@@ -8,9 +8,9 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-ssd-storage
+  storageClassName: local-hdd-storage
   local:
-    path: /mnt/ssd/mealie
+    path: /mnt/hd/mealie
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -18,4 +18,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - cluster
+          - swagman-2
