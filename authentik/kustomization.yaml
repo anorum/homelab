@@ -5,9 +5,11 @@ namespace: authentik
 resources:
 - namespace.yaml
 - httproute.yaml
+- authentik-provider.yaml
 
 generators:
 - secret-generator.yaml
+- argocd-oauth-secret-generator.yaml
 
 helmCharts:
   - name: authentik

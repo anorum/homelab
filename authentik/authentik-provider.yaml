@@ -1,0 +1,64 @@
+---
+# OAuth2 Provider for ArgoCD
+apiVersion: authentik.goauthentik.io/v1alpha1
+kind: OAuth2Provider
+metadata:
+  name: argocd
+  namespace: authentik
+spec:
+  # Display name in Authentik
+  name: ArgoCD
+  # Must match what's configured in ArgoCD dex.config
+  clientId: LBwcFRMLl834aRtkJ1uXD0s0i2AU5VdMKcy5qPv0
+  # Reference to secret containing clientSecret
+  clientSecret:
+    secretName: argocd-oauth-secret
+    key: clientSecret
+  # Dex callback URL
+  redirectUris:
+    signIn: https://argo.alexnorum.com/api/dex/callback
+  # Use implicit consent flow (no extra "authorize" click)
+  authorizationFlow: default-provider-authorization-implicit-consent
+  # Property mappings for OIDC scopes
+  propertyMappings:
+    - authentik default OAuth Mapping: OpenID 'openid'
+    - authentik default OAuth Mapping: OpenID 'email'
+    - authentik default OAuth Mapping: OpenID 'profile'
+    - authentik default OAuth Mapping: OpenID 'groups'
+---
+# Application entry in Authentik
+apiVersion: authentik.goauthentik.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: authentik
+spec:
+  # Display name shown in Authentik app library
+  name: ArgoCD
+  # URL slug - creates issuer at /application/o/argo-cd/
+  slug: argo-cd
+  # Link to the OAuth2 provider
+  provider: argocd
+  # Launch URL for the app library tile
+  metaLaunchUrl: https://argo.alexnorum.com
+  # Optional: icon for the app library
+  metaIcon: https://argo.alexnorum.com/assets/images/logo.png
+  policyEngineMode: any
+---
+# Admin group for ArgoCD
+apiVersion: authentik.goauthentik.io/v1alpha1
+kind: Group
+metadata:
+  name: argocd-admins
+  namespace: authentik
+spec:
+  name: ArgoCD Admins
+---
+# Viewer group for ArgoCD
+apiVersion: authentik.goauthentik.io/v1alpha1
+kind: Group
+metadata:
+  name: argocd-viewers
+  namespace: authentik
+spec:
+  name: ArgoCD Viewers
