@@ -14,6 +14,11 @@ global:
       value: "https://sso.alexnorum.com"
     - name: AUTHENTIK_HOST_BROWSER
       value: "https://sso.alexnorum.com"
+    - name: AUTHENTIK_DISABLE_STARTUP_ANALYTICS
+      value: "true"
+    # Trust X-Forwarded headers from proxy
+    - name: AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS
+      value: "0.0.0.0/0"
 
 authentik:
   secret_key: env://AUTHENTIK_SECRET_KEY
