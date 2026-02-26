@@ -14,13 +14,16 @@ spec:
             secretName: sops-age-key
       initContainers:
         - name: install-ksops
-          image: viaductoss/ksops:v4.4.0
+          image: alpine:3.19
           command: ["/bin/sh", "-c"]
           args:
-            - echo "Installing KSOPS...";
-              mv /usr/local/bin/ksops /custom-tools/ksops;
-              mv /usr/local/bin/kustomize /custom-tools/kustomize;
-              echo "Done.";
+            - |
+              set -e
+              echo "Installing KSOPS and Kustomize..."
+              wget -qO- https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_arm64.tar.gz | tar xz -C /custom-tools
+              wget -qO- https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_arm64.tar.gz | tar xz -C /custom-tools
+              chmod +x /custom-tools/*
+              echo "Done."
           volumeMounts:
             - mountPath: /custom-tools
               name: custom-tools
