@@ -10,6 +10,10 @@ global:
         secretKeyRef:
           name: authentik-secrets
           key: postgresql-password
+    - name: AUTHENTIK_HOST
+      value: "https://sso.alexnorum.com"
+    - name: AUTHENTIK_HOST_BROWSER
+      value: "https://sso.alexnorum.com"
 
 authentik:
   secret_key: env://AUTHENTIK_SECRET_KEY
