@@ -8,11 +8,13 @@ resources:
 - argocd-blueprint.yaml
 - google-oauth-blueprint.yaml
 - forward-auth-blueprint.yaml
+- grafana-blueprint.yaml
 
 generators:
 - secret-generator.yaml
 - argocd-oauth-secret-generator.yaml
 - google-oauth-secret-generator.yaml
+- grafana-oauth-secret-generator.yaml
 
 helmCharts:
   - name: authentik

@@ -39,6 +39,7 @@ blueprints:
     - argocd-blueprint
     - google-oauth-blueprint
     - forward-auth-blueprint
+    - grafana-blueprint
 
 server:
   containerPorts:
@@ -74,6 +75,11 @@ worker:
       valueFrom:
         secretKeyRef:
           name: google-oauth-secret
+          key: clientSecret
+    - name: GRAFANA_OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: grafana-oauth-secret
           key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
