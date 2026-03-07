@@ -89,24 +89,6 @@ worker:
       cpu: 100m
       memory: 512Mi
 
-redis:
-  enabled: true
-  architecture: standalone
-  image:
-    registry: docker.io
-    repository: library/redis
-    tag: "8.0-bookworm"
-  auth:
-    enabled: false
-  master:
-    resources:
-      limits:
-        cpu: 250m
-        memory: 128Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
-
 postgresql:
   enabled: true
   image:
