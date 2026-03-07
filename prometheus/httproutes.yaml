@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentik-proxy
+  namespace: prometheus
+spec:
+  type: ExternalName
+  externalName: authentik-server.authentik.svc.cluster.local
+  ports:
+    - port: 80
+      protocol: TCP
+---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -38,6 +50,14 @@ spec:
   hostnames:
     - grafana.homelab
   rules:
+    # Outpost callback must bypass forward auth to avoid loop
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /outpost.goauthentik.io/
+      backendRefs:
+        - name: authentik-proxy
+          port: 80
     - matches:
         - path:
             type: PathPrefix
@@ -77,6 +97,13 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /outpost.goauthentik.io/
+      backendRefs:
+        - name: authentik-proxy
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
             value: /
       filters:
         - type: ExtensionRef
@@ -108,6 +135,13 @@ spec:
   hostnames:
     - alertmanager.homelab
   rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /outpost.goauthentik.io/
+      backendRefs:
+        - name: authentik-proxy
+          port: 80
     - matches:
         - path:
             type: PathPrefix
