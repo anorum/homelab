@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: loki
+
+resources:
+  - namespace.yaml
+  - pv.yaml
+  - pvc.yaml
+  - httproute.yaml
+
+helmCharts:
+  - name: loki
+    repo: https://grafana.github.io/helm-charts
+    version: 6.53.0
+    releaseName: loki
+    namespace: loki
+    valuesFile: values.yaml
+
+  - name: promtail
+    repo: https://grafana.github.io/helm-charts
+    version: 6.17.1
+    releaseName: promtail
+    namespace: loki
+    valuesInline:
+      config:
+        clients:
+          - url: http://loki:3100/loki/api/v1/push
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
+labels:
+- pairs:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki

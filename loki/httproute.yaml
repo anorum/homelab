@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: loki
+  namespace: loki
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Loki"
+    gethomepage.dev/description: "Log Aggregation"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "loki"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: traefik
+      sectionName: web
+  hostnames:
+    - loki.homelab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: loki
+          port: 3100
