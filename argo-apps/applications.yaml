@@ -12,6 +12,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: adguard
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -27,6 +31,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: uptime-kuma
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -42,6 +50,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: cloudflared
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -57,6 +69,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: metallb
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -72,6 +88,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -116,6 +136,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: homepage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -131,6 +155,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -146,6 +174,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: mealie
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -161,6 +193,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: loki
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -176,6 +212,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: ollama
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -191,3 +231,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: open-webui
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
