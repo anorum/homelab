@@ -35,8 +35,8 @@ spec:
       namespace: traefik
       sectionName: web
   hostnames:
-    - uptime.homelab
-    - status.homelab
+    - uptime.home.alexnorum.com
+    - status.home.alexnorum.com
     - status.alexnorum.com
   rules:
     - matches:

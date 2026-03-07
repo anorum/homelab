@@ -16,7 +16,7 @@ spec:
       sectionName: web
   hostnames:
     - mealie.alexnorum.com
-    - mealie.homelab
+    - mealie.home.alexnorum.com
   rules:
     - matches:
         - path:

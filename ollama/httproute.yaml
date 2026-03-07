@@ -15,7 +15,7 @@ spec:
       namespace: traefik
       sectionName: web
   hostnames:
-    - ollama.homelab
+    - ollama.home.alexnorum.com
   rules:
     - matches:
         - path:

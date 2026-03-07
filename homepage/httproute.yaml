@@ -15,7 +15,7 @@ spec:
       namespace: traefik
       sectionName: web
   hostnames:
-    - homelab
+    - home.alexnorum.com
   rules:
     - matches:
         - path:

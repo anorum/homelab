@@ -11,7 +11,7 @@ data:
       labels:
         blueprints.goauthentik.io/instantiate: "true"
     entries:
-      # Proxy Provider in forward_domain mode for *.homelab
+      # Proxy Provider in forward_domain mode for *.home.alexnorum.com
       - model: authentik_providers_proxy.proxyprovider
         id: homelab-forward-auth-provider
         state: present
@@ -21,8 +21,8 @@ data:
           authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
           invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
           mode: forward_domain
-          cookie_domain: homelab
-          external_host: http://grafana.homelab
+          cookie_domain: home.alexnorum.com
+          external_host: http://grafana.home.alexnorum.com
           access_token_validity: hours=24
 
       # Application linked to the proxy provider
@@ -33,5 +33,5 @@ data:
         attrs:
           name: Homelab Internal
           provider: !KeyOf homelab-forward-auth-provider
-          meta_launch_url: http://grafana.homelab
+          meta_launch_url: http://grafana.home.alexnorum.com
           policy_engine_mode: any

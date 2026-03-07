@@ -38,7 +38,7 @@ spec:
       kind: Gateway
       sectionName: web
   hostnames:
-    - grafana.homelab
+    - grafana.home.alexnorum.com
   rules:
     - matches:
         - path:
@@ -79,7 +79,7 @@ spec:
       kind: Gateway
       sectionName: web
   hostnames:
-    - prometheus.homelab
+    - prometheus.home.alexnorum.com
   rules:
     - matches:
         - path:
@@ -118,7 +118,7 @@ spec:
       kind: Gateway
       sectionName: web
   hostnames:
-    - alertmanager.homelab
+    - alertmanager.home.alexnorum.com
   rules:
     - matches:
         - path:

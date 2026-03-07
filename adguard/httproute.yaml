@@ -35,7 +35,7 @@ spec:
       namespace: traefik
       sectionName: web
   hostnames:
-    - adguard.homelab
+    - adguard.home.alexnorum.com
   rules:
     - matches:
         - path:

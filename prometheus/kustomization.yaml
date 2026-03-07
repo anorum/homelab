@@ -45,7 +45,7 @@ helmCharts:
             isDefault: false
         grafana.ini:
           server:
-            root_url: http://grafana.homelab
+            root_url: http://grafana.home.alexnorum.com
       prometheus:
         thanosService:
           enabled: false

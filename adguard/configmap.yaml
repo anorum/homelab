@@ -155,9 +155,9 @@ data:
       parental_block_host: family-block.dns.adguard.com
       safebrowsing_block_host: standard-block.dns.adguard.com
       rewrites:
-        - domain: '*.homelab'
+        - domain: '*.home.alexnorum.com'
           answer: 192.168.1.151
-        - domain: homelab
+        - domain: home.alexnorum.com
           answer: 192.168.1.151
       safe_fs_patterns:
         - /opt/adguardhome/work/userfilters/*
