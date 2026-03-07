@@ -34,6 +34,8 @@ spec:
   parentRefs:
     - name: homelab-gateway
       namespace: traefik
+      group: gateway.networking.k8s.io
+      kind: Gateway
       sectionName: web
   hostnames:
     - grafana.homelab
@@ -70,6 +72,8 @@ spec:
   parentRefs:
     - name: homelab-gateway
       namespace: traefik
+      group: gateway.networking.k8s.io
+      kind: Gateway
       sectionName: web
   hostnames:
     - prometheus.homelab
@@ -104,6 +108,8 @@ spec:
   parentRefs:
     - name: homelab-gateway
       namespace: traefik
+      group: gateway.networking.k8s.io
+      kind: Gateway
       sectionName: web
   hostnames:
     - alertmanager.homelab
