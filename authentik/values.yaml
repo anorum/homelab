@@ -38,6 +38,7 @@ blueprints:
   configMaps:
     - argocd-blueprint
     - google-oauth-blueprint
+    - forward-auth-blueprint
 
 server:
   containerPorts:
