@@ -104,6 +104,9 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - [ ] Implement network policies for enhanced security
 - [x] Set up Tailscale for remote access (subnet router on both Pis)
 - [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
+- [ ] HomeKit Bridge for Siri device control
+- [ ] Spotify integration via Music Assistant
+- [ ] Voice satellite hardware (Pi Zero 2W + ReSpeaker)
 
 ## Not Currently Used
 Components in `not_in_use/` kept for reference:
