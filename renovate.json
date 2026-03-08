@@ -46,5 +46,8 @@
   ],
   "ignoreDeps": [
     "alpine"
+  ],
+  "ignorePaths": [
+    "not_in_use/**"
   ]
 }
