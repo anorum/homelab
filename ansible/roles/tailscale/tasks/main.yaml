@@ -1,0 +1,39 @@
+---
+- name: Add Tailscale GPG key
+  get_url:
+    url: https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+
+- name: Add Tailscale apt repository
+  copy:
+    content: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bookworm main\n"
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: "0644"
+
+- name: Install Tailscale
+  apt:
+    name: tailscale
+    state: present
+    update_cache: yes
+
+- name: Enable and start tailscaled
+  systemd:
+    name: tailscaled
+    state: started
+    enabled: yes
+
+- name: Check Tailscale status
+  command: tailscale status
+  register: ts_status
+  changed_when: false
+  failed_when: false
+
+- name: Display auth instructions
+  debug:
+    msg: >-
+      Tailscale is installed but not authenticated.
+      Run manually on each node:
+      sudo tailscale up --advertise-routes=192.168.1.0/24 --accept-dns=false
+      Then approve subnet routes in Tailscale admin console.
+  when: ts_status.rc != 0

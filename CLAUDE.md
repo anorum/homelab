@@ -17,6 +17,7 @@
 - **Gateway API**: All services use HTTPRoute (NOT Ingress). Routes reference `parentRefs: [{name: homelab-gateway, namespace: traefik, sectionName: web}]`
 - **Cloudflared**: Tunnel for external access via Cloudflare
 - **DNS**: AdGuard (192.168.1.150) with `*.home.alexnorum.com` wildcard rewrite to 192.168.1.151
+- **Tailscale**: Subnet router on both Pis, advertises 192.168.1.0/24 for remote access
 - **External access**: sso.alexnorum.com and argo.alexnorum.com via Cloudflare Tunnel
 
 ### Authentication

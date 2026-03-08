@@ -1,0 +1,5 @@
+- name: Install Tailscale on all nodes
+  hosts: all
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/tailscale/tasks/main.yaml"
