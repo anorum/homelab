@@ -6,8 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: prometheus
-    prometheus: kube-prometheus
-    role: alert-rules
+    release: prometheus
 spec:
   groups:
     - name: homelab-node-health
