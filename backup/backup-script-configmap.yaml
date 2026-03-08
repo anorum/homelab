@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-script
+  namespace: backup
+data:
+  backup.sh: |
+    #!/bin/sh
+    set -euo pipefail
+
+    DATE=$(date +%Y-%m-%d)
+    BUCKET="anorum-homelab"
+    BACKUP_PREFIX="backups"
+
+    echo "=== Homelab Backup - $DATE ==="
+
+    # --- Mealie backup ---
+    echo "Backing up Mealie data..."
+    aws s3 sync /mnt/hd/mealie/ "s3://$BUCKET/$BACKUP_PREFIX/mealie/" \
+      --delete \
+      --region "$AWS_DEFAULT_REGION"
+    echo "Mealie backup complete."
+
+    # --- Authentik PostgreSQL backup ---
+    echo "Backing up Authentik database..."
+    kubectl exec -n authentik authentik-postgresql-0 -- \
+      sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U authentik -d authentik' \
+      | aws s3 cp - "s3://$BUCKET/$BACKUP_PREFIX/authentik/$DATE.sql" \
+        --region "$AWS_DEFAULT_REGION"
+    echo "Authentik backup complete."
+
+    # --- Cleanup old Authentik backups (keep 7 days) ---
+    echo "Cleaning up old Authentik backups..."
+    CUTOFF_DATE=$(date -d "-7 days" +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d)
+    aws s3 ls "s3://$BUCKET/$BACKUP_PREFIX/authentik/" --region "$AWS_DEFAULT_REGION" \
+      | awk '{print $4}' \
+      | while read -r file; do
+          file_date=$(echo "$file" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          if [ -n "$file_date" ] && [ "$file_date" \< "$CUTOFF_DATE" ]; then
+            echo "Deleting old backup: $file"
+            aws s3 rm "s3://$BUCKET/$BACKUP_PREFIX/authentik/$file" --region "$AWS_DEFAULT_REGION"
+          fi
+        done
+    echo "Cleanup complete."
+
+    echo "=== All backups completed successfully ==="

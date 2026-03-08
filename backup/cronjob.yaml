@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: homelab-backup
+  namespace: backup
+spec:
+  schedule: "0 3 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: backup-sa
+          nodeSelector:
+            kubernetes.io/hostname: swagman-2
+          restartPolicy: Never
+          containers:
+            - name: backup
+              image: alpine:3.21
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  apk add --no-cache aws-cli kubectl bash &&
+                  /scripts/backup.sh
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-aws-credentials
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-aws-credentials
+                      key: aws-secret-access-key
+                - name: AWS_DEFAULT_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-aws-credentials
+                      key: aws-region
+              volumeMounts:
+                - name: backup-script
+                  mountPath: /scripts
+                - name: mealie-data
+                  mountPath: /mnt/hd/mealie
+                  readOnly: true
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+          volumes:
+            - name: backup-script
+              configMap:
+                name: backup-script
+                defaultMode: 0755
+            - name: mealie-data
+              hostPath:
+                path: /mnt/hd/mealie
+                type: Directory

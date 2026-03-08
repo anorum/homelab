@@ -84,7 +84,7 @@ Worst case for data — all HDD data is lost.
 2. Join cluster (same as Scenario B)
 3. ArgoCD syncs all apps (they'll start with empty data)
 4. Restore from backup:
-   - Mealie: restore from Mac Mini backup (`/backups/homelab/mealie/`)
+   - Mealie: `aws s3 sync s3://anorum-homelab/backups/mealie/ /mnt/hd/mealie/`
    - Loki: starts fresh (acceptable — logs are ephemeral)
 5. Authentik may need reconfiguration if its PVC was also on swagman-2
 
@@ -116,7 +116,7 @@ Full rebuild.
 3. Clone repo: `git clone git@github.com:anorum/homelab.git`
 4. Restore age key from password manager to `~/.config/sops/age/keys.txt`
 5. Run ansible + bootstrap (same as Scenario D)
-6. Restore data from Mac Mini backups
+6. Restore data from S3: `aws s3 sync s3://anorum-homelab/backups/ /tmp/restore/`
 7. Reconfigure Authentik (create admin user, re-apply blueprints)
 8. Update Cloudflare Tunnel config if IPs changed
 
@@ -124,52 +124,57 @@ Full rebuild.
 
 ## Backup Strategy
 
-### Automated: Mac Mini daily backup (launchd)
+### Automated: S3 daily backup (k8s CronJob)
 
-The Mac Mini runs `scripts/backup-to-mac.sh` daily at 3 AM via launchd.
+A k8s CronJob (`homelab-backup` in `backup` namespace) runs daily at 3 AM, managed by ArgoCD.
 
 **What gets backed up:**
-- Mealie data (`rsync` from swagman-2:/mnt/hd/mealie/)
-- Authentik PostgreSQL dump (`pg_dump` via kubectl exec)
+- Mealie data (`aws s3 sync` from hostPath `/mnt/hd/mealie` on swagman-2)
+- Authentik PostgreSQL dump (`pg_dump` via `kubectl exec`, uploaded to S3)
 
-**Backup location:** `~/backups/homelab/YYYY-MM-DD/`
-**Retention:** 7 daily backups
-**Log:** `~/backups/homelab/backup.log`
+**S3 bucket:** `s3://anorum-homelab/backups/`
+- `backups/mealie/` — full sync of Mealie data
+- `backups/authentik/YYYY-MM-DD.sql` — daily pg dumps
 
-**launchd plist:** `~/Library/LaunchAgents/com.homelab.backup.plist`
+**Retention:** Mealie is a live sync. Authentik keeps 7 daily dumps.
 
-**Manual run:**
+**AWS credentials:** IAM user `homelab-backup` managed by Terragrunt/OpenTofu in `terraform/homelab/`. Credentials stored as a SOPS-encrypted k8s Secret.
+
+**Manual trigger:**
 ```bash
-./scripts/backup-to-mac.sh
+kubectl create job --from=cronjob/homelab-backup -n backup manual-backup-$(date +%s)
 ```
 
-**Manage schedule:**
+**Check backup logs:**
 ```bash
-# Check status
-launchctl list | grep homelab
-
-# Reload after editing plist
-launchctl unload ~/Library/LaunchAgents/com.homelab.backup.plist
-launchctl load ~/Library/LaunchAgents/com.homelab.backup.plist
+kubectl logs -n backup -l job-name --tail=100
 ```
 
-### Restoring from Backup
+**Check S3 contents:**
+```bash
+aws s3 ls s3://anorum-homelab/backups/mealie/ --summarize
+aws s3 ls s3://anorum-homelab/backups/authentik/
+```
+
+### Restoring from S3 Backup
 
 **Mealie:**
 ```bash
-# Find latest backup
-ls ~/backups/homelab/
-# Rsync back to swagman-2
-rsync -avz ~/backups/homelab/YYYY-MM-DD/mealie/ anorum@192.168.1.102:/mnt/hd/mealie/
+# Sync data back from S3 to swagman-2
+aws s3 sync s3://anorum-homelab/backups/mealie/ /mnt/hd/mealie/
+# Or from a remote machine:
+ssh -i ~/.ssh/rpi_key anorum@192.168.1.102 "aws s3 sync s3://anorum-homelab/backups/mealie/ /mnt/hd/mealie/"
 ```
 
 **Authentik PostgreSQL:**
 ```bash
-# Copy SQL dump to the pod and restore
-cat ~/backups/homelab/YYYY-MM-DD/authentik-db.sql | \
-  ssh -i ~/.ssh/rpi_key anorum@192.168.1.101 \
-  "sudo kubectl exec -i -n authentik authentik-postgresql-0 -- \
-  bash -c 'PGPASSWORD=\$(cat /opt/bitnami/postgresql/secrets/postgresql-password) psql -U authentik authentik'"
+# Download the latest dump
+aws s3 cp s3://anorum-homelab/backups/authentik/YYYY-MM-DD.sql /tmp/authentik-restore.sql
+
+# Restore into the pod
+cat /tmp/authentik-restore.sql | \
+  kubectl exec -i -n authentik authentik-postgresql-0 -- \
+  bash -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U authentik authentik'
 ```
 
 ## Testing Recovery
@@ -178,5 +183,5 @@ Periodically verify:
 1. Age key can decrypt secrets: `sops -d authentik/secret.enc.yaml`
 2. SSH key works: `ssh -i ~/.ssh/rpi_key anorum@192.168.1.101`
 3. Bootstrap script is up to date with current apps
-4. Backup files on Mac Mini are recent and non-empty: `ls -la ~/backups/homelab/`
-5. Backup log shows no errors: `tail ~/backups/homelab/backup.log`
+4. S3 backups are recent: `aws s3 ls s3://anorum-homelab/backups/authentik/`
+5. CronJob is running: `kubectl get cronjobs -n backup`
