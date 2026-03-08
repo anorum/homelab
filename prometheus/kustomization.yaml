@@ -183,8 +183,3 @@ patches:
       kind: StatefulSet
       name: prometheus-kube-prometheus-prometheus
       namespace: prometheus
-
-labels:
-- pairs:
-    app.kubernetes.io/name: prometheus
-    app.kubernetes.io/instance: prometheus
