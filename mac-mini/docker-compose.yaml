@@ -24,6 +24,14 @@ services:
       - piper-data:/data
     command: --voice en_US-lessac-medium
 
+  wyoming-openwakeword:
+    image: rhasspy/wyoming-openwakeword
+    container_name: wyoming-openwakeword
+    restart: unless-stopped
+    ports:
+      - "10400:10400"
+    command: --preload-model "hey_jarvis"
+
 volumes:
   whisper-data:
   piper-data:
