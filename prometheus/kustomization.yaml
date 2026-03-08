@@ -6,6 +6,7 @@ namespace: prometheus
 resources:
   - namespace.yaml
   - httproutes.yaml
+  - homelab-rules.yaml
 
 generators:
   - discord-webhook-secret-generator.yaml
@@ -125,6 +126,17 @@ helmCharts:
               - receiver: "null"
                 matchers:
                   - alertname = "InfoInhibitor"
+              # k3s embeds these components — metrics not exposed, alerts always fire
+              - receiver: "null"
+                matchers:
+                  - alertname =~ "KubeSchedulerDown|KubeControllerManagerDown|KubeProxyDown"
+              - receiver: "null"
+                matchers:
+                  - alertname =~ "etcd.*"
+              # Not useful for a 2-node homelab
+              - receiver: "null"
+                matchers:
+                  - alertname =~ "KubeMemoryOvercommit|KubeCPUOvercommit"
           receivers:
             - name: "null"
             - name: "discord"

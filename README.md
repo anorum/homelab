@@ -1,37 +1,34 @@
 # Home Lab Kubernetes Cluster
 
-My personal Kubernetes cluster running on Raspberry Pi. This repository contains the configuration and deployment files for various services running in my homelab.
+My personal Kubernetes cluster running on Raspberry Pi 5. This repository contains the configuration and deployment files for various services running in my homelab.
 
 ## Overview
 
-This is a k3s-based Kubernetes cluster running on Raspberry Pi hardware. The cluster is managed using GitOps principles with Argo CD, and the initial setup is automated using Ansible.
+This is a k3s-based Kubernetes cluster running on Raspberry Pi 5 hardware managed via GitOps with Argo CD. Everything is defined as code — push to `main` and ArgoCD syncs the cluster automatically.
+
+See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
 
 ## Core Components
 
 ### Infrastructure
-- **k3s**: Lightweight Kubernetes distribution
-- **MetalLB**: Load balancer for bare metal Kubernetes
-- **Nginx Ingress**: Ingress controller for handling external access
-- **Cert-Manager**: Automatic SSL certificate management
+- **k3s**: Lightweight Kubernetes distribution (2 nodes)
+- **MetalLB**: L2 load balancer for bare metal Kubernetes
+- **Traefik**: Ingress via Gateway API (HTTPRoute)
 - **Cloudflared**: Cloudflare tunnel for secure external access
-- **Sealed Secrets**: Secure management of Kubernetes secrets
-- **Argo Apps**: Application management with GitOps
+- **SOPS + Age**: Secret encryption with KSOPS generators
+- **Argo CD**: GitOps app-of-apps pattern with auto-sync
 
 ### Applications
-- **Argo CD**: GitOps continuous delivery tool
-- **Prometheus**: Metrics collection and monitoring
+- **Prometheus + Grafana**: Metrics, dashboards, and alerting (Discord)
+- **Loki + Promtail**: Log aggregation
+- **Alertmanager**: Alert routing to Discord
 - **Uptime Kuma**: Uptime monitoring
-- **AdGuard**: Network-wide ad blocking and DNS filtering
-- **Home Assistant**: Home automation platform
-- **Jellyfin**: Media server with various supporting applications
-  - Jellyseerr, Radarr, Sonarr, Readarr, Prowlarr, Qbittorrent, Kavita, Audiobookshelf, Flaresolverr
+- **AdGuard**: Network-wide DNS filtering
 - **Mealie**: Recipe management and meal planning
-- **Authentik**: Identity provider and SSO solution
-- **Homepage**: Dashboard for services and applications
-- **Ollama**: Self-hosted AI model server
-- **Alex-API**: Custom API service
-- **Marabot**: Custom bot application
-- **Airflow**: Workflow automation and scheduling
+- **Authentik**: Identity provider and SSO (OAuth/OIDC for Grafana, ArgoCD)
+- **Homepage**: Dashboard for services
+- **Ollama**: Self-hosted AI model server (runs on Mac Mini)
+- **Open WebUI**: Chat interface for Ollama
 
 ## Installation
 
@@ -52,27 +49,24 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 ```
 .
 ├── adguard/            # AdGuard DNS configuration
-├── airflow/            # Apache Airflow workflow automation
-├── alex-api/           # Custom API service
-├── ansible/            # Ansible playbooks and roles
-├── argo-apps/          # Argo CD applications
-├── argo-cd/            # Argo CD configuration
-├── authentik/          # Identity provider and SSO
-├── cert-manager/       # Certificate management
+├── ansible/            # Ansible playbooks and roles for k3s setup
+├── argo-apps/          # ArgoCD Application definitions (app-of-apps)
+├── argo-cd/            # ArgoCD configuration, OIDC, KSOPS
+├── authentik/          # Identity provider, SSO, OAuth blueprints
 ├── cloudflared/        # Cloudflare tunnel setup
-├── home-assistant/     # Home automation platform
+├── docs/               # Disaster recovery and operational docs
 ├── homepage/           # Dashboard for services
-├── ingress-nginx/      # Nginx ingress controller
-├── jellyfin/           # Media server and related apps
-├── marabot/            # Custom bot application
+├── loki/               # Log aggregation (Loki + Promtail)
 ├── mealie/             # Recipe management system
-├── metallb/            # MetalLB configuration
-├── not_in_use/         # Components not currently active
-├── ollama/             # Self-hosted AI model server
-├── prometheus/         # Monitoring setup
-├── sealed-secrets/     # Secure secrets management
-├── storage/            # Storage configuration
-└── uptime-kuma/        # Uptime monitoring
+├── metallb/            # MetalLB L2 load balancer
+├── ollama/             # Ollama external service (Mac Mini)
+├── open-webui/         # Chat UI for Ollama
+├── prometheus/         # Monitoring (Prometheus, Grafana, Alertmanager)
+├── scripts/            # Bootstrap and utility scripts
+├── storage/            # StorageClass and PV for 12TB HDD
+├── traefik/            # Traefik + Gateway API
+├── uptime-kuma/        # Uptime monitoring
+└── not_in_use/         # Deprecated components (kept for reference)
 ```
 
 ## Notes to Self
@@ -104,27 +98,25 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 6. Review events: `kubectl get events -A --sort-by='.lastTimestamp'`
 
 ### Future Improvements
-- [ ] Implement backup solution
-- [ ] Add monitoring dashboards
-- [ ] Configure alerting
-- [ ] Document disaster recovery procedures
+- [x] Add monitoring dashboards (Grafana + kube-prometheus-stack)
+- [x] Configure alerting (Alertmanager → Discord, custom homelab rules)
+- [x] Document disaster recovery procedures ([docs/disaster-recovery.md](docs/disaster-recovery.md))
+- [ ] Implement automated backup solution (rsync to Mac Mini)
 - [ ] Implement network policies for enhanced security
-- [ ] Set up automated updates for applications
+- [ ] Set up Tailscale for remote access
+- [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
 
 ## Not Currently Used
-Some components are kept for reference but not actively used:
-- Kubernetes Dashboard
-- CoreDNS custom configuration
-- PiHole (replaced by AdGuard)
-- External DNS
-- External Secrets
-- Registry
-- Plex (replaced by Jellyfin)
+Components in `not_in_use/` kept for reference:
+- Jellyfin, Plex (media servers)
+- Airflow, Home Assistant
+- Cert-Manager, External DNS, External Secrets
+- Sealed Secrets (replaced by SOPS + Age)
+- Kubernetes Dashboard, PiHole, and others
 
 ## Security Notes
 - Cluster is accessible via Cloudflare Tunnel only
 - No direct external ports exposed
-- SSL certificates managed automatically
-- Network policies should be reviewed periodically
-- Secrets are encrypted using Sealed Secrets
-- Authentication is centralized with Authentik
+- Secrets are encrypted with SOPS + Age (repo is public)
+- Authentication centralized with Authentik (SSO/OIDC)
+- Forward auth on sensitive services (Prometheus, Alertmanager)

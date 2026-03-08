@@ -1,0 +1,109 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-rules
+  namespace: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: prometheus
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: homelab-node-health
+      rules:
+        - alert: HomelabNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} is not ready"
+            description: "Node {{ $labels.node }} has been in a not-ready state for more than 5 minutes."
+
+        - alert: HomelabHighCpuUsage
+          expr: (1 - avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.instance }}"
+            description: "CPU usage on {{ $labels.instance }} has been above 85% for 10 minutes. Current value: {{ $value | humanizePercentage }}"
+
+        - alert: HomelabHighMemoryUsage
+          expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage on {{ $labels.instance }}"
+            description: "Memory usage on {{ $labels.instance }} has been above 85% for 10 minutes. Current value: {{ $value | humanizePercentage }}"
+
+    - name: homelab-disk
+      rules:
+        - alert: HomelabHddUsageWarning
+          expr: (1 - node_filesystem_avail_bytes{mountpoint="/mnt/hd"} / node_filesystem_size_bytes{mountpoint="/mnt/hd"}) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "12TB HDD usage above 80%"
+            description: "HDD at /mnt/hd on swagman-2 is {{ $value | humanizePercentage }} full."
+
+        - alert: HomelabHddUsageCritical
+          expr: (1 - node_filesystem_avail_bytes{mountpoint="/mnt/hd"} / node_filesystem_size_bytes{mountpoint="/mnt/hd"}) > 0.90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "12TB HDD usage above 90%"
+            description: "HDD at /mnt/hd on swagman-2 is {{ $value | humanizePercentage }} full. Immediate attention required."
+
+        - alert: HomelabRootDiskUsageWarning
+          expr: (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="tmpfs"}) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Root disk usage above 80% on {{ $labels.instance }}"
+            description: "Root filesystem on {{ $labels.instance }} is {{ $value | humanizePercentage }} full."
+
+    - name: homelab-pods
+      rules:
+        - alert: HomelabPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+            description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times in the last hour."
+
+        - alert: HomelabPodNotReady
+          expr: kube_pod_status_ready{condition="true",namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a not-ready state for more than 10 minutes."
+
+    - name: homelab-services
+      rules:
+        - alert: HomelabArgoOutOfSync
+          expr: argocd_app_info{sync_status!="Synced"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} is out of sync"
+            description: "ArgoCD application {{ $labels.name }} has been out of sync for more than 15 minutes. Sync status: {{ $labels.sync_status }}"
+
+        - alert: HomelabArgoDegraded
+          expr: argocd_app_info{health_status=~"Degraded|Missing"} == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
+            description: "ArgoCD application {{ $labels.name }} has been {{ $labels.health_status }} for more than 10 minutes."
