@@ -1,0 +1,62 @@
+version: '3'
+
+dotenv: ['.env']
+
+vars:
+  OLLAMA_HOST: http://192.168.1.105:11434
+  OPEN_WEBUI_URL: http://chat.home.alexnorum.com
+
+tasks:
+  ollama:create-jarvis:
+    desc: Create/update the Jarvis model on Ollama from system prompt
+    cmds:
+      - |
+        python3 -c "
+        import json, sys
+        with open('open-webui/jarvis-modelfile.txt') as f:
+            system = f.read()
+        print(json.dumps({
+            'model': 'jarvis',
+            'from': 'qwen2.5:7b',
+            'system': system,
+            'parameters': {'temperature': 0.7, 'num_ctx': 4096}
+        }))
+        " | curl -s {{.OLLAMA_HOST}}/api/create -d @- | python3 -c "
+        import sys, json
+        for line in sys.stdin:
+            data = json.loads(line)
+            print(data.get('status', ''))
+        "
+    sources:
+      - open-webui/jarvis-modelfile.txt
+
+  ollama:list:
+    desc: List all Ollama models
+    cmds:
+      - curl -s {{.OLLAMA_HOST}}/api/tags | python3 -c "import sys,json; [print(f\"  {m['name']:30s} {m['details']['parameter_size']}\") for m in json.load(sys.stdin)['models']]"
+
+  openwebui:deploy-tools:
+    desc: Deploy all Open WebUI tools via API
+    cmds:
+      - uv run open-webui/tools/deploy.py
+    env:
+      OPEN_WEBUI_URL: "{{.OPEN_WEBUI_URL}}"
+    sources:
+      - open-webui/tools/*.py
+
+  openwebui:list-tools:
+    desc: List installed Open WebUI tools
+    cmds:
+      - |
+        curl -s {{.OPEN_WEBUI_URL}}/api/v1/tools/ \
+          -H "Authorization: Bearer $OPEN_WEBUI_API_KEY" \
+          | python3 -c "
+        import sys, json
+        tools = json.load(sys.stdin)
+        if not tools:
+            print('  No tools installed.')
+        else:
+            for t in tools:
+                meta = t.get('meta', {}).get('manifest', {})
+                print(f\"  {t['id']:30s} v{meta.get('version', '?'):8s} {meta.get('description', '')}\")
+        "

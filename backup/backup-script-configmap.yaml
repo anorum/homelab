@@ -29,18 +29,29 @@ data:
         --region "$AWS_DEFAULT_REGION"
     echo "Authentik backup complete."
 
-    # --- Cleanup old Authentik backups (keep 7 days) ---
-    echo "Cleaning up old Authentik backups..."
+    # --- Open WebUI SQLite backup ---
+    echo "Backing up Open WebUI database..."
+    OW_POD=$(kubectl get pod -n open-webui -l app=open-webui -o jsonpath='{.items[0].metadata.name}')
+    kubectl cp "open-webui/$OW_POD:/app/backend/data/webui.db" /tmp/webui.db
+    aws s3 cp /tmp/webui.db "s3://$BUCKET/$BACKUP_PREFIX/open-webui/$DATE.db" \
+      --region "$AWS_DEFAULT_REGION"
+    rm -f /tmp/webui.db
+    echo "Open WebUI backup complete."
+
+    # --- Cleanup old backups (keep 7 days) ---
+    echo "Cleaning up old backups..."
     CUTOFF_DATE=$(date -d "-7 days" +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d)
-    aws s3 ls "s3://$BUCKET/$BACKUP_PREFIX/authentik/" --region "$AWS_DEFAULT_REGION" \
-      | awk '{print $4}' \
-      | while read -r file; do
-          file_date=$(echo "$file" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
-          if [ -n "$file_date" ] && [ "$file_date" \< "$CUTOFF_DATE" ]; then
-            echo "Deleting old backup: $file"
-            aws s3 rm "s3://$BUCKET/$BACKUP_PREFIX/authentik/$file" --region "$AWS_DEFAULT_REGION"
-          fi
-        done
+    for prefix in authentik open-webui; do
+      aws s3 ls "s3://$BUCKET/$BACKUP_PREFIX/$prefix/" --region "$AWS_DEFAULT_REGION" \
+        | awk '{print $4}' \
+        | while read -r file; do
+            file_date=$(echo "$file" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            if [ -n "$file_date" ] && [ "$file_date" \< "$CUTOFF_DATE" ]; then
+              echo "Deleting old backup: $prefix/$file"
+              aws s3 rm "s3://$BUCKET/$BACKUP_PREFIX/$prefix/$file" --region "$AWS_DEFAULT_REGION"
+            fi
+          done
+    done
     echo "Cleanup complete."
 
     echo "=== All backups completed successfully ==="
