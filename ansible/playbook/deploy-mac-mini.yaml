@@ -1,0 +1,27 @@
+- name: Deploy Docker Compose services on Mac Mini
+  hosts: mac_mini
+  gather_facts: false
+  vars:
+    compose_dir: "{{ playbook_dir }}/../../mac-mini"
+  tasks:
+    - name: Ensure Docker is running
+      command: docker info
+      changed_when: false
+
+    - name: Deploy compose stack
+      command: docker compose up -d
+      args:
+        chdir: "{{ compose_dir }}"
+      register: compose_result
+      changed_when: "'Started' in compose_result.stderr or 'Created' in compose_result.stderr"
+
+    - name: Show running containers
+      command: docker compose ps
+      args:
+        chdir: "{{ compose_dir }}"
+      changed_when: false
+      register: ps_result
+
+    - name: Display status
+      debug:
+        msg: "{{ ps_result.stdout_lines }}"

@@ -1,0 +1,17 @@
+# Mac Mini services (192.168.1.105)
+# Ollama runs natively via macOS app (Metal GPU acceleration)
+# Deploy: ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbook/deploy-mac-mini.yaml
+
+services:
+  wyoming-whisper:
+    image: rhasspy/wyoming-whisper
+    container_name: wyoming-whisper
+    restart: unless-stopped
+    ports:
+      - "10300:10300"
+    volumes:
+      - whisper-data:/data
+    command: --model tiny-int8 --language en
+
+volumes:
+  whisper-data:
