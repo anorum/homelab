@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "kubernetes": {
+    "fileMatch": [
+      "(^|/)deployment\\.yaml$",
+      "(^|/)cronjob\\.yaml$",
+      "(^|/)kustomization\\.yaml$"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["(^|/)kustomization\\.yaml$"],
+      "matchStrings": [
+        "helmCharts:[\\s\\S]*?name:\\s*(?<depName>[\\w-]+)\\s*\\n\\s*repo:\\s*(?<registryUrl>https?://[^\\s]+)\\s*\\n\\s*version:\\s*(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "helm"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Auto-merge patch updates for container images",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "matchDatasources": ["docker"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group Helm chart updates",
+      "matchDatasources": ["helm"],
+      "groupName": "helm charts"
+    },
+    {
+      "description": "Ignore not_in_use directory",
+      "matchFileNames": ["not_in_use/**"],
+      "enabled": false
+    },
+    {
+      "description": "Ignore images pinned to latest",
+      "matchCurrentVersion": "latest",
+      "enabled": false
+    }
+  ],
+  "ignoreDeps": [
+    "alpine"
+  ]
+}

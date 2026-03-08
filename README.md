@@ -106,7 +106,9 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
 - [ ] HomeKit Bridge for Siri device control
 - [ ] Spotify integration via Music Assistant
-- [ ] Voice satellite hardware (Pi Zero 2W + ReSpeaker)
+- [ ] Voice satellite hardware (Pi 4B + ReSpeaker)
+- [ ] Renovate Bot for automated dependency updates
+- [ ] Personal AI agent service (PydanticAI + tool registry, HA integration)
 
 ## Not Currently Used
 Components in `not_in_use/` kept for reference:
