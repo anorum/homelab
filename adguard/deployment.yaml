@@ -33,7 +33,7 @@ spec:
           mountPath: /opt/adguardhome/conf
       containers:
       - name: adguard-home
-        image: adguard/adguardhome:v0.107.55
+        image: adguard/adguardhome:v0.107.72
         imagePullPolicy: IfNotPresent
         resources:
           limits:
