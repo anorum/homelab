@@ -1,5 +1,6 @@
 # Mac Mini services (192.168.1.105)
 # Ollama runs natively via macOS app (Metal GPU acceleration)
+# Home Assistant runs on separate Pi (homeassistant.local:8123)
 # Deploy: ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbook/deploy-mac-mini.yaml
 
 services:
@@ -13,5 +14,16 @@ services:
       - whisper-data:/data
     command: --model tiny-int8 --language en
 
+  wyoming-piper:
+    image: rhasspy/wyoming-piper
+    container_name: wyoming-piper
+    restart: unless-stopped
+    ports:
+      - "10200:10200"
+    volumes:
+      - piper-data:/data
+    command: --voice en_US-lessac-medium
+
 volumes:
   whisper-data:
+  piper-data:
