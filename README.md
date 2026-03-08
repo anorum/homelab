@@ -54,9 +54,11 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 ├── argo-cd/            # ArgoCD configuration, OIDC, KSOPS
 ├── authentik/          # Identity provider, SSO, OAuth blueprints
 ├── cloudflared/        # Cloudflare tunnel setup
+├── backup/             # S3 backup CronJob (Mealie + Authentik)
 ├── docs/               # Disaster recovery and operational docs
 ├── homepage/           # Dashboard for services
 ├── loki/               # Log aggregation (Loki + Promtail)
+├── mac-mini/           # Docker Compose (Wyoming Whisper + Piper)
 ├── mealie/             # Recipe management system
 ├── metallb/            # MetalLB L2 load balancer
 ├── ollama/             # Ollama external service (Mac Mini)
@@ -64,6 +66,7 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 ├── prometheus/         # Monitoring (Prometheus, Grafana, Alertmanager)
 ├── scripts/            # Bootstrap and utility scripts
 ├── storage/            # StorageClass and PV for 12TB HDD
+├── terraform/          # Terragrunt + OpenTofu IaC (AWS IAM)
 ├── traefik/            # Traefik + Gateway API
 ├── uptime-kuma/        # Uptime monitoring
 └── not_in_use/         # Deprecated components (kept for reference)
@@ -76,18 +79,14 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - ArgoCD UI is accessible through the configured ingress
 - Uptime Kuma dashboard provides monitoring status
 - AdGuard admin interface is available through ingress
-- Home Assistant provides home automation control
-- Jellyfin and related apps manage media content
 - Mealie handles recipe management and meal planning
 - Authentik manages authentication across services
 
 ### Maintenance
-- Certificates are automatically renewed by cert-manager
-- DNS records are managed by external-dns
 - Monitor Prometheus alerts for cluster health
 - Check Uptime Kuma for service availability
 - Regularly update container images for security patches
-- Review Sealed Secrets when configuration changes are needed
+- Verify S3 backups: `aws s3 ls s3://anorum-homelab/backups/authentik/`
 
 ### Troubleshooting
 1. Check pod status: `kubectl get pods -A`
@@ -101,7 +100,7 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - [x] Add monitoring dashboards (Grafana + kube-prometheus-stack)
 - [x] Configure alerting (Alertmanager → Discord, custom homelab rules)
 - [x] Document disaster recovery procedures ([docs/disaster-recovery.md](docs/disaster-recovery.md))
-- [x] Implement automated backup solution (rsync to Mac Mini, daily launchd)
+- [x] Implement automated backup solution (S3 CronJob via ArgoCD, Terragrunt IaC)
 - [ ] Implement network policies for enhanced security
 - [x] Set up Tailscale for remote access (subnet router on both Pis)
 - [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
