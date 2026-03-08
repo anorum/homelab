@@ -101,9 +101,9 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - [x] Add monitoring dashboards (Grafana + kube-prometheus-stack)
 - [x] Configure alerting (Alertmanager → Discord, custom homelab rules)
 - [x] Document disaster recovery procedures ([docs/disaster-recovery.md](docs/disaster-recovery.md))
-- [ ] Implement automated backup solution (rsync to Mac Mini)
+- [x] Implement automated backup solution (rsync to Mac Mini, daily launchd)
 - [ ] Implement network policies for enhanced security
-- [ ] Set up Tailscale for remote access
+- [x] Set up Tailscale for remote access (subnet router on both Pis)
 - [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
 
 ## Not Currently Used

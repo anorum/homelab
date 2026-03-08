@@ -124,35 +124,59 @@ Full rebuild.
 
 ## Backup Strategy
 
-### Current: Mac Mini rsync (manual/cron)
+### Automated: Mac Mini daily backup (launchd)
 
-The Mac Mini (192.168.1.105) serves as the local backup target.
+The Mac Mini runs `scripts/backup-to-mac.sh` daily at 3 AM via launchd.
 
+**What gets backed up:**
+- Mealie data (`rsync` from swagman-2:/mnt/hd/mealie/)
+- Authentik PostgreSQL dump (`pg_dump` via kubectl exec)
+
+**Backup location:** `~/backups/homelab/YYYY-MM-DD/`
+**Retention:** 7 daily backups
+**Log:** `~/backups/homelab/backup.log`
+
+**launchd plist:** `~/Library/LaunchAgents/com.homelab.backup.plist`
+
+**Manual run:**
 ```bash
-# Run from Mac Mini (or as a cron job)
-#!/bin/bash
-BACKUP_DIR="/backups/homelab/$(date +%Y-%m-%d)"
-mkdir -p "$BACKUP_DIR"
-
-# Mealie data (most important)
-rsync -avz pi@192.168.1.102:/mnt/hd/mealie/ "$BACKUP_DIR/mealie/"
-
-# Authentik PostgreSQL dump (run via kubectl on master)
-ssh pi@192.168.1.101 "sudo kubectl exec -n authentik deploy/authentik-postgresql -- \
-  pg_dump -U authentik authentik" > "$BACKUP_DIR/authentik-db.sql"
-
-# Keep last 7 daily backups
-find /backups/homelab/ -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
+./scripts/backup-to-mac.sh
 ```
 
-### Future: In-cluster CronJob
+**Manage schedule:**
+```bash
+# Check status
+launchctl list | grep homelab
 
-Could deploy a `backup/` directory with a Kubernetes CronJob managed by ArgoCD. This would be more gitops-native but adds SSH key complexity.
+# Reload after editing plist
+launchctl unload ~/Library/LaunchAgents/com.homelab.backup.plist
+launchctl load ~/Library/LaunchAgents/com.homelab.backup.plist
+```
+
+### Restoring from Backup
+
+**Mealie:**
+```bash
+# Find latest backup
+ls ~/backups/homelab/
+# Rsync back to swagman-2
+rsync -avz ~/backups/homelab/YYYY-MM-DD/mealie/ anorum@192.168.1.102:/mnt/hd/mealie/
+```
+
+**Authentik PostgreSQL:**
+```bash
+# Copy SQL dump to the pod and restore
+cat ~/backups/homelab/YYYY-MM-DD/authentik-db.sql | \
+  ssh -i ~/.ssh/rpi_key anorum@192.168.1.101 \
+  "sudo kubectl exec -i -n authentik authentik-postgresql-0 -- \
+  bash -c 'PGPASSWORD=\$(cat /opt/bitnami/postgresql/secrets/postgresql-password) psql -U authentik authentik'"
+```
 
 ## Testing Recovery
 
 Periodically verify:
 1. Age key can decrypt secrets: `sops -d authentik/secret.enc.yaml`
-2. SSH key works: `ssh -i ~/.ssh/rpi_key pi@192.168.1.101`
+2. SSH key works: `ssh -i ~/.ssh/rpi_key anorum@192.168.1.101`
 3. Bootstrap script is up to date with current apps
-4. Backup files on Mac Mini are recent and non-empty
+4. Backup files on Mac Mini are recent and non-empty: `ls -la ~/backups/homelab/`
+5. Backup log shows no errors: `tail ~/backups/homelab/backup.log`
