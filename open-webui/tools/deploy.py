@@ -61,37 +61,48 @@ def api_request(method: str, path: str, data: dict | None = None) -> tuple[int, 
             return e.code, {"detail": body}
 
 
-def deploy_tool(filepath: Path) -> None:
-    tool_id = tool_id_from_filename(filepath.name)
-    content = filepath.read_text()
-    meta = parse_metadata(content)
-
-    payload = {
-        "id": tool_id,
-        "name": meta.get("title", tool_id),
-        "content": content,
-        "meta": {
-            "manifest": {
-                "title": meta.get("title", tool_id),
-                "author": meta.get("author", ""),
-                "version": meta.get("version", "0.1.0"),
-                "description": meta.get("description", ""),
-            }
-        },
-    }
-
-    # Try create first
+def _deploy_payload(tool_id: str, payload: dict) -> None:
     status, resp = api_request("POST", "/api/v1/tools/create", payload)
     if status == 200:
         print(f"  + {tool_id}: created")
         return
-
-    # If already exists, update
     status, resp = api_request("POST", f"/api/v1/tools/id/{tool_id}/update", payload)
     if status == 200:
         print(f"  ~ {tool_id}: updated")
     else:
         print(f"  ! {tool_id}: failed ({status}) {resp.get('detail', resp)}")
+
+
+def deploy_tool(filepath: Path) -> list[str]:
+    """Deploy tool(s) from a file. Returns list of deployed tool IDs."""
+    if filepath.suffix == ".json":
+        data = json.loads(filepath.read_text())
+        items = data if isinstance(data, list) else [data]
+        ids = []
+        for item in items:
+            tool_id = item["id"]
+            _deploy_payload(tool_id, item)
+            ids.append(tool_id)
+        return ids
+    else:
+        tool_id = tool_id_from_filename(filepath.name)
+        content = filepath.read_text()
+        meta = parse_metadata(content)
+        payload = {
+            "id": tool_id,
+            "name": meta.get("title", tool_id),
+            "content": content,
+            "meta": {
+                "manifest": {
+                    "title": meta.get("title", tool_id),
+                    "author": meta.get("author", ""),
+                    "version": meta.get("version", "0.1.0"),
+                    "description": meta.get("description", ""),
+                }
+            },
+        }
+        _deploy_payload(tool_id, payload)
+        return [tool_id]
 
 
 def deploy_model(tool_ids: list[str]) -> None:
@@ -124,7 +135,8 @@ def main():
         sys.exit(1)
 
     tool_files = sorted(
-        f for f in SCRIPT_DIR.glob("*.py") if f.name != "deploy.py"
+        f for f in SCRIPT_DIR.iterdir()
+        if f.suffix in (".py", ".json") and f.name != "deploy.py"
     )
 
     if not tool_files:
@@ -134,8 +146,7 @@ def main():
     print(f"Deploying {len(tool_files)} tool(s) to {BASE_URL}...")
     tool_ids = []
     for filepath in tool_files:
-        deploy_tool(filepath)
-        tool_ids.append(tool_id_from_filename(filepath.name))
+        tool_ids.extend(deploy_tool(filepath))
 
     print("Configuring Jarvis model...")
     deploy_model(tool_ids)
