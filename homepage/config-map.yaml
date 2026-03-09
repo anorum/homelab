@@ -10,75 +10,140 @@ data:
     mode: cluster
     gateway: true
   settings.yaml: |
-    title: "Homelab Dashboard"
+    title: "swagman"
     theme: dark
-    colorScheme: blue
+    colorScheme: slate
     language: en
-    disableCollapse: true
-    headerStyle: clean
+    headerStyle: underlined
+    useEqualHeights: true
+    cardBlur: md
+    background:
+      image: https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&q=80
+      blur: md
+      brightness: 20
+      opacity: 15
+    allowedHosts: home.alexnorum.com
+    layout:
+      Infrastructure:
+        style: row
+        columns: 2
+        header: true
+        icon: mdi-server-network
+      Monitoring:
+        style: row
+        columns: 4
+        header: true
+        icon: mdi-chart-areaspline
+      Network:
+        style: row
+        columns: 2
+        header: true
+        icon: mdi-lan
+      Apps:
+        style: row
+        columns: 2
+        header: true
+        icon: mdi-apps
   custom.css: ""
   custom.js: ""
-  bookmarks.yaml: |
-    - Developer:
-      - Github:
-          - abbr: GH
-            href: https://github.com/anorum/homelab
-      - Docker Hub:
-          - abbr: DH
-            href: https://hub.docker.com
-      - Kubernetes:
-          - abbr: K8S
-            href: https://kubernetes.io/docs
-      - Helm Hub:
-          - abbr: HELM
-            href: https://artifacthub.io
+  bookmarks.yaml: ""
   services.yaml: |
-    - Media Services:
-      - Homepage:
-          href: https://hoyt.lol
-          description: Hoyt Dashboard
-          icon: home-assistant
-          siteMonitor: https://hoyt.lol
-          weight: 1
-      - Media:
-          href: https://media.hoyt.lol
-          description: Media Server
-          icon: plex.png
-          siteMonitor: https://media.hoyt.lol
-          weight: 2
-      - Requests:
-          href: https://requests.hoyt.lol
-          description: Request Movies & TV Shows
-          icon: overseerr.png
-          siteMonitor: https://requests.hoyt.lol
-          weight: 3
-    - External:
-      - Status Page:
-          href: https://status.alexnorum.com
-          description: External Status Monitor
+    - Infrastructure:
+      - ArgoCD:
+          href: https://argo.alexnorum.com
+          description: GitOps CD
+          icon: argocd.png
+          siteMonitor: https://argo.alexnorum.com
+          widget:
+            type: argocd
+            url: https://argo.alexnorum.com
+            key: "{{HOMEPAGE_VAR_ARGOCD_KEY}}"
+      - Authentik:
+          href: https://sso.alexnorum.com
+          description: Identity Provider & SSO
+          icon: authentik.png
+          siteMonitor: https://sso.alexnorum.com
+    - Monitoring:
+      - Grafana:
+          href: http://grafana.home.alexnorum.com
+          description: Metrics & Dashboards
+          icon: grafana.png
+          siteMonitor: http://grafana.home.alexnorum.com
+          widget:
+            type: grafana
+            url: http://grafana.home.alexnorum.com
+            username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+            password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+      - Prometheus:
+          href: http://prometheus.home.alexnorum.com
+          description: Metrics Store
+          icon: prometheus.png
+          siteMonitor: http://prometheus.home.alexnorum.com
+          widget:
+            type: prometheus
+            url: http://prometheus.home.alexnorum.com
+      - Alertmanager:
+          href: http://alertmanager.home.alexnorum.com
+          description: Alert Routing
+          icon: alertmanager.png
+          siteMonitor: http://alertmanager.home.alexnorum.com
+          widget:
+            type: alertmanager
+            url: http://alertmanager.home.alexnorum.com
+            preset: alertmanager
+      - Uptime Kuma:
+          href: http://uptime.home.alexnorum.com
+          description: Service Uptime
           icon: uptime-kuma.png
-          siteMonitor: https://status.alexnorum.com
-          weight: 1
+          siteMonitor: http://uptime.home.alexnorum.com
+    - Network:
+      - AdGuard:
+          href: http://adguard.home.alexnorum.com
+          description: DNS & Ad Blocking
+          icon: adguard-home.png
+          siteMonitor: http://adguard.home.alexnorum.com
+          widget:
+            type: adguard
+            url: http://adguard.home.alexnorum.com
+            username: "{{HOMEPAGE_VAR_ADGUARD_USERNAME}}"
+            password: "{{HOMEPAGE_VAR_ADGUARD_PASSWORD}}"
+      - Loki:
+          href: http://loki.home.alexnorum.com
+          description: Log Aggregation
+          icon: loki.png
+          siteMonitor: http://loki.home.alexnorum.com
+    - Apps:
+      - Mealie:
+          href: http://mealie.home.alexnorum.com
+          description: Recipe Manager
+          icon: mealie.png
+          siteMonitor: http://mealie.home.alexnorum.com
+      - Open WebUI:
+          href: http://chat.home.alexnorum.com
+          description: Local AI Chat
+          icon: ollama.png
+          siteMonitor: http://chat.home.alexnorum.com
   widgets.yaml: |
+    - datetime:
+        text_size: xl
+        format:
+          dateStyle: long
+          timeStyle: short
+          hourCycle: h23
     - kubernetes:
         cluster:
           show: true
           cpu: true
           memory: true
           showLabel: true
-          label: "cluster"
+          label: "swagman"
         nodes:
           show: true
           cpu: true
           memory: true
           showLabel: true
-    - resources:
-        backend: resources
-        expanded: true
-        cpu: true
-        memory: true
-        network: default
     - search:
-        provider: google
+        provider: duckduckgo
         target: _blank
+        focus: false
   docker.yaml: ""
