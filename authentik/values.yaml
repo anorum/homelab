@@ -83,10 +83,17 @@ worker:
           key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
+    failureThreshold: 5
+    timeoutSeconds: 5
   readinessProbe:
     initialDelaySeconds: 180
+    failureThreshold: 5
+    timeoutSeconds: 5
+    periodSeconds: 20
   startupProbe:
     initialDelaySeconds: 180
+    failureThreshold: 10
+    timeoutSeconds: 5
   resources:
     limits:
       cpu: 500m

@@ -24,6 +24,9 @@ spec:
               value: "http://ollama.ollama.svc.cluster.local:11434"
             - name: WEBUI_AUTH
               value: "true"
+          envFrom:
+            - secretRef:
+                name: open-webui-argocd
           volumeMounts:
             - name: data
               mountPath: /app/backend/data
