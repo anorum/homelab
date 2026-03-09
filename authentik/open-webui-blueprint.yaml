@@ -29,7 +29,7 @@ data:
           client_secret: !Context client_secret
           client_type: confidential
           redirect_uris:
-            - url: https://chat.home.alexnorum.com/oauth/oidc/callback
+            - url: http://chat.home.alexnorum.com/oauth/oidc/callback
               matching_mode: strict
           include_claims_in_id_token: true
           sub_mode: hashed_user_id
