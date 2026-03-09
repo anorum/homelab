@@ -59,6 +59,8 @@ server:
       memory: 512Mi
 
 worker:
+  podAnnotations:
+    reloader.stakater.com/auto: "true"
   env:
     - name: TMPDIR
       value: /tmp
