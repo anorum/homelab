@@ -51,8 +51,8 @@ data:
       - ArgoCD:
           href: https://argo.alexnorum.com
           description: GitOps continuous delivery
-          icon: argocd.png
-          siteMonitor: https://argo.alexnorum.com
+          icon: mdi-source-branch-sync-#ff6b6b
+          siteMonitor: http://argocd-server.argocd.svc.cluster.local
           widget:
             type: argocd
             url: http://argocd-server.argocd.svc.cluster.local
@@ -61,13 +61,13 @@ data:
           href: https://sso.alexnorum.com
           description: Identity provider & SSO
           icon: authentik.png
-          siteMonitor: https://sso.alexnorum.com
+          siteMonitor: http://authentik-server.authentik.svc.cluster.local
     - Observability:
       - Grafana:
           href: http://grafana.home.alexnorum.com
           description: Metrics & dashboards
           icon: grafana.png
-          siteMonitor: http://grafana.home.alexnorum.com
+          siteMonitor: http://prometheus-grafana.prometheus.svc.cluster.local
           widget:
             type: grafana
             url: http://prometheus-grafana.prometheus.svc.cluster.local
@@ -77,7 +77,7 @@ data:
           href: http://prometheus.home.alexnorum.com
           description: Metrics store
           icon: prometheus.png
-          siteMonitor: http://prometheus.home.alexnorum.com
+          siteMonitor: http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090/-/healthy
           widget:
             type: prometheus
             url: http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090
@@ -85,34 +85,34 @@ data:
           href: http://alertmanager.home.alexnorum.com
           description: Alert routing
           icon: alertmanager.png
-          siteMonitor: http://alertmanager.home.alexnorum.com
+          siteMonitor: http://prometheus-kube-prometheus-alertmanager.prometheus.svc.cluster.local:9093/-/healthy
       - Loki:
           href: http://loki.home.alexnorum.com
           description: Log aggregation
           icon: loki.png
-          siteMonitor: http://loki.home.alexnorum.com
+          siteMonitor: http://loki.loki.svc.cluster.local:3100/ready
     - Network:
       - AdGuard:
           href: http://adguard.home.alexnorum.com
           description: DNS & ad blocking
           icon: adguard-home.png
-          siteMonitor: http://adguard.home.alexnorum.com
+          siteMonitor: http://adguard-service.adguard.svc.cluster.local
       - Uptime Kuma:
           href: http://uptime.home.alexnorum.com
           description: Uptime monitoring
           icon: uptime-kuma.png
-          siteMonitor: http://uptime.home.alexnorum.com
+          siteMonitor: http://uptime-kuma.uptime-kuma.svc.cluster.local
     - Apps:
       - Mealie:
           href: http://mealie.home.alexnorum.com
           description: Recipe manager
           icon: mealie.png
-          siteMonitor: http://mealie.home.alexnorum.com
+          siteMonitor: http://mealie.mealie.svc.cluster.local:9000
       - Open WebUI:
           href: http://chat.home.alexnorum.com
           description: Local AI assistant
           icon: open-webui.png
-          siteMonitor: http://chat.home.alexnorum.com
+          siteMonitor: http://open-webui.open-webui.svc.cluster.local:8080
   widgets.yaml: |
     - datetime:
         text_size: xl
