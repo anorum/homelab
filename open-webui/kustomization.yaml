@@ -12,3 +12,4 @@ resources:
 
 generators:
   - argocd-secret-generator.yaml
+  - oauth-secret-generator.yaml

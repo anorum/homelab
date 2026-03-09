@@ -24,6 +24,22 @@ spec:
               value: "http://ollama.ollama.svc.cluster.local:11434"
             - name: WEBUI_AUTH
               value: "true"
+            - name: ENABLE_OAUTH_SIGNUP
+              value: "true"
+            - name: OAUTH_PROVIDER_NAME
+              value: "Authentik"
+            - name: OPENID_PROVIDER_URL
+              value: "https://sso.alexnorum.com/application/o/open-webui/.well-known/openid-configuration"
+            - name: OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oauth
+                  key: OAUTH_CLIENT_ID
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oauth
+                  key: OAUTH_CLIENT_SECRET
           envFrom:
             - secretRef:
                 name: open-webui-argocd

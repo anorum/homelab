@@ -40,6 +40,7 @@ blueprints:
     - google-oauth-blueprint
     - forward-auth-blueprint
     - grafana-blueprint
+    - open-webui-blueprint
 
 server:
   containerPorts:
@@ -80,6 +81,11 @@ worker:
       valueFrom:
         secretKeyRef:
           name: grafana-oauth-secret
+          key: clientSecret
+    - name: OPEN_WEBUI_OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: open-webui-oauth-secret
           key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
