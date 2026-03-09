@@ -1,7 +1,7 @@
 """
 title: Cluster Status
 author: Alex Norum
-version: 0.1.0
+version: 0.2.0
 description: Query Prometheus for k8s cluster health — nodes, pods, CPU, memory, and active alerts.
 """
 
@@ -26,8 +26,8 @@ class Tools:
         queries = {
             "node_count": 'count(kube_node_info)',
             "ready_nodes": 'count(kube_node_status_condition{condition="Ready",status="true"})',
-            "running_pods": 'count(kube_pod_status_phase{phase="Running"})',
-            "failed_pods": 'count(kube_pod_status_phase{phase="Failed"})',
+            "running_pods": 'count(kube_pod_status_phase{phase="Running"} == 1)',
+            "failed_pods": 'count(kube_pod_status_phase{phase="Failed"} == 1)',
             "cpu_usage_pct": '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))',
             "memory_usage_pct": '100 * (1 - avg(node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))',
         }
@@ -52,7 +52,13 @@ class Tools:
             req = urllib.request.Request(url, headers={"Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read())
-                firing = [a for a in data["data"]["alerts"] if a["state"] == "firing"]
+                # k3s doesn't expose control plane metrics — these always fire as false positives
+                k3s_noise = {"KubeControllerManagerDown", "KubeProxyDown", "KubeSchedulerDown"}
+                firing = [
+                    a for a in data["data"]["alerts"]
+                    if a["state"] == "firing"
+                    and a["labels"].get("alertname") not in k3s_noise
+                ]
                 if firing:
                     alert_names = [a["labels"].get("alertname", "unknown") for a in firing]
                     results.append(f"firing_alerts: {', '.join(alert_names)}")
