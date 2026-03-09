@@ -22,7 +22,6 @@ data:
       blur: md
       brightness: 20
       opacity: 15
-    allowedHosts: home.alexnorum.com
     layout:
       Infrastructure:
         style: row
