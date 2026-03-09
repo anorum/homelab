@@ -7,28 +7,35 @@ vars:
   OPEN_WEBUI_URL: http://chat.home.alexnorum.com
 
 tasks:
-  ollama:create-jarvis:
-    desc: Create/update the Jarvis model on Ollama from system prompt
+  openwebui:build-model:
+    desc: Create/update the Jarvis model on Ollama from Modelfile
     cmds:
       - |
-        python3 -c "
-        import json, sys
-        with open('open-webui/jarvis-modelfile.txt') as f:
-            system = f.read()
-        print(json.dumps({
+        uv run python -c "
+        import json, re
+        with open('open-webui/Modelfile') as f:
+            content = f.read()
+        from_m = re.search(r'^FROM\s+(\S+)', content, re.MULTILINE | re.IGNORECASE)
+        sys_m = re.search(r'SYSTEM\s+\"\"\"(.*?)\"\"\"', content, re.DOTALL | re.IGNORECASE)
+        params = {}
+        for m in re.finditer(r'^PARAMETER\s+(\w+)\s+(\S+)', content, re.MULTILINE | re.IGNORECASE):
+            k, v = m.group(1), m.group(2)
+            try: v = float(v) if '.' in v else int(v)
+            except ValueError: pass
+            params[k] = v
+        payload = {
             'model': 'jarvis',
-            'from': 'qwen2.5:7b',
-            'system': system,
-            'parameters': {'temperature': 0.7, 'num_ctx': 4096}
-        }))
-        " | curl -s {{.OLLAMA_HOST}}/api/create -d @- | python3 -c "
+            'from': from_m.group(1) if from_m else 'qwen2.5:7b',
+            'system': sys_m.group(1).strip() if sys_m else '',
+            'parameters': params,
+        }
+        print(json.dumps(payload))
+        " | curl -s {{.OLLAMA_HOST}}/api/create -d @- | uv run python -c "
         import sys, json
         for line in sys.stdin:
             data = json.loads(line)
-            print(data.get('status', ''))
+            print(data.get('status') or data.get('error') or data)
         "
-    sources:
-      - open-webui/jarvis-modelfile.txt
 
   ollama:list:
     desc: List all Ollama models
@@ -41,8 +48,6 @@ tasks:
       - uv run open-webui/tools/deploy.py
     env:
       OPEN_WEBUI_URL: "{{.OPEN_WEBUI_URL}}"
-    sources:
-      - open-webui/tools/*.py
 
   openwebui:list-tools:
     desc: List installed Open WebUI tools

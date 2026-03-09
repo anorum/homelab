@@ -6,6 +6,7 @@ description: Query Prometheus for k8s cluster health — nodes, pods, CPU, memor
 """
 
 import urllib.request
+import urllib.parse
 import json
 from typing import Any
 
