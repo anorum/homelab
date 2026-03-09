@@ -103,12 +103,13 @@ ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
 - [x] Implement automated backup solution (S3 CronJob via ArgoCD, Terragrunt IaC)
 - [ ] Implement network policies for enhanced security
 - [x] Set up Tailscale for remote access (subnet router on both Pis)
-- [ ] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
+- [x] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
 - [ ] HomeKit Bridge for Siri device control
-- [ ] Spotify integration via Music Assistant
+- [x] Spotify integration via Music Assistant
 - [ ] Voice satellite hardware (Pi 4B + ReSpeaker)
-- [ ] Renovate Bot for automated dependency updates
+- [x] Renovate Bot for automated dependency updates
 - [ ] Personal AI agent service (PydanticAI + tool registry, HA integration)
+- [ ] HomeAssistant custom bot with tools.
 
 ## Not Currently Used
 Components in `not_in_use/` kept for reference:

@@ -22,7 +22,7 @@ data:
           invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
           mode: forward_domain
           cookie_domain: home.alexnorum.com
-          external_host: http://grafana.home.alexnorum.com
+          external_host: https://sso.alexnorum.com
           access_token_validity: hours=24
 
       # Application linked to the proxy provider
@@ -33,5 +33,5 @@ data:
         attrs:
           name: Homelab Internal
           provider: !KeyOf homelab-forward-auth-provider
-          meta_launch_url: http://grafana.home.alexnorum.com
+          meta_launch_url: http://homepage.home.alexnorum.com
           policy_engine_mode: any
