@@ -23,30 +23,30 @@
       - pulseaudio-utils
     state: present
 
-# ── ReSpeaker 2-Mic HAT driver (seeed-voicecard) ─────────────────────────────
+# ── ReSpeaker 2-Mic HAT driver (via wyoming-satellite's official script) ──────
+# Clone wyoming-satellite first so its bundled driver script is available.
+# The official script at etc/install-respeaker-drivers.sh handles Pi Zero 2 W
+# low-memory (512MB) build constraints automatically.
+- name: Clone wyoming-satellite repository (needed for driver script)
+  git:
+    repo: https://github.com/rhasspy/wyoming-satellite.git
+    dest: /opt/wyoming-satellite
+    version: master
+    depth: 1
+
 - name: Check if seeed-voicecard driver is already installed
   stat:
     path: /etc/voicecard/seeed-2mic-voicecard.conf
   register: seeed_installed
 
-- name: Clone seeed-voicecard repository
-  git:
-    repo: https://github.com/seeed-studio/seeed-voicecard.git
-    dest: /opt/seeed-voicecard
-    version: master
-    depth: 1
-  when: not seeed_installed.stat.exists
-
-- name: Run seeed-voicecard install script
-  command: bash install.sh
-  args:
-    chdir: /opt/seeed-voicecard
+- name: Run official wyoming-satellite ReSpeaker driver install script
+  command: bash /opt/wyoming-satellite/etc/install-respeaker-drivers.sh
   when: not seeed_installed.stat.exists
   register: seeed_install_result
 
-- name: Reboot after seeed-voicecard install
+- name: Reboot after ReSpeaker driver install
   reboot:
-    reboot_timeout: 120
+    reboot_timeout: 300
   when: seeed_install_result is changed
 
 # ── Verify audio device is present ───────────────────────────────────────────
@@ -100,13 +100,6 @@
     editable: yes
 
 # ── wyoming-satellite ─────────────────────────────────────────────────────────
-- name: Clone wyoming-satellite repository
-  git:
-    repo: https://github.com/rhasspy/wyoming-satellite.git
-    dest: /opt/wyoming-satellite
-    version: master
-    depth: 1
-
 - name: Create wyoming-satellite venv
   command: python3 -m venv /opt/wyoming-satellite/.venv
   args:
@@ -129,14 +122,11 @@
     src: wyoming-openwakeword.service.j2
     dest: /etc/systemd/system/wyoming-openwakeword.service
     mode: '0644'
-  notify: Restart wyoming-openwakeword
-
 - name: Install wyoming-satellite systemd service
   template:
     src: wyoming-satellite.service.j2
     dest: /etc/systemd/system/wyoming-satellite.service
     mode: '0644'
-  notify: Restart wyoming-satellite
 
 - name: Enable and start wyoming-openwakeword
   systemd:

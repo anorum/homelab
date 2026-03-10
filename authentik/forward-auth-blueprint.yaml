@@ -33,5 +33,5 @@ data:
         attrs:
           name: Homelab Internal
           provider: !KeyOf homelab-forward-auth-provider
-          meta_launch_url: http://homepage.home.alexnorum.com
+          meta_launch_url: http://home.alexnorum.com
           policy_engine_mode: any
