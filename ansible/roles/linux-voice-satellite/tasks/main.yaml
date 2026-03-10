@@ -22,6 +22,7 @@
       - wireplumber
       - flac
       - ffmpeg
+      - libmpv-dev
     state: present
 
 # ── SPI (for ReSpeaker APA102 LEDs) ──────────────────────────────────────────
