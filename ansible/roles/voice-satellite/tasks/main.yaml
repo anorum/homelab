@@ -1,0 +1,152 @@
+---
+# ── System prerequisites ──────────────────────────────────────────────────────
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install system dependencies
+  apt:
+    name:
+      - git
+      - python3
+      - python3-pip
+      - python3-venv
+      - python3-dev
+      - alsa-utils
+      - libsndfile1
+      - libportaudio2
+      - portaudio19-dev
+      - flac
+      - ffmpeg
+      - pulseaudio
+      - pulseaudio-utils
+    state: present
+
+# ── ReSpeaker 2-Mic HAT driver (seeed-voicecard) ─────────────────────────────
+- name: Check if seeed-voicecard driver is already installed
+  stat:
+    path: /etc/voicecard/seeed-2mic-voicecard.conf
+  register: seeed_installed
+
+- name: Clone seeed-voicecard repository
+  git:
+    repo: https://github.com/seeed-studio/seeed-voicecard.git
+    dest: /opt/seeed-voicecard
+    version: master
+    depth: 1
+  when: not seeed_installed.stat.exists
+
+- name: Run seeed-voicecard install script
+  command: bash install.sh
+  args:
+    chdir: /opt/seeed-voicecard
+  when: not seeed_installed.stat.exists
+  register: seeed_install_result
+
+- name: Reboot after seeed-voicecard install
+  reboot:
+    reboot_timeout: 120
+  when: seeed_install_result is changed
+
+# ── Verify audio device is present ───────────────────────────────────────────
+- name: Verify ReSpeaker audio card is present
+  command: aplay -l
+  register: aplay_output
+  changed_when: false
+  failed_when: "'seeed2micvoicec' not in aplay_output.stdout"
+
+# ── Set ReSpeaker as default ALSA device ─────────────────────────────────────
+- name: Set ReSpeaker as default ALSA device (system-wide)
+  copy:
+    dest: /etc/asound.conf
+    mode: '0644'
+    content: |
+      defaults.pcm.card 1
+      defaults.ctl.card 1
+
+- name: Set ReSpeaker as default ALSA device (user)
+  copy:
+    dest: /home/anorum/.asoundrc
+    owner: anorum
+    group: anorum
+    mode: '0644'
+    content: |
+      defaults.pcm.card 1
+      defaults.ctl.card 1
+
+# ── wyoming-openwakeword (local, satellite only) ──────────────────────────────
+- name: Clone wyoming-openwakeword repository
+  git:
+    repo: https://github.com/rhasspy/wyoming-openwakeword.git
+    dest: /opt/wyoming-openwakeword
+    version: master
+    depth: 1
+
+- name: Create wyoming-openwakeword venv
+  command: python3 -m venv /opt/wyoming-openwakeword/.venv
+  args:
+    creates: /opt/wyoming-openwakeword/.venv/bin/python
+
+- name: Install wyoming-openwakeword dependencies
+  pip:
+    requirements: /opt/wyoming-openwakeword/requirements.txt
+    virtualenv: /opt/wyoming-openwakeword/.venv
+
+- name: Install wyoming-openwakeword package
+  pip:
+    name: /opt/wyoming-openwakeword
+    virtualenv: /opt/wyoming-openwakeword/.venv
+    editable: yes
+
+# ── wyoming-satellite ─────────────────────────────────────────────────────────
+- name: Clone wyoming-satellite repository
+  git:
+    repo: https://github.com/rhasspy/wyoming-satellite.git
+    dest: /opt/wyoming-satellite
+    version: master
+    depth: 1
+
+- name: Create wyoming-satellite venv
+  command: python3 -m venv /opt/wyoming-satellite/.venv
+  args:
+    creates: /opt/wyoming-satellite/.venv/bin/python
+
+- name: Install wyoming-satellite dependencies
+  pip:
+    requirements: /opt/wyoming-satellite/requirements.txt
+    virtualenv: /opt/wyoming-satellite/.venv
+
+- name: Install wyoming-satellite package (with linux extras)
+  pip:
+    name: "/opt/wyoming-satellite[linux]"
+    virtualenv: /opt/wyoming-satellite/.venv
+    editable: yes
+
+# ── systemd services ──────────────────────────────────────────────────────────
+- name: Install wyoming-openwakeword systemd service
+  template:
+    src: wyoming-openwakeword.service.j2
+    dest: /etc/systemd/system/wyoming-openwakeword.service
+    mode: '0644'
+  notify: Restart wyoming-openwakeword
+
+- name: Install wyoming-satellite systemd service
+  template:
+    src: wyoming-satellite.service.j2
+    dest: /etc/systemd/system/wyoming-satellite.service
+    mode: '0644'
+  notify: Restart wyoming-satellite
+
+- name: Enable and start wyoming-openwakeword
+  systemd:
+    name: wyoming-openwakeword
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Enable and start wyoming-satellite
+  systemd:
+    name: wyoming-satellite
+    state: started
+    enabled: yes

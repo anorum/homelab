@@ -1,0 +1,6 @@
+---
+- name: Deploy Wyoming Voice Satellite
+  hosts: voice_satellite
+  become: yes
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../roles/voice-satellite/tasks/main.yaml"

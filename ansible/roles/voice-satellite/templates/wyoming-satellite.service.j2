@@ -1,0 +1,23 @@
+[Unit]
+Description=Wyoming Satellite ({{ satellite_name }})
+After=network.target wyoming-openwakeword.service
+
+[Service]
+Type=simple
+User=anorum
+SupplementaryGroups=audio
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/wyoming-satellite/.venv/bin/python -m wyoming_satellite \
+  --name "{{ satellite_name }} Satellite" \
+  --uri tcp://0.0.0.0:{{ satellite_port }} \
+  --mic-device plughw:CARD=seeed2micvoicec,DEV=0 \
+  --snd-device plughw:CARD=seeed2micvoicec,DEV=0 \
+  --wake-uri tcp://127.0.0.1:10400 \
+  --wake-word-name hey_jarvis \
+  --awake-wav /opt/wyoming-satellite/sounds/awake.wav \
+  --done-wav /opt/wyoming-satellite/sounds/done.wav
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

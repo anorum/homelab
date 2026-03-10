@@ -1,0 +1,15 @@
+[Unit]
+Description=Wyoming openWakeWord (local, for satellite)
+After=network.target
+
+[Service]
+Type=simple
+User=anorum
+ExecStart=/opt/wyoming-openwakeword/.venv/bin/python -m wyoming_openwakeword \
+  --uri tcp://127.0.0.1:10400 \
+  --preload-model hey_jarvis
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
