@@ -1,0 +1,38 @@
+[Unit]
+Description=Linux Voice Assistant ({{ satellite_name }})
+# ESPHome satellite — Home Assistant discovers this device via mDNS on port 6053.
+# No HA host config needed here; HA connects to us.
+After=network.target sound.target
+
+[Service]
+Type=simple
+User=anorum
+SupplementaryGroups=audio
+Environment=PYTHONUNBUFFERED=1
+
+# Device identity (shows in HA ESPHome integration)
+Environment=CLIENT_NAME="{{ satellite_name }} Satellite"
+
+# Wake word (hey_jarvis model must exist in /opt/linux-voice-assistant/wakewords/)
+Environment=WAKE_MODEL=hey_jarvis
+
+# PipeWire/PulseAudio socket (user 1000 = anorum)
+Environment=LVA_PULSE_SERVER=unix:/run/user/1000/pulse/native
+Environment=LVA_XDG_RUNTIME_DIR=/run/user/1000
+Environment=PULSE_SERVER=unix:/run/user/1000/pulse/native
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Audio routing through PipeWire pulse compat layer
+# Leave AUDIO_INPUT_DEVICE / AUDIO_OUTPUT_DEVICE unset to auto-detect,
+# or set to a specific PulseAudio sink/source name if needed.
+# To list devices: LVA_RUN=list python -m linux_voice_assistant
+
+# Listening port (ESPHome protocol)
+Environment=PORT=6053
+
+ExecStart=/opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

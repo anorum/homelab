@@ -1,0 +1,6 @@
+---
+- name: Deploy Linux Voice Assistant (ESPHome satellite)
+  hosts: voice_satellite
+  become: yes
+  roles:
+    - role: ../roles/linux-voice-satellite

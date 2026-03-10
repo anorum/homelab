@@ -48,56 +48,98 @@ If your events differ, update the conditions in the blueprint YAML accordingly.
 
 ---
 
-## Wyoming Voice Satellite
+## Voice Satellite
 
 ### Hardware
-- Raspberry Pi 4B (hostname: `voice-satellite`)
-- ReSpeaker 2-Mic HAT (seeed-voicecard driver)
+- Raspberry Pi Zero 2 W (hostname: `voice-satellite`)
+- ReSpeaker 2-Mic HAT (seeed-voicecard driver, APA102 LEDs)
 - Edifier R1280DB speakers (3.5mm jack on ReSpeaker HAT)
 
-Deployment is automated via Ansible — see [ansible/playbook/deploy-voice-satellite.yaml](../ansible/playbook/deploy-voice-satellite.yaml).
+### Architecture
 
-### Wyoming Integration Setup
+```
+Pi Zero 2 W
+  linux-voice-assistant (ESPHome, port 6053)  ← primary
+  wyoming-satellite (Wyoming, port 10700)      ← fallback
 
-1. In HA, go to **Settings > Devices & Services > Add Integration**.
-2. Search for **Wyoming Protocol** and add an entry for each service:
+Mac Mini (192.168.1.105)
+  Wyoming Whisper :10300  — STT
+  Wyoming Piper   :10200  — TTS
+  Homelab MCP     :8080   — tools for Ollama
+
+HA: ESPHome integration → satellite (auto-discovered)
+    Wyoming integrations → Whisper + Piper
+    MCP Client integration → Mac Mini:8080
+    Ollama conversation agent → Mac Mini:11434
+```
+
+### Deployment
+
+**Primary (linux-voice-assistant — ESPHome protocol):**
+```bash
+cd ansible
+ansible-playbook playbook/deploy-linux-voice-satellite.yaml
+```
+HA discovers the satellite automatically via mDNS — no manual Wyoming integration needed for the satellite itself.
+
+**Fallback (wyoming-satellite):**
+```bash
+cd ansible
+ansible-playbook playbook/deploy-voice-satellite.yaml
+```
+The wyoming role is preserved intact. To roll back: re-run it and remove the ESPHome device from HA.
+
+**Note (first deploy):** The first run installs the ReSpeaker kernel driver and reboots (up to 5 min on Pi Zero 2 W). Run the playbook a second time to complete setup.
+
+### MCP Homelab Tools Setup
+
+1. Start MCP server on Mac Mini:
+   ```bash
+   cd mac-mini && docker compose up -d homelab-mcp
+   ```
+2. In HA: **Settings > Devices & Services > Add Integration > Model Context Protocol**
+   - URL: `http://192.168.1.105:8080/mcp`
+   - Name: `Homelab Tools`
+
+To add new tools: edit `mac-mini/mcp-server/server.py`, add a `@mcp.tool()` function, restart the container. No HA config changes needed.
+
+### Wyoming Integration Setup (STT + TTS on Mac Mini)
+
+In HA, go to **Settings > Devices & Services > Add Integration > Wyoming Protocol**:
 
 | Service | Host | Port |
 |---------|------|------|
-| Satellite (voice-satellite) | `voice-satellite.local` | `10700` |
-| Whisper STT (Mac Mini) | `192.168.1.105` | `10300` |
-| Piper TTS (Mac Mini) | `192.168.1.105` | `10200` |
-
-3. HA will auto-discover the satellite and its local wake word detector.
+| Whisper STT | `192.168.1.105` | `10300` |
+| Piper TTS | `192.168.1.105` | `10200` |
 
 ### Voice Pipeline Configuration
 
-Go to **Settings > Voice Assistants > Add Assistant** (or edit existing):
+**Settings > Voice Assistants > Add Assistant** (or edit existing):
 
 | Field | Value |
 |-------|-------|
 | Name | Homelab |
 | Language | English (en) |
-| Conversation agent | Ollama (or Home Assistant) |
+| Conversation agent | Ollama (`llama3.1:8b` recommended for tool calling) |
 | Speech-to-text | faster-whisper (Mac Mini, port 10300) |
 | Text-to-speech | Piper (Mac Mini, port 10200), voice: `en_US-lessac-medium` |
-| Wake word engine | openWakeWord (satellite) |
+| Wake word engine | openWakeWord (auto-configured on satellite) |
 | Wake word | `hey_jarvis` |
+
+**Note:** Use `llama3.1:8b` or `qwen3:8b` for reliable tool calling. The 4B model may not consistently invoke MCP tools.
 
 ### Assign Pipeline to Satellite
 
-1. **Settings > Devices & Services > Wyoming Protocol**
-2. Find the "Living Room Satellite" device → click **Configure**
+1. **Settings > Devices & Services > ESPHome**
+2. Find the "Living Room Satellite" device → **Configure**
 3. Set **Voice assistant pipeline** to "Homelab"
 
 ### Adding More Satellites
 
-For each additional Pi satellite:
-1. Add a host entry to `ansible/inventory/hosts.yaml` under `voice_satellite`
-2. Create `ansible/inventory/host_vars/<hostname>.yaml` with a unique `satellite_name` and `satellite_port`
-3. Run `ansible-playbook playbook/deploy-voice-satellite.yaml --limit <hostname>`
-4. Add a new Wyoming integration in HA pointing to the new satellite's IP and port
-5. Assign the "Homelab" pipeline to the new satellite device
+1. Add host entry to `ansible/inventory/hosts.yaml` under `voice_satellite`
+2. Create `ansible/inventory/host_vars/<hostname>.yaml` with a unique `satellite_name`
+3. Run `ansible-playbook playbook/deploy-linux-voice-satellite.yaml --limit <hostname>`
+4. HA auto-discovers via mDNS; assign the "Homelab" pipeline to the new device
 
 ### Audio Testing (SSH to satellite)
 
@@ -111,17 +153,29 @@ alsamixer -c 1
 
 # Save ALSA mixer state
 sudo alsactl store
+
+# List detected audio devices (linux-voice-assistant)
+LIST_DEVICES=1 /opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant
 ```
 
 ### Troubleshooting
 
 ```bash
-# Check service status
+# linux-voice-assistant
+systemctl status linux-voice-assistant
+journalctl -u linux-voice-assistant -f
+nc -zv voice-satellite.local 6053
+
+# Fallback wyoming services
 systemctl status wyoming-satellite wyoming-openwakeword
-
-# Stream logs
 journalctl -u wyoming-satellite -f
-
-# Verify satellite is reachable from network
 nc -zv voice-satellite.local 10700
+
+# MCP server (on Mac Mini)
+curl http://192.168.1.105:8080/mcp
+docker logs homelab-mcp
 ```
+
+### Known Limitations
+
+**Barge-in / TTS interrupt**: Long TTS responses cannot be interrupted by speaking. Neither linux-voice-assistant nor wyoming-satellite implements barge-in as of early 2026. Track progress at [OHF-Voice/linux-voice-assistant issues](https://github.com/OHF-Voice/linux-voice-assistant/issues).

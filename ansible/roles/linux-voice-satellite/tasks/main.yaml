@@ -17,16 +17,23 @@
       - libsndfile1
       - libportaudio2
       - portaudio19-dev
+      - pipewire
+      - pipewire-pulse
+      - wireplumber
       - flac
       - ffmpeg
-      - pulseaudio
-      - pulseaudio-utils
     state: present
 
-# ── ReSpeaker 2-Mic HAT driver (via wyoming-satellite's official script) ──────
-# Clone wyoming-satellite first so its bundled driver script is available.
-# The official script at etc/install-respeaker-drivers.sh handles Pi Zero 2 W
-# low-memory (512MB) build constraints automatically.
+# ── SPI (for ReSpeaker APA102 LEDs) ──────────────────────────────────────────
+- name: Enable SPI in /boot/firmware/config.txt
+  lineinfile:
+    path: /boot/firmware/config.txt
+    line: 'dtparam=spi=on'
+    regexp: '^#?dtparam=spi='
+    state: present
+  register: spi_config
+
+# ── ReSpeaker 2-Mic HAT driver ───────────────────────────────────────────────
 - name: Clone wyoming-satellite repository (needed for driver script)
   git:
     repo: https://github.com/rhasspy/wyoming-satellite.git
@@ -44,10 +51,10 @@
   when: not seeed_installed.stat.exists
   register: seeed_install_result
 
-- name: Reboot after ReSpeaker driver install
+- name: Reboot after driver install (activates seeed-voicecard + SPI if changed)
   reboot:
     reboot_timeout: 300
-  when: seeed_install_result is changed
+  when: seeed_install_result is changed or spi_config is changed
 
 # ── Verify audio device is present ───────────────────────────────────────────
 - name: Verify ReSpeaker audio card is present
@@ -75,7 +82,7 @@
       defaults.pcm.card 1
       defaults.ctl.card 1
 
-# ── PulseAudio user service (handles simultaneous mic + speaker) ──────────────
+# ── PipeWire user session ─────────────────────────────────────────────────────
 - name: Enable linger for anorum (start user services on boot without login)
   command: loginctl enable-linger anorum
   args:
@@ -112,58 +119,35 @@
   command: alsactl store
   changed_when: false
 
-# ── wyoming-openwakeword (local, satellite only) ──────────────────────────────
-- name: Clone wyoming-openwakeword repository
+# ── linux-voice-assistant ─────────────────────────────────────────────────────
+- name: Clone linux-voice-assistant repository
   git:
-    repo: https://github.com/rhasspy/wyoming-openwakeword.git
-    dest: /opt/wyoming-openwakeword
+    repo: https://github.com/OHF-Voice/linux-voice-assistant.git
+    dest: /opt/linux-voice-assistant
     version: HEAD
     depth: 1
 
-- name: Create wyoming-openwakeword venv
-  command: python3 -m venv /opt/wyoming-openwakeword/.venv
+- name: Create linux-voice-assistant venv
+  command: python3 -m venv /opt/linux-voice-assistant/.venv
   args:
-    creates: /opt/wyoming-openwakeword/.venv/bin/python
+    creates: /opt/linux-voice-assistant/.venv/bin/python
 
-- name: Install wyoming-openwakeword package
+- name: Install linux-voice-assistant package
   pip:
-    name: /opt/wyoming-openwakeword
-    virtualenv: /opt/wyoming-openwakeword/.venv
+    name: /opt/linux-voice-assistant
+    virtualenv: /opt/linux-voice-assistant/.venv
     editable: yes
 
-# ── wyoming-satellite ─────────────────────────────────────────────────────────
-- name: Create wyoming-satellite venv
-  command: python3 -m venv /opt/wyoming-satellite/.venv
-  args:
-    creates: /opt/wyoming-satellite/.venv/bin/python
-
-- name: Install wyoming-satellite package (with linux extras)
-  pip:
-    name: "/opt/wyoming-satellite[linux]"
-    virtualenv: /opt/wyoming-satellite/.venv
-    editable: yes
-
-# ── systemd services ──────────────────────────────────────────────────────────
-- name: Install wyoming-openwakeword systemd service
+# ── systemd service ───────────────────────────────────────────────────────────
+- name: Install linux-voice-assistant systemd service
   template:
-    src: wyoming-openwakeword.service.j2
-    dest: /etc/systemd/system/wyoming-openwakeword.service
-    mode: '0644'
-- name: Install wyoming-satellite systemd service
-  template:
-    src: wyoming-satellite.service.j2
-    dest: /etc/systemd/system/wyoming-satellite.service
+    src: linux-voice-assistant.service.j2
+    dest: /etc/systemd/system/linux-voice-assistant.service
     mode: '0644'
 
-- name: Enable and start wyoming-openwakeword
+- name: Enable and start linux-voice-assistant
   systemd:
-    name: wyoming-openwakeword
+    name: linux-voice-assistant
     state: started
     enabled: yes
     daemon_reload: yes
-
-- name: Enable and start wyoming-satellite
-  systemd:
-    name: wyoming-satellite
-    state: started
-    enabled: yes
