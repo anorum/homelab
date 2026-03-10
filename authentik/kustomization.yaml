@@ -5,7 +5,6 @@ namespace: authentik
 resources:
 - namespace.yaml
 - httproute.yaml
-- argocd-blueprint.yaml
 - google-oauth-blueprint.yaml
 - forward-auth-blueprint.yaml
 - grafana-blueprint.yaml
@@ -13,7 +12,6 @@ resources:
 
 generators:
 - secret-generator.yaml
-- argocd-oauth-secret-generator.yaml
 - google-oauth-secret-generator.yaml
 - grafana-oauth-secret-generator.yaml
 - open-webui-oauth-secret-generator.yaml
