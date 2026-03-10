@@ -17,7 +17,7 @@ data:
       session_ttl: 720h
     users:
       - name: anorum
-        password: $2y$10$C7jHXiJ2X2nTho7tyYui1.ZKlXzJZC5WBK8UjbwbSZCHx6JFf9XeS
+        password: $2y$10$42whwGRIdFp8FREXm2XvweIeJeHMZSl7Usd5kboFkGi.UURc8buuu
     auth_attempts: 5
     block_auth_min: 15
     http_proxy: ""
