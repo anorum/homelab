@@ -10,7 +10,6 @@ resources:
 
 generators:
   - discord-webhook-secret-generator.yaml
-  - grafana-oauth-secret-generator.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -45,20 +44,16 @@ helmCharts:
             url: http://loki.loki:3100
             access: proxy
             isDefault: false
-        envFromSecret: grafana-oauth-secret
         grafana.ini:
           server:
             root_url: http://grafana.home.alexnorum.com
-          auth.generic_oauth:
+          auth:
+            disable_login_form: true
+          auth.anonymous:
             enabled: true
-            name: Authentik
-            allow_sign_up: true
-            client_id: mfRJRhWtDBQztXT9o-bS-j0zPYZEKCuAMvycoFsi
-            scopes: openid email profile
-            auth_url: https://sso.alexnorum.com/application/o/authorize/
-            token_url: https://sso.alexnorum.com/application/o/token/
-            api_url: https://sso.alexnorum.com/application/o/userinfo/
-            role_attribute_path: "contains(groups[*], 'Grafana Admins') && 'Admin' || 'Viewer'"
+            org_role: Admin
+          auth.basic:
+            enabled: false
       prometheus:
         thanosService:
           enabled: false
