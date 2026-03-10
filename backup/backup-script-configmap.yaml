@@ -24,7 +24,7 @@ data:
     # --- Authentik PostgreSQL backup ---
     echo "Backing up Authentik database..."
     kubectl exec -n authentik authentik-postgresql-0 -- \
-      sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U authentik -d authentik' \
+      sh -c 'PGPASSWORD="$(cat /opt/bitnami/postgresql/secrets/postgresql-password)" pg_dump -U authentik -d authentik' \
       | aws s3 cp - "s3://$BUCKET/$BACKUP_PREFIX/authentik/$DATE.sql" \
         --region "$AWS_DEFAULT_REGION"
     echo "Authentik backup complete."
