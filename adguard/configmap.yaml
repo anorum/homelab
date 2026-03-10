@@ -15,9 +15,7 @@ data:
         enabled: false
       address: 0.0.0.0:80
       session_ttl: 720h
-    users:
-      - name: anorum
-        password: $2y$10$42whwGRIdFp8FREXm2XvweIeJeHMZSl7Usd5kboFkGi.UURc8buuu
+    users: []
     auth_attempts: 5
     block_auth_min: 15
     http_proxy: ""
