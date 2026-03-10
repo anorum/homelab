@@ -40,7 +40,7 @@ data:
 
     # --- Cleanup old backups (keep 7 days) ---
     echo "Cleaning up old backups..."
-    CUTOFF_DATE=$(date -d "-7 days" +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d)
+    CUTOFF_DATE=$(date -d @$(($(date +%s) - 604800)) +%Y-%m-%d)
     for prefix in authentik open-webui; do
       aws s3 ls "s3://$BUCKET/$BACKUP_PREFIX/$prefix/" --region "$AWS_DEFAULT_REGION" \
         | awk '{print $4}' \
