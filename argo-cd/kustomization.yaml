@@ -30,6 +30,9 @@ patches:
     kind: Deployment
     name: argocd-repo-server
 
+generators:
+- secret-generator.yaml
+
 resources:
 - namespace.yaml
 - https://raw.githubusercontent.com/argoproj/argo-cd/v3.3.2/manifests/install.yaml
