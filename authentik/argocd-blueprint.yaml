@@ -32,13 +32,13 @@ data:
           client_type: confidential
           # redirect_uris - allow both http/https and different callback paths
           redirect_uris:
-            - url: https://argo.alexnorum.com/api/dex/callback
+            - url: https://argo.home.alexnorum.com/api/dex/callback
               matching_mode: strict
-            - url: http://argo.alexnorum.com/api/dex/callback
+            - url: http://argo.home.alexnorum.com/api/dex/callback
               matching_mode: strict
-            - url: https://argo.alexnorum.com/auth/callback
+            - url: https://argo.home.alexnorum.com/auth/callback
               matching_mode: strict
-            - url: http://argo.alexnorum.com/auth/callback
+            - url: http://argo.home.alexnorum.com/auth/callback
               matching_mode: strict
           include_claims_in_id_token: true
           sub_mode: hashed_user_id
@@ -57,7 +57,7 @@ data:
         attrs:
           name: ArgoCD
           provider: !KeyOf argocd-provider
-          meta_launch_url: https://argo.alexnorum.com
+          meta_launch_url: https://argo.home.alexnorum.com
           policy_engine_mode: any
 
       # ArgoCD Admin Group

@@ -14,7 +14,7 @@ spec:
       namespace: traefik
       sectionName: web
   hostnames:
-    - argo.alexnorum.com
+    - argo.home.alexnorum.com
   rules:
     - matches:
         - path:

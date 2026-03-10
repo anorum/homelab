@@ -46,7 +46,7 @@ configMapGenerator:
       - kustomize.buildOptions=--enable-helm --enable-alpha-plugins --enable-exec
       - accounts.readonly=apiKey
       - accounts.jarvis=apiKey
-      - url=https://argo.alexnorum.com
+      - url=https://argo.home.alexnorum.com
       - admin.enabled=false
       - application.instanceLabelKey=argocd.argoproj.io/instance
       - timeout.reconciliation=180s
