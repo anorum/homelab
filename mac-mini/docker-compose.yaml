@@ -41,6 +41,8 @@ services:
     volumes:
       - ./mcp-server:/app
     working_dir: /app
+    env_file:
+      - .env
     command: >
       sh -c "pip install --quiet -r requirements.txt && python server.py"
 
