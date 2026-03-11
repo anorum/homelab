@@ -99,3 +99,7 @@ charts/
 .claude/
 
 .playwright-mcp
+
+voice-cloning/data/**
+output/**
+voice-cloning/styletts2/outputs/**

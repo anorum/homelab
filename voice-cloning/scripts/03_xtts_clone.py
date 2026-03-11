@@ -25,18 +25,23 @@ Prerequisites:
 
 import argparse
 import sys
+import tempfile
 import time
 from pathlib import Path
 
+from pydub import AudioSegment
+
+
+def trim_silence(wav_path: Path, trim_ms: int = 500) -> Path:
+    """Trim leading/trailing silence from a WAV and return a temp file path."""
+    audio = AudioSegment.from_wav(str(wav_path))
+    trimmed = audio[trim_ms:-trim_ms]
+    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    trimmed.export(tmp.name, format="wav")
+    return Path(tmp.name)
+
 SAMPLE_TEXTS = [
-    "Hello, welcome to my smart home. How can I help you today?",
-    "The weather today is sunny with a high of seventy five degrees.",
-    "I've turned off all the lights and locked the front door. Good night.",
-    "Your timer for fifteen minutes has started. I'll let you know when it's done.",
-    "I found three recipes for chicken parmesan. Would you like me to read the first one?",
-    "The living room temperature is currently sixty eight degrees. Would you like me to adjust it?",
-    "Playing your evening playlist on the kitchen speaker.",
-    "Reminder: you have a dentist appointment tomorrow at two thirty.",
+    "I'm an assistant here to help. Tell me what you want me to do.",
 ]
 
 
@@ -58,17 +63,18 @@ def clone_voice(speaker_wav: Path, text: str, output_path: Path, use_gpu: bool =
     print(f"Loading XTTS v2 model (this may take a minute on first run)...")
     tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-    print(f"Cloning voice from: {speaker_wav.name}")
-    print(f"Text: {text[:80]}{'...' if len(text) > 80 else ''}")
+    trimmed_wav = trim_silence(speaker_wav)
+    print(f"Cloning voice from: {speaker_wav.name} (silence-trimmed)")
     print(f"Output: {output_path}")
 
     start = time.time()
     tts.tts_to_file(
         text=text,
-        speaker_wav=str(speaker_wav),
+        speaker_wav=str(trimmed_wav),
         language="en",
         file_path=str(output_path),
     )
+    trimmed_wav.unlink(missing_ok=True)
     elapsed = time.time() - start
     print(f"Generated in {elapsed:.1f}s")
     return output_path

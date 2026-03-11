@@ -23,6 +23,7 @@
       - flac
       - ffmpeg
       - libmpv-dev
+      - libmpv2
     state: present
 
 # ── SPI (for ReSpeaker APA102 LEDs) ──────────────────────────────────────────
@@ -127,6 +128,14 @@
     dest: /opt/linux-voice-assistant
     version: HEAD
     depth: 1
+    force: yes  # overwrite any local manual edits — Ansible is the source of truth
+
+- name: Set ownership of linux-voice-assistant to anorum
+  file:
+    path: /opt/linux-voice-assistant
+    owner: anorum
+    group: anorum
+    recurse: yes
 
 - name: Create linux-voice-assistant venv
   command: python3 -m venv /opt/linux-voice-assistant/.venv
@@ -145,6 +154,7 @@
     src: linux-voice-assistant.service.j2
     dest: /etc/systemd/system/linux-voice-assistant.service
     mode: '0644'
+  register: lva_service
 
 - name: Enable and start linux-voice-assistant
   systemd:
@@ -152,3 +162,55 @@
     state: started
     enabled: yes
     daemon_reload: yes
+
+# ── apa102-pi (APA102 LED driver) ────────────────────────────────────────────
+# Must be installed as root into the venv because lva-leds.service runs as root
+# for SPI access (/dev/spidev0.0 requires root without udev rule)
+- name: Install apa102-pi into venv (required by LED service running as root)
+  pip:
+    name: apa102-pi
+    executable: /opt/linux-voice-assistant/.venv/bin/pip
+
+# ── Stop word sensitivity ─────────────────────────────────────────────────────
+- name: Deploy stop.json with lower probability threshold
+  copy:
+    src: stop.json
+    dest: /opt/linux-voice-assistant/wakewords/stop.json
+    mode: '0644'
+  register: stop_json
+
+- name: Restart linux-voice-assistant if service file or stop.json changed
+  systemd:
+    name: linux-voice-assistant
+    state: restarted
+    daemon_reload: yes
+  when: lva_service.changed or stop_json.changed
+
+# ── LED companion script + service ───────────────────────────────────────────
+- name: Deploy lva-leds.py
+  copy:
+    src: lva-leds.py
+    dest: /opt/lva-leds.py
+    mode: '0755'
+  register: lva_leds_script
+
+- name: Install lva-leds systemd service
+  template:
+    src: lva-leds.service.j2
+    dest: /etc/systemd/system/lva-leds.service
+    mode: '0644'
+  register: lva_leds_service
+
+- name: Enable and start lva-leds
+  systemd:
+    name: lva-leds
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Restart lva-leds if script or service file changed
+  systemd:
+    name: lva-leds
+    state: restarted
+    daemon_reload: yes
+  when: lva_leds_script.changed or lva_leds_service.changed

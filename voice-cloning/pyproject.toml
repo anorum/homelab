@@ -1,0 +1,15 @@
+[project]
+name = "voice-cloning"
+version = "0.1.0"
+description = "Custom TTS voice cloning for home voice satellite"
+requires-python = ">=3.10,<3.12"
+dependencies = [
+    "openai-whisper",
+    "pydub",
+    "soundfile",
+    "TTS==0.22.0",
+    "transformers>=4.33,<4.45",
+    "torch>=2.0,<2.6",
+    "elevenlabs",
+    "tensorboard",
+]

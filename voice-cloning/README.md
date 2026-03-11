@@ -7,12 +7,8 @@ Create custom TTS voices for the linux-voice-assistant (Wyoming Piper) setup.
 ```bash
 cd voice-cloning
 
-# Create a venv
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies and create venv
+uv sync
 ```
 
 ## Scripts
@@ -32,7 +28,7 @@ Hear your cloned voice instantly from just a short audio clip:
 
 ```bash
 # Drop a ~10 second clean voice clip into data/raw/
-python scripts/03_xtts_clone.py \
+uv run scripts/03_xtts_clone.py \
   --speaker-wav data/raw/my_voice_sample.wav \
   --batch
 
@@ -46,7 +42,7 @@ For real-time use on the Raspberry Pi satellite:
 ```bash
 # 1. Put your recordings in data/raw/
 # 2. Prepare the training dataset
-python scripts/01_prepare_audio.py \
+uv run scripts/01_prepare_audio.py \
   --input-dir data/raw \
   --output-dir data/dataset
 
@@ -56,7 +52,7 @@ python scripts/01_prepare_audio.py \
 git clone https://github.com/rhasspy/piper.git /opt/piper
 cd /opt/piper/src/python && pip install -e . && cd -
 
-python scripts/02_train_piper.py \
+uv run scripts/02_train_piper.py \
   --dataset-dir data/dataset \
   --output-dir models \
   --base-voice lessac-medium
@@ -70,12 +66,12 @@ python scripts/02_train_piper.py \
 export ELEVENLABS_API_KEY="your-key"
 
 # Clone your voice
-python scripts/04_elevenlabs_clone.py clone \
+uv run scripts/04_elevenlabs_clone.py clone \
   --name "My Voice" \
   --audio-files data/raw/sample1.wav data/raw/sample2.wav
 
 # Generate speech
-python scripts/04_elevenlabs_clone.py speak \
+uv run scripts/04_elevenlabs_clone.py speak \
   --voice-id <your-voice-id> \
   --text "Hello from the smart home"
 ```
