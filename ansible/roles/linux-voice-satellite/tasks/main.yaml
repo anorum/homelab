@@ -130,11 +130,11 @@
     depth: 1
     force: yes  # overwrite any local manual edits — Ansible is the source of truth
 
-- name: Patch satellite.py to advertise SPEAKER + MEDIA_PLAYER feature flags
+- name: Patch satellite.py to advertise SPEAKER feature flag (enables media_player entity in HA)
   replace:
     path: /opt/linux-voice-assistant/linux_voice_assistant/satellite.py
     regexp: 'VoiceAssistantFeature\.TIMERS(?!\s*\|)'
-    replace: 'VoiceAssistantFeature.TIMERS | VoiceAssistantFeature.SPEAKER | VoiceAssistantFeature.MEDIA_PLAYER'
+    replace: 'VoiceAssistantFeature.TIMERS | VoiceAssistantFeature.SPEAKER'
   register: media_player_patch
 
 - name: Set ownership of linux-voice-assistant to anorum
