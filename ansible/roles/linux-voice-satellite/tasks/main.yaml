@@ -178,7 +178,7 @@
     name: apa102-pi
     executable: /opt/linux-voice-assistant/.venv/bin/pip
 
-# ── Stop word sensitivity ─────────────────────────────────────────────────────
+# ── Wake word sensitivity ─────────────────────────────────────────────────────
 - name: Deploy stop.json with lower probability threshold
   copy:
     src: stop.json
@@ -186,12 +186,19 @@
     mode: '0644'
   register: stop_json
 
-- name: Restart linux-voice-assistant if service file or stop.json changed
+- name: Deploy hey_jarvis.json with lower probability threshold
+  copy:
+    src: hey_jarvis.json
+    dest: /opt/linux-voice-assistant/wakewords/hey_jarvis.json
+    mode: '0644'
+  register: hey_jarvis_json
+
+- name: Restart linux-voice-assistant if config changed
   systemd:
     name: linux-voice-assistant
     state: restarted
     daemon_reload: yes
-  when: lva_service.changed or stop_json.changed or media_player_patch.changed
+  when: lva_service.changed or stop_json.changed or hey_jarvis_json.changed or media_player_patch.changed
 
 # ── LED companion script + service ───────────────────────────────────────────
 - name: Deploy lva-leds.py
