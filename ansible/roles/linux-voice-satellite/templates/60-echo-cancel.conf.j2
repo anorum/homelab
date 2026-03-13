@@ -1,0 +1,35 @@
+# PipeWire native echo cancellation for ReSpeaker 2-Mic HAT
+# Replaces the PulseAudio module-echo-cancel that was loaded in ExecStartPre
+context.modules = [
+  {
+    name = libpipewire-module-echo-cancel
+    args = {
+      # Virtual source — apps read from this to get echo-cancelled audio
+      capture.props = {
+        node.name = "Echo-Cancel Source"
+        node.description = "ReSpeaker Echo-Canceled Microphone"
+        media.class = "Audio/Source"
+      }
+      # Virtual sink — apps play to this so the AEC knows what to subtract from mic
+      playback.props = {
+        node.name = "Echo-Cancel Speaker"
+        node.description = "Echo-Cancel Speaker"
+        media.class = "Audio/Sink"
+      }
+      # Physical source to capture from (ReSpeaker mic)
+      source.props = {
+        node.name = "alsa_input.platform-soc_sound.stereo-fallback"
+      }
+      # Physical sink to monitor for echo reference (ReSpeaker speaker)
+      sink.props = {
+        node.name = "alsa_output.platform-soc_sound.stereo-fallback"
+      }
+      aec.method = "webrtc"
+      aec.args = {
+        echo_suppression = true
+        noise_suppression = true
+        auto_gain_control = false
+      }
+    }
+  }
+]

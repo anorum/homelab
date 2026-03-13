@@ -108,6 +108,22 @@
   become: yes
   become_user: anorum
 
+# ── Remove stale PipeWire echo-cancel config (causes source name confusion) ──
+- name: Remove PipeWire echo-cancel config if present
+  file:
+    path: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
+    state: absent
+  register: pipewire_echo_cancel_removed
+
+- name: Restart PipeWire if echo-cancel config was removed
+  systemd:
+    name: pipewire
+    state: restarted
+    scope: user
+  become: yes
+  become_user: anorum
+  when: pipewire_echo_cancel_removed.changed
+
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
 - name: Set ReSpeaker headphone volume to 80%
   command: amixer -c 1 sset 'Headphone' 80%,80%
@@ -120,6 +136,21 @@
 - name: Save ALSA mixer state
   command: alsactl store
   changed_when: false
+
+# ── Clean up old Wyoming satellite services ─────────────────────────────────
+- name: Stop and disable old wyoming-satellite service
+  systemd:
+    name: wyoming-satellite
+    state: stopped
+    enabled: no
+  failed_when: false
+
+- name: Stop and disable old wyoming-openwakeword service
+  systemd:
+    name: wyoming-openwakeword
+    state: stopped
+    enabled: no
+  failed_when: false
 
 # ── linux-voice-assistant ─────────────────────────────────────────────────────
 - name: Clone linux-voice-assistant repository

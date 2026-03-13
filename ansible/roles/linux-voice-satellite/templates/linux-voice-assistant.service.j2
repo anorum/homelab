@@ -14,15 +14,11 @@ Environment=PYTHONUNBUFFERED=1
 Environment=PULSE_SERVER=unix:/run/user/1000/pulse/native
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
-# Load echo-cancel module before starting — suppresses mic pickup of speaker output.
-# Check first so we don't stack up duplicate ec_mic sources on repeated restarts.
-ExecStartPre=/bin/bash -c 'pactl --server unix:/run/user/1000/pulse/native list modules | grep -q module-echo-cancel || pactl --server unix:/run/user/1000/pulse/native load-module module-echo-cancel aec_method=webrtc source_name=ec_mic sink_name=ec_speaker'
-
 ExecStart=/opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant \
   --name "{{ satellite_name }} Satellite" \
   --wake-model hey_jarvis \
   --port 6053 \
-  --audio-input-device "Echo-Cancel Source" \
+  --audio-input-device "Built-in Audio Stereo" \
   --stop-model stop \
   --refractory-seconds 2
 Restart=always
