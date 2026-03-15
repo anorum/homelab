@@ -10,6 +10,7 @@ resources:
 
 generators:
   - discord-webhook-secret-generator.yaml
+  - ha-scrape-secret-generator.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -72,6 +73,10 @@ helmCharts:
                     storage: 5Gi
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
+          additionalScrapeConfigsSecret:
+            enabled: true
+            name: ha-scrape-config
+            key: additional-scrape-configs.yaml
         ingress:
           enabled: false
       kubeEtcd:
