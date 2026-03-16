@@ -87,6 +87,17 @@ spec:
             summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
             description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a not-ready state for more than 10 minutes."
 
+    - name: homelab-home-assistant
+      rules:
+        - alert: HomeAssistantDown
+          expr: up{job="home_assistant"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Home Assistant is down"
+            description: "Prometheus cannot reach Home Assistant at 192.168.1.38:8123. It has been unreachable for more than 2 minutes."
+
     - name: homelab-services
       rules:
         - alert: HomelabArgoOutOfSync
