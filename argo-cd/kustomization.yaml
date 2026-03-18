@@ -35,6 +35,7 @@ resources:
 - https://raw.githubusercontent.com/argoproj/argo-cd/v3.3.2/manifests/install.yaml
 - httproute.yaml
 - app-of-apps.yaml
+- servicemonitors.yaml
 
 configMapGenerator:
   - name: argocd-cm

@@ -1,37 +1,10 @@
 # Mac Mini services (192.168.1.105)
 # Ollama runs natively via macOS app (Metal GPU acceleration)
 # Home Assistant runs on separate Pi (homeassistant.local:8123)
+# Wyoming STT/TTS run as add-ons on the HA Pi 5
 # Deploy: ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbook/deploy-mac-mini.yaml
 
 services:
-  wyoming-whisper:
-    image: rhasspy/wyoming-whisper
-    container_name: wyoming-whisper
-    restart: unless-stopped
-    ports:
-      - "10300:10300"
-    volumes:
-      - whisper-data:/data
-    command: --model tiny-int8 --language en
-
-  wyoming-piper:
-    image: rhasspy/wyoming-piper
-    container_name: wyoming-piper
-    restart: unless-stopped
-    ports:
-      - "10200:10200"
-    volumes:
-      - piper-data:/data
-    command: --voice en_US-lessac-medium
-
-  wyoming-openwakeword:
-    image: rhasspy/wyoming-openwakeword
-    container_name: wyoming-openwakeword
-    restart: unless-stopped
-    ports:
-      - "10400:10400"
-    command: --preload-model "hey_jarvis"
-
   homelab-mcp:
     image: python:3.12-slim
     container_name: homelab-mcp
@@ -46,6 +19,3 @@ services:
     command: >
       sh -c "pip install --quiet -r requirements.txt && python server.py"
 
-volumes:
-  whisper-data:
-  piper-data:

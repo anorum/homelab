@@ -16,13 +16,11 @@
       - alsa-utils
       - libsndfile1
       - libportaudio2
-      - portaudio19-dev
       - pipewire
       - pipewire-pulse
       - wireplumber
       - flac
       - ffmpeg
-      - libmpv-dev
       - libmpv2
     state: present
 
@@ -42,6 +40,7 @@
     dest: /opt/wyoming-satellite
     version: master
     depth: 1
+    update: no
 
 - name: Check if seeed-voicecard DKMS module is already registered
   stat:
@@ -66,14 +65,6 @@
   failed_when: "'seeed2micvoicec' not in aplay_output.stdout"
 
 # ── Set ReSpeaker as default ALSA device ─────────────────────────────────────
-- name: Set ReSpeaker as default ALSA device (system-wide)
-  copy:
-    dest: /etc/asound.conf
-    mode: '0644'
-    content: |
-      defaults.pcm.card 1
-      defaults.ctl.card 1
-
 - name: Set ReSpeaker as default ALSA device (user)
   copy:
     dest: /home/anorum/.asoundrc
@@ -125,16 +116,9 @@
   when: pipewire_echo_cancel_removed.changed
 
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
-- name: Set ReSpeaker headphone volume to 80%
-  command: amixer -c 1 sset 'Headphone' 80%,80%
-  changed_when: false
-
+# Volume is set on every service start via ExecStartPre in the service template.
 - name: Enable headphone zero-crossing
   command: amixer -c 1 sset 'Headphone Playback ZC' on
-  changed_when: false
-
-- name: Save ALSA mixer state
-  command: alsactl store
   changed_when: false
 
 # ── Clean up old Wyoming satellite services ─────────────────────────────────
@@ -159,7 +143,7 @@
     dest: /opt/linux-voice-assistant
     version: HEAD
     depth: 1
-    force: yes  # overwrite any local manual edits — Ansible is the source of truth
+    update: no
 
 - name: Patch satellite.py to advertise SPEAKER feature flag (enables media_player entity in HA)
   replace:

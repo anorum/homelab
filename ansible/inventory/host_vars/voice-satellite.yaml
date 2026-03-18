@@ -1,2 +1,4 @@
 satellite_name: "Living Room"
 satellite_port: 10700
+refractory_seconds: 1
+audio_input_device: "Built-in Audio Stereo"

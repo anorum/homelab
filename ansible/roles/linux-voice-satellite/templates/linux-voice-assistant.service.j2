@@ -1,7 +1,5 @@
 [Unit]
 Description=Linux Voice Assistant ({{ satellite_name }})
-# ESPHome satellite — Home Assistant discovers this device via mDNS on port 6053.
-# No HA host config needed here; HA connects to us.
 After=network.target sound.target
 
 [Service]
@@ -14,13 +12,14 @@ Environment=PYTHONUNBUFFERED=1
 Environment=PULSE_SERVER=unix:/run/user/1000/pulse/native
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
+ExecStartPre=/usr/bin/amixer -c 1 sset Headphone 100%,100%
 ExecStart=/opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant \
   --name "{{ satellite_name }} Satellite" \
   --wake-model hey_jarvis \
-  --port 6053 \
-  --audio-input-device "Built-in Audio Stereo" \
+  --port {{ satellite_port }} \
+  --audio-input-device "{{ audio_input_device }}" \
   --stop-model stop \
-  --refractory-seconds 2
+  --refractory-seconds {{ refractory_seconds }}
 Restart=always
 RestartSec=5
 

@@ -7,9 +7,7 @@ Run: uv run server.py
 """
 
 import asyncio
-import base64
 import os
-import time
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -20,59 +18,8 @@ PROMETHEUS = "http://prometheus.home.alexnorum.com"
 
 HA_URL = os.environ.get("HA_URL", "http://homeassistant.local:8123")
 HA_TOKEN = os.environ.get("HA_TOKEN", "")
-HA_SPOTIFY_ENTITY = os.environ.get("HA_SPOTIFY_ENTITY", "media_player.spotify")
 
-SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "")
-SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "")
-
-_spotify_token_cache: dict = {}
-
-
-async def _spotify_token() -> str:
-    """Get a cached Spotify client-credentials access token (auto-refreshes)."""
-    now = time.time()
-    if _spotify_token_cache.get("expires_at", 0) > now + 60:
-        return _spotify_token_cache["token"]
-    creds = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.post(
-            "https://accounts.spotify.com/api/token",
-            headers={"Authorization": f"Basic {creds}"},
-            data={"grant_type": "client_credentials"},
-        )
-        r.raise_for_status()
-        data = r.json()
-    _spotify_token_cache["token"] = data["access_token"]
-    _spotify_token_cache["expires_at"] = now + data["expires_in"]
-    return _spotify_token_cache["token"]
-
-
-async def _spotify_search(query: str) -> tuple[str, str]:
-    """Search Spotify and return (uri, media_content_type) — playlist preferred, fallback to track."""
-    token = await _spotify_token()
-    headers = {"Authorization": f"Bearer {token}"}
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(
-            "https://api.spotify.com/v1/search",
-            headers=headers,
-            params={"q": query, "type": "playlist", "limit": 5, "market": "US"},
-        )
-        r.raise_for_status()
-        playlists = [p for p in r.json()["playlists"]["items"] if p]
-        if playlists:
-            return playlists[0]["uri"], "SPOTIFY"
-
-        r = await client.get(
-            "https://api.spotify.com/v1/search",
-            headers=headers,
-            params={"q": query, "type": "track", "limit": 1, "market": "US"},
-        )
-        r.raise_for_status()
-        tracks = r.json()["tracks"]["items"]
-        if tracks:
-            return tracks[0]["uri"], "SPOTIFY"
-
-    raise ValueError(f"No Spotify results found for: {query}")
+MA_PLAYER = os.environ.get("MA_PLAYER", "media_player.living_room_satellite_media_player_2")
 
 
 def _ha_headers() -> dict:
@@ -186,53 +133,35 @@ async def query_prometheus(promql: str) -> str:
         return r.text
 
 
-# ── Spotify ───────────────────────────────────────────────────────────────────
+# ── Music ─────────────────────────────────────────────────────────────────────
 
 
 @mcp.tool()
-async def play_spotify(query: str) -> str:
+async def play_music(query: str) -> str:
     """
-    Search Spotify and play the result on the living room Pi speakers.
+    Search and play music on the living room speakers via Music Assistant.
     query: any music description — genre, mood, artist, song, playlist name.
     Examples: 'relaxing piano', 'punk rock', 'taylor swift', 'sleep music', 'chill'
     Use this whenever the user asks to play music.
     """
-    (uri, content_type), _ = await asyncio.gather(
-        _spotify_search(query),
-        _ha_call("media_player", "select_source", {
-            "entity_id": HA_SPOTIFY_ENTITY,
-            "source": "Living Room Satellite",
-        }),
-    )
-    # Retry play_media — device activation can take 1-3s after select_source
-    last_err: Exception = RuntimeError("play_media never attempted")
-    for delay in (0, 1, 2):
-        await asyncio.sleep(delay)
-        try:
-            await _ha_call("media_player", "play_media", {
-                "entity_id": HA_SPOTIFY_ENTITY,
-                "media_content_id": uri,
-                "media_content_type": content_type,
-            })
-            break
-        except RuntimeError as e:
-            last_err = e
-    else:
-        raise last_err
-    return f"Playing {query} on Spotify through the living room speakers"
+    await _ha_call("music_assistant", "play_media", {
+        "entity_id": MA_PLAYER,
+        "media_id": query,
+    })
+    return f"Playing {query} on the living room speakers"
 
 
 @mcp.tool()
-async def pause_spotify() -> str:
-    """Pause Spotify music."""
-    await _ha_call("media_player", "media_pause", {"entity_id": HA_SPOTIFY_ENTITY})
+async def pause_music() -> str:
+    """Pause music."""
+    await _ha_call("media_player", "media_pause", {"entity_id": MA_PLAYER})
     return "Music paused"
 
 
 @mcp.tool()
-async def resume_spotify() -> str:
-    """Resume Spotify music."""
-    await _ha_call("media_player", "media_play", {"entity_id": HA_SPOTIFY_ENTITY})
+async def resume_music() -> str:
+    """Resume music."""
+    await _ha_call("media_player", "media_play", {"entity_id": MA_PLAYER})
     return "Music resumed"
 
 
