@@ -8,6 +8,14 @@
       command: docker info
       changed_when: false
 
+    - name: Fix openclaw workspace permissions (container runs as uid 1000)
+      file:
+        path: "{{ compose_dir }}/openclaw"
+        owner: "1000"
+        recurse: true
+        mode: g+rwX
+      become: true
+
     - name: Deploy compose stack
       command: docker compose up -d
       args:

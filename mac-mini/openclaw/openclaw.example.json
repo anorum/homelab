@@ -1,0 +1,39 @@
+{
+  // Copy to openclaw.json — OpenClaw will auto-generate gateway token + meta on first run
+  // Set DISCORD_BOT_TOKEN in mac-mini/.env
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://192.168.1.105:11434",
+        apiKey: "ollama-local",
+        api: "ollama",
+        models: [{ id: "qwen3:8b", name: "qwen3:8b" }],
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      model: "ollama/qwen3:8b",
+      sandbox: {
+        mode: "non-main",
+        scope: "agent",
+        workspaceAccess: "none",
+      },
+    },
+  },
+  channels: {
+    discord: {
+      enabled: true,
+      // token auto-read from DISCORD_BOT_TOKEN env var
+      dmPolicy: "allowlist",
+      allowFrom: ["694720781887733760"],
+      groupPolicy: "allowlist",
+      guilds: {
+        "1479658297110823037": {
+          requireMention: true,
+          users: ["694720781887733760"],
+        },
+      },
+    },
+  },
+}

@@ -1,0 +1,5 @@
+# Ignore everything — openclaw.json is auto-managed by OpenClaw and contains secrets
+# See openclaw.example.json for the config structure
+*
+!.gitignore
+!openclaw.example.json
