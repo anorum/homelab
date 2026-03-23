@@ -14,7 +14,7 @@ Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 ExecStart=/opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant \
   --name "{{ satellite_name }} Satellite" \
-  --wake-model hey_jarvis \
+  --wake-model okay_nabu \
   --port {{ satellite_port }} \
   --audio-input-device "{{ audio_input_device }}" \
   --stop-model stop \

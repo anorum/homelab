@@ -210,19 +210,26 @@
     mode: '0644'
   register: stop_json
 
-- name: Deploy hey_jarvis.json with lower probability threshold
+- name: Remove stale hey_jarvis.json wake word config
+  file:
+    path: /opt/linux-voice-assistant/wakewords/hey_jarvis.json
+    state: absent
+
+- name: Deploy okay_nabu.json wake word config
   copy:
-    src: hey_jarvis.json
-    dest: /opt/linux-voice-assistant/wakewords/hey_jarvis.json
+    src: okay_nabu.json
+    dest: /opt/linux-voice-assistant/wakewords/okay_nabu.json
     mode: '0644'
-  register: hey_jarvis_json
+    owner: anorum
+    group: anorum
+  register: okay_nabu_json
 
 - name: Restart linux-voice-assistant if config changed
   systemd:
     name: linux-voice-assistant
     state: restarted
     daemon_reload: yes
-  when: lva_service.changed or stop_json.changed or hey_jarvis_json.changed or media_player_patch.changed
+  when: lva_service.changed or stop_json.changed or okay_nabu_json.changed or media_player_patch.changed
 
 # ── LED companion script + service ───────────────────────────────────────────
 - name: Deploy lva-leds.py
