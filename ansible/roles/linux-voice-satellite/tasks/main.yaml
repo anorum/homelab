@@ -136,6 +136,11 @@
     su - anorum -s /bin/bash -c
     "XDG_RUNTIME_DIR=/run/user/1000 pactl set-sink-port alsa_output.platform-soc_sound.stereo-fallback analog-output-headphones"
   changed_when: false
+  # When echo cancellation is active, PipeWire creates a virtual sink with the same node name
+  # that shadows the physical sink. pactl resolves to the virtual sink (no ports) and returns
+  # "No such entity". WirePlumber persists the headphone route across reboots so the physical
+  # sink's active port is already correct — this failure is safe to ignore.
+  failed_when: false
 
 # ── Clean up old Wyoming satellite services ─────────────────────────────────
 - name: Stop and disable old wyoming-satellite service
