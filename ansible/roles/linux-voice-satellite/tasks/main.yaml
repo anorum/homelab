@@ -99,21 +99,28 @@
   become: yes
   become_user: anorum
 
-# ── Remove stale PipeWire echo-cancel config (causes source name confusion) ──
-- name: Remove PipeWire echo-cancel config if present
+# ── PipeWire echo cancellation (WebRTC AEC) ──────────────────────────────────
+- name: Ensure /etc/pipewire/pipewire.conf.d directory exists
   file:
-    path: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
-    state: absent
-  register: pipewire_echo_cancel_removed
+    path: /etc/pipewire/pipewire.conf.d
+    state: directory
+    mode: '0755'
 
-- name: Restart PipeWire if echo-cancel config was removed
+- name: Deploy PipeWire echo-cancel config
+  template:
+    src: 60-echo-cancel.conf.j2
+    dest: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
+    mode: '0644'
+  register: pipewire_echo_cancel
+
+- name: Restart PipeWire if echo-cancel config changed
   systemd:
     name: pipewire
     state: restarted
     scope: user
   become: yes
   become_user: anorum
-  when: pipewire_echo_cancel_removed.changed
+  when: pipewire_echo_cancel.changed
 
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
 # WirePlumber manages the seeed-voicecard (alsa_card.platform-soc_sound) and defaults
