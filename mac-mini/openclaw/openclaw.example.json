@@ -14,10 +14,9 @@
   agents: {
     defaults: {
       model: "ollama/qwen3:8b",
+      // sandbox requires Docker-in-Docker — disabled since we don't mount the socket
       sandbox: {
-        mode: "non-main",
-        scope: "agent",
-        workspaceAccess: "none",
+        mode: "off",
       },
     },
   },
