@@ -99,21 +99,28 @@
   become: yes
   become_user: anorum
 
-# ── Remove stale PipeWire echo-cancel config (causes source name confusion) ──
-- name: Remove PipeWire echo-cancel config if present
+# ── PipeWire echo cancellation (WebRTC AEC) ──────────────────────────────────
+- name: Ensure /etc/pipewire/pipewire.conf.d directory exists
   file:
-    path: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
-    state: absent
-  register: pipewire_echo_cancel_removed
+    path: /etc/pipewire/pipewire.conf.d
+    state: directory
+    mode: '0755'
 
-- name: Restart PipeWire if echo-cancel config was removed
+- name: Deploy PipeWire echo-cancel config
+  template:
+    src: 60-echo-cancel.conf.j2
+    dest: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
+    mode: '0644'
+  register: pipewire_echo_cancel
+
+- name: Restart PipeWire if echo-cancel config changed
   systemd:
     name: pipewire
     state: restarted
     scope: user
   become: yes
   become_user: anorum
-  when: pipewire_echo_cancel_removed.changed
+  when: pipewire_echo_cancel.changed
 
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
 # WirePlumber manages the seeed-voicecard (alsa_card.platform-soc_sound) and defaults
@@ -210,19 +217,26 @@
     mode: '0644'
   register: stop_json
 
-- name: Deploy hey_jarvis.json with lower probability threshold
+- name: Remove stale hey_jarvis.json wake word config
+  file:
+    path: /opt/linux-voice-assistant/wakewords/hey_jarvis.json
+    state: absent
+
+- name: Deploy okay_nabu.json wake word config
   copy:
-    src: hey_jarvis.json
-    dest: /opt/linux-voice-assistant/wakewords/hey_jarvis.json
+    src: okay_nabu.json
+    dest: /opt/linux-voice-assistant/wakewords/okay_nabu.json
     mode: '0644'
-  register: hey_jarvis_json
+    owner: anorum
+    group: anorum
+  register: okay_nabu_json
 
 - name: Restart linux-voice-assistant if config changed
   systemd:
     name: linux-voice-assistant
     state: restarted
     daemon_reload: yes
-  when: lva_service.changed or stop_json.changed or hey_jarvis_json.changed or media_player_patch.changed
+  when: lva_service.changed or stop_json.changed or okay_nabu_json.changed or media_player_patch.changed
 
 # ── LED companion script + service ───────────────────────────────────────────
 - name: Deploy lva-leds.py

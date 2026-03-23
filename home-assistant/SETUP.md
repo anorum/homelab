@@ -124,9 +124,12 @@ In HA, go to **Settings > Devices & Services > Add Integration > Wyoming Protoco
 | Speech-to-text | faster-whisper (Mac Mini, port 10300) |
 | Text-to-speech | Piper (Mac Mini, port 10200), voice: `en_US-lessac-medium` |
 | Wake word engine | openWakeWord (auto-configured on satellite) |
-| Wake word | `hey_jarvis` |
+| Wake word | `okay_nabu` |
 
-**Note:** Use `llama3.1:8b` or `qwen3:8b` for reliable tool calling. The 4B model may not consistently invoke MCP tools.
+**Notes:**
+- Use `llama3.1:8b` or `qwen3:8b` for reliable tool calling. The 4B model may not consistently invoke MCP tools.
+- PipeWire echo cancellation (WebRTC AEC) is enabled on the satellite. The `audio_input_device` is configured to use the virtual echo-cancelled source `"Echo-Cancel Source"` to reduce feedback during TTS playback.
+- The stop word ("stop") is fully wired — it is detected during TTS playback and will call `tts_player.stop()` to interrupt playback.
 
 ### Assign Pipeline to Satellite
 
