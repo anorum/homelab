@@ -15,9 +15,7 @@
     defaults: {
       model: "ollama/qwen3:8b",
       sandbox: {
-        mode: "non-main",
-        scope: "agent",
-        workspaceAccess: "none",
+        mode: "off",
       },
     },
   },
