@@ -116,9 +116,18 @@
   when: pipewire_echo_cancel_removed.changed
 
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
-# Volume is set on every service start via ExecStartPre in the service template.
+# WirePlumber manages the seeed-voicecard (alsa_card.platform-soc_sound) and defaults
+# to the analog-output-speaker route, which mutes the headphone jack (Headphone=0%).
+# We must explicitly select analog-output-headphones so audio reaches the 3.5mm output.
+# WirePlumber persists this choice in ~/.local/state/wireplumber/default-routes.
 - name: Enable headphone zero-crossing
   command: amixer -c 1 sset 'Headphone Playback ZC' on
+  changed_when: false
+
+- name: Set WirePlumber output route to headphones (so Headphone ALSA control stays non-zero)
+  command: >
+    su - anorum -s /bin/bash -c
+    "XDG_RUNTIME_DIR=/run/user/1000 pactl set-sink-port alsa_output.platform-soc_sound.stereo-fallback analog-output-headphones"
   changed_when: false
 
 # ── Clean up old Wyoming satellite services ─────────────────────────────────

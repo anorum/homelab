@@ -12,7 +12,6 @@ Environment=PYTHONUNBUFFERED=1
 Environment=PULSE_SERVER=unix:/run/user/1000/pulse/native
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
-ExecStartPre=/usr/bin/amixer -c 1 sset Headphone 100%,100%
 ExecStart=/opt/linux-voice-assistant/.venv/bin/python -m linux_voice_assistant \
   --name "{{ satellite_name }} Satellite" \
   --wake-model hey_jarvis \
