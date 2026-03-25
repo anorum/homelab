@@ -9,6 +9,9 @@ services:
     image: python:3.12-slim
     container_name: homelab-mcp
     restart: unless-stopped
+    dns:
+      - 192.168.1.150   # AdGuard — resolves *.home.alexnorum.com
+      - 8.8.8.8         # fallback for internet domains (pypi.org, etc.)
     ports:
       - "8881:8080"
     volumes:

@@ -99,28 +99,24 @@
   become: yes
   become_user: anorum
 
-# ── PipeWire echo cancellation (WebRTC AEC) ──────────────────────────────────
-- name: Ensure /etc/pipewire/pipewire.conf.d directory exists
+# ── Remove stale PipeWire echo-cancel config ──────────────────────────────────
+# Echo cancel renames PulseAudio source descriptions (e.g. "Built-in Audio Stereo"
+# → "Echo-Cancel Source"), which breaks soundcard device lookup in linux-voice-assistant.
+# Keep disabled until upstream adds device-name-aware lookup.
+- name: Remove PipeWire echo-cancel config if present
   file:
-    path: /etc/pipewire/pipewire.conf.d
-    state: directory
-    mode: '0755'
+    path: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
+    state: absent
+  register: pipewire_echo_cancel_removed
 
-- name: Deploy PipeWire echo-cancel config
-  template:
-    src: 60-echo-cancel.conf.j2
-    dest: /etc/pipewire/pipewire.conf.d/60-echo-cancel.conf
-    mode: '0644'
-  register: pipewire_echo_cancel
-
-- name: Restart PipeWire if echo-cancel config changed
+- name: Restart PipeWire if echo-cancel config was removed
   systemd:
     name: pipewire
     state: restarted
     scope: user
   become: yes
   become_user: anorum
-  when: pipewire_echo_cancel.changed
+  when: pipewire_echo_cancel_removed.changed
 
 # ── Set ALSA mixer levels ─────────────────────────────────────────────────────
 # WirePlumber manages the seeed-voicecard (alsa_card.platform-soc_sound) and defaults
@@ -190,6 +186,13 @@
     name: /opt/linux-voice-assistant
     virtualenv: /opt/linux-voice-assistant/.venv
     editable: yes
+
+# ── Clean up debug drop-in ────────────────────────────────────────────────────
+- name: Remove debug service drop-in if present
+  file:
+    path: /etc/systemd/system/linux-voice-assistant.service.d/debug.conf
+    state: absent
+  register: debug_dropin_removed
 
 # ── systemd service ───────────────────────────────────────────────────────────
 - name: Install linux-voice-assistant systemd service
