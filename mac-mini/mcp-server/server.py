@@ -12,7 +12,8 @@ import os
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("homelab", host="0.0.0.0", port=8080)
+_port = int(os.environ.get("MCP_PORT", 8080))
+mcp = FastMCP("homelab", host="0.0.0.0", port=_port)
 
 PROMETHEUS = "http://prometheus.home.alexnorum.com"
 

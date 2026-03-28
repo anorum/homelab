@@ -70,8 +70,8 @@ spec:
     - name: homelab-pods
       rules:
         - alert: HomelabPodCrashLooping
-          expr: increase(kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"}[1h]) > 3
-          for: 5m
+          expr: kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"} > 5
+          for: 10m
           labels:
             severity: warning
           annotations:
@@ -91,7 +91,7 @@ spec:
       rules:
         - alert: HomeAssistantDown
           expr: up{job="home_assistant"} == 0
-          for: 2m
+          for: 5m
           labels:
             severity: critical
           annotations:

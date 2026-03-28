@@ -94,7 +94,7 @@ helmCharts:
             - discord-webhook
         config:
           global:
-            resolve_timeout: 5m
+            resolve_timeout: 10m
           inhibit_rules:
             - source_matchers:
                 - "severity = critical"

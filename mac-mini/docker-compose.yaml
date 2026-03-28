@@ -9,16 +9,14 @@ services:
     image: python:3.12-slim
     container_name: homelab-mcp
     restart: unless-stopped
-    dns:
-      - 192.168.1.150   # AdGuard — resolves *.home.alexnorum.com
-      - 8.8.8.8         # fallback for internet domains (pypi.org, etc.)
-    ports:
-      - "8881:8080"
+    network_mode: host   # needs LAN access for Prometheus/HA
     volumes:
       - ./mcp-server:/app
     working_dir: /app
     env_file:
       - .env
+    environment:
+      MCP_PORT: "8881"
     command: >
       sh -c "pip install --quiet -r requirements.txt && python server.py"
 
