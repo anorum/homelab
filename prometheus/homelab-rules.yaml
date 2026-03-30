@@ -96,7 +96,7 @@ spec:
             severity: warning
           annotations:
             summary: "Mac Mini data disk above 85%"
-            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full. Current usage: ~170Gi/228Gi."
+            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full."
 
         - alert: MacMiniDataDiskCritical
           expr: (1 - node_filesystem_avail_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"} / node_filesystem_size_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"}) > 0.92
