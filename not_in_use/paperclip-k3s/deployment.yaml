@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperclip
+  namespace: paperclip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paperclip
+  template:
+    metadata:
+      labels:
+        app: paperclip
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - swagman-2
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - until nc -z postgres.paperclip.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done
+      containers:
+        - name: paperclip
+          image: ghcr.io/paperclipai/paperclip:v2026.325.0
+          ports:
+            - containerPort: 3100
+          env:
+            - name: PORT
+              value: "3100"
+            - name: SERVE_UI
+              value: "true"
+            - name: PAPERCLIP_DEPLOYMENT_MODE
+              value: "authenticated"
+            - name: PAPERCLIP_DEPLOYMENT_EXPOSURE
+              value: "private"
+            - name: PAPERCLIP_PUBLIC_URL
+              value: "https://paperclip.home.alexnorum.com"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: paperclip-secrets
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: "postgres://paperclip:$(POSTGRES_PASSWORD)@postgres.paperclip.svc.cluster.local:5432/paperclip"
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: paperclip-secrets
+                  key: better-auth-secret
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3100
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3100
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3100
+            periodSeconds: 5
+          volumeMounts:
+            - name: app-data
+              mountPath: /paperclip
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: paperclip-data
