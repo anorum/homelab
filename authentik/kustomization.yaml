@@ -5,6 +5,7 @@ namespace: authentik
 resources:
 - namespace.yaml
 - httproute.yaml
+- argocd-blueprint.yaml
 - google-oauth-blueprint.yaml
 - forward-auth-blueprint.yaml
 - grafana-blueprint.yaml

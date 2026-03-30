@@ -117,3 +117,43 @@ spec:
           annotations:
             summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
             description: "ArgoCD application {{ $labels.name }} has been {{ $labels.health_status }} for more than 10 minutes."
+
+        - alert: HomelabArgoProgressing
+          expr: argocd_app_info{health_status="Progressing"} == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} stuck Progressing"
+            description: "ArgoCD application {{ $labels.name }} has been in Progressing state for more than 30 minutes — possible deployment stall or missing resource."
+
+    - name: homelab-backup
+      rules:
+        - alert: HomelabBackupFailed
+          expr: kube_job_status_failed{namespace="backup"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Backup job {{ $labels.job_name }} failed"
+            description: "Backup CronJob {{ $labels.job_name }} in namespace backup has a failed pod. Check logs immediately."
+
+        - alert: HomelabBackupMissing
+          expr: (time() - kube_cronjob_status_last_schedule_time{namespace="backup"}) > 90000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Backup CronJob {{ $labels.cronjob }} hasn't run recently"
+            description: "Backup CronJob {{ $labels.cronjob }} last ran more than 25 hours ago. Expected daily schedule may have missed."
+
+    - name: homelab-pod-unknown
+      rules:
+        - alert: HomelabPodUnknown
+          expr: kube_pod_status_phase{phase="Unknown",namespace!="kube-system"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is in Unknown state"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in Unknown phase for 15 minutes. The node it was on may be unreachable."
