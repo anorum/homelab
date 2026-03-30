@@ -138,6 +138,10 @@ helmCharts:
               - receiver: "null"
                 matchers:
                   - alertname =~ "KubeMemoryOvercommit|KubeCPUOvercommit"
+              # Suppress meta-alerts that cause a feedback loop when Discord webhook fails
+              - receiver: "null"
+                matchers:
+                  - alertname =~ "AlertmanagerFailedToSendAlerts|AlertmanagerClusterFailedToSendAlerts"
           receivers:
             - name: "null"
             - name: "discord"
@@ -146,12 +150,13 @@ helmCharts:
                   send_resolved: true
                   title: '{{ if eq .Status "firing" }}[FIRING:{{ .Alerts.Firing | len }}]{{ else }}[RESOLVED]{{ end }} {{ .CommonLabels.alertname }}'
                   text: |-
-                    {{ range .Alerts }}
+                    {{ range .Alerts -}}
                     *Alert:* {{ .Labels.alertname }} ({{ .Labels.severity }})
                     *Namespace:* {{ .Labels.namespace }}
                     {{ if .Annotations.summary }}*Summary:* {{ .Annotations.summary }}{{ end }}
                     {{ if .Annotations.description }}*Description:* {{ .Annotations.description }}{{ end }}
-                    {{ end }}
+                    {{ end -}}
+                    {{ if not .Alerts }}(no alert details){{ end }}
           templates:
             - "/etc/alertmanager/config/*.tmpl"
 
