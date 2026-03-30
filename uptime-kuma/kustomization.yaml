@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
+  - service-push-nodeport.yaml
   - pvc.yaml
   - httproute.yaml
   # - certificate.yaml

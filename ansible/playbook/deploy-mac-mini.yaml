@@ -72,3 +72,42 @@
     - name: Show LaunchAgent status
       debug:
         msg: "{{ lctl.stdout }}"
+
+- name: Deploy openclaw-push as native LaunchAgent
+  hosts: mac_mini
+  gather_facts: false
+  vars:
+    plist_src: "{{ playbook_dir }}/../../mac-mini/com.homelab.openclaw-push.plist"
+    plist_dest: "/Users/alexnorum/Library/LaunchAgents/com.homelab.openclaw-push.plist"
+    push_sh: "/Users/alexnorum/repos/homelab/mac-mini/openclaw-push.sh"
+  tasks:
+    - name: Make openclaw-push.sh executable
+      file:
+        path: "{{ push_sh }}"
+        mode: "0755"
+
+    - name: Install openclaw-push LaunchAgent plist
+      copy:
+        src: "{{ plist_src }}"
+        dest: "{{ plist_dest }}"
+        mode: "0644"
+      register: plist_changed
+
+    - name: Unload existing LaunchAgent (if running)
+      command: launchctl unload "{{ plist_dest }}"
+      ignore_errors: true
+      when: plist_changed.changed
+
+    - name: Load LaunchAgent
+      command: launchctl load "{{ plist_dest }}"
+      when: plist_changed.changed
+
+    - name: Ensure LaunchAgent is running
+      command: launchctl list com.homelab.openclaw-push
+      register: lctl
+      changed_when: false
+      failed_when: lctl.rc != 0
+
+    - name: Show LaunchAgent status
+      debug:
+        msg: "{{ lctl.stdout }}"
