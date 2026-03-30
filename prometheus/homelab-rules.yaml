@@ -87,6 +87,53 @@ spec:
             summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
             description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a not-ready state for more than 10 minutes."
 
+    - name: homelab-mac-mini
+      rules:
+        - alert: MacMiniDataDiskWarning
+          expr: (1 - node_filesystem_avail_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"} / node_filesystem_size_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"}) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mac Mini data disk above 85%"
+            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full. Current usage: ~170Gi/228Gi."
+
+        - alert: MacMiniDataDiskCritical
+          expr: (1 - node_filesystem_avail_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"} / node_filesystem_size_bytes{instance="mac-mini",mountpoint="/System/Volumes/Data"}) > 0.92
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mac Mini data disk above 92% — immediate action required"
+            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full. Services (Ollama, OpenClaw, Paperclip) may be impacted."
+
+        - alert: MacMiniHighCpu
+          expr: (1 - avg by(instance) (rate(node_cpu_seconds_total{instance="mac-mini",mode="idle"}[5m]))) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mac Mini CPU above 85%"
+            description: "Mac Mini CPU usage has been above 85% for 10 minutes. Current value: {{ $value | humanizePercentage }}"
+
+        - alert: MacMiniHighMemory
+          expr: (1 - node_memory_MemAvailable_bytes{instance="mac-mini"} / node_memory_MemTotal_bytes{instance="mac-mini"}) > 0.90
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mac Mini memory above 90%"
+            description: "Mac Mini memory usage has been above 90% for 10 minutes. Current value: {{ $value | humanizePercentage }}"
+
+        - alert: MacMiniNodeExporterDown
+          expr: up{job="mac-mini-node-exporter"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mac Mini node_exporter is unreachable"
+            description: "Prometheus cannot scrape node_exporter at 192.168.1.105:9100. Mac Mini may be down or node_exporter stopped."
+
     - name: homelab-home-assistant
       rules:
         - alert: HomeAssistantDown

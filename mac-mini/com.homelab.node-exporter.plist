@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.homelab.node-exporter</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/node_exporter</string>
+        <string>--web.listen-address=:9100</string>
+        <string>--collector.disable-defaults</string>
+        <string>--collector.cpu</string>
+        <string>--collector.meminfo</string>
+        <string>--collector.diskstats</string>
+        <string>--collector.filesystem</string>
+        <string>--collector.netdev</string>
+        <string>--collector.loadavg</string>
+        <string>--collector.uname</string>
+        <string>--collector.time</string>
+        <string>--collector.boottime</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/homelab-node-exporter.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/homelab-node-exporter.log</string>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+</dict>
+</plist>

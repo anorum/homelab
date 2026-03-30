@@ -73,6 +73,13 @@ helmCharts:
                     storage: 5Gi
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
+          additionalScrapeConfigs:
+            - job_name: mac-mini-node-exporter
+              static_configs:
+                - targets:
+                    - 192.168.1.105:9100
+                  labels:
+                    instance: mac-mini
           additionalScrapeConfigsSecret:
             enabled: true
             name: ha-scrape-config
