@@ -114,12 +114,21 @@ helmCharts:
               equal: ["namespace"]
             - target_matchers:
                 - "alertname = InfoInhibitor"
+            # Warning/Critical pairs with different alertnames — suppress warning when critical fires
+            - source_matchers:
+                - alertname = "MacMiniDataDiskCritical"
+              target_matchers:
+                - alertname = "MacMiniDataDiskWarning"
+            - source_matchers:
+                - alertname = "HomelabHddUsageCritical"
+              target_matchers:
+                - alertname = "HomelabHddUsageWarning"
           route:
             group_by: ["namespace", "alertname"]
             group_wait: 30s
             group_interval: 5m
             repeat_interval: 12h
-            receiver: "discord"
+            receiver: "null"
             routes:
               - receiver: "null"
                 matchers:
@@ -142,6 +151,16 @@ helmCharts:
               - receiver: "null"
                 matchers:
                   - alertname =~ "AlertmanagerFailedToSendAlerts|AlertmanagerClusterFailedToSendAlerts"
+              # KubeJobFailed duplicates HomelabBackupFailed for backup jobs
+              - receiver: "null"
+                matchers:
+                  - alertname = "KubeJobFailed"
+                  - namespace = "backup"
+              # Warnings re-notify every 24h instead of 12h for persistent non-critical issues
+              - receiver: "null"
+                matchers:
+                  - severity = "warning"
+                repeat_interval: 24h
           receivers:
             - name: "null"
             - name: "discord"
