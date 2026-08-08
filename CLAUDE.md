@@ -100,6 +100,10 @@ sops secret.enc.yaml
 ### Expose an external service (not running in k8s)
 See `ollama/service.yaml` for the pattern: headless Service + manual EndpointSlice pointing to external IP.
 
+**Gotcha:** ArgoCD's default `resource.exclusions` covers `Endpoints` and `EndpointSlice`, so ArgoCD
+will report the app `Synced` while silently never applying the EndpointSlice. After changing an
+external IP you must `kubectl apply -f <service>/service.yaml` by hand — pushing to git is not enough.
+
 ### Bootstrap from scratch
 1. Flash Raspberry Pi OS on both Pis, configure IPs
 2. `ansible-playbook -i ansible/inventory/hosts.yaml ansible/roles/k3s/tasks/master.yaml` (then workers)
