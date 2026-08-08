@@ -24,4 +24,4 @@ ports:
     name: http
 endpoints:
   - addresses:
-      - "192.168.1.105"
+      - "192.168.1.168"

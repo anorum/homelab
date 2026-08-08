@@ -1,4 +1,4 @@
-# Mac Mini services (192.168.1.105)
+# Mac Mini services (192.168.1.168)
 # Ollama runs natively via macOS app (Metal GPU acceleration)
 # Home Assistant runs on separate Pi (homeassistant.local:8123)
 # Wyoming STT/TTS run as add-ons on the HA Pi 5

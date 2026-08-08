@@ -25,7 +25,7 @@ services:
       SERVE_UI: "true"
       PAPERCLIP_DEPLOYMENT_MODE: "authenticated"
       PAPERCLIP_DEPLOYMENT_EXPOSURE: "private"
-      PAPERCLIP_PUBLIC_URL: "http://192.168.1.105:3100"
+      PAPERCLIP_PUBLIC_URL: "http://192.168.1.168:3100"
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
     volumes:
       - paperclip-data:/paperclip

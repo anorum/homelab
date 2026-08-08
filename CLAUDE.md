@@ -9,7 +9,7 @@
 |------|------|----|-------|
 | swagman-1 | Master | 192.168.1.101 | Control plane, SSH key `~/.ssh/rpi_key`, requires `sudo kubectl` |
 | swagman-2 | Worker | 192.168.1.102 | 12TB HDD at `/mnt/hd` |
-| Mac Mini | External | 192.168.1.105 | Runs Ollama (not a k8s node) |
+| Mac Mini | External | 192.168.1.168 | Runs Ollama (not a k8s node) |
 
 ### Networking
 - **MetalLB**: L2 mode, Traefik LoadBalancer at 192.168.1.151
@@ -33,7 +33,7 @@
 - **ArgoCD integration**: repo-server has KSOPS + age key via init container (`argo-cd/ksops-patch.yaml`)
 - **Kustomize build flags**: `--enable-helm --enable-alpha-plugins --enable-exec` (set in argocd-cm)
 - **Bootstrap**: `scripts/bootstrap-cluster.sh` manually decrypts secrets for initial deploy before ArgoCD is running
-- **Repo is public** on GitHub — all secrets MUST be SOPS-encrypted
+- **Repo is private** on GitHub, but treat it as public — all secrets MUST be SOPS-encrypted
 
 ### Storage
 | StorageClass | Provisioner | Location | Used By |
@@ -52,7 +52,7 @@
 5. Source repo: `git@github.com:anorum/homelab.git` at HEAD
 
 ### Active ArgoCD Apps
-adguard, authentik, cloudflared, homepage, loki, mealie, metallb, ollama, open-webui, prometheus, traefik, uptime-kuma
+adguard, authentik, backup, cloudflared, homepage, loki, mealie, metallb, ollama, open-webui, prometheus, reloader, traefik, uptime-kuma (plus `app-of-apps` and `argo-cd` itself)
 
 ### Monitoring Stack
 - **Prometheus**: kube-prometheus-stack v82.2.1, 7d retention, 5Gi storage
@@ -110,11 +110,12 @@ See `ollama/service.yaml` for the pattern: headless Service + manual EndpointSli
 All at `*.home.alexnorum.com` resolving to 192.168.1.151. Configure via AdGuard DNS or `/etc/hosts`.
 
 ## External Services
-- **Ollama** on Mac Mini (192.168.1.105:11434) — exposed to cluster via headless Service + EndpointSlice in `ollama/service.yaml`
+- **Ollama** on Mac Mini (192.168.1.168:11434) — exposed to cluster via headless Service + EndpointSlice in `ollama/service.yaml`
 
 ## Inactive Components
 - `not_in_use/` — deprecated configs kept for reference (jellyfin, airflow, plex, pihole, etc.)
-- `home-assistant/` — has blueprints/configs but HA not currently deployed in cluster
+- `not_in_use/home-assistant/` — blueprints/configs; HA runs on a separate Pi, not in the cluster
+- `not_in_use/website/`, `not_in_use/paperclip/`, `not_in_use/voice-cloning/` — no ArgoCD Application
 
 ## Key Files
 | File | Purpose |

@@ -18,7 +18,7 @@ all:
     mac_mini:
       hosts:
         mac-mini:
-          ansible_host: 192.168.1.105
+          ansible_host: 192.168.1.168
           ansible_connection: local
     voice_satellite:
       hosts:

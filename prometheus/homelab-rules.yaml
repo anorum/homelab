@@ -105,7 +105,7 @@ spec:
             severity: critical
           annotations:
             summary: "Mac Mini data disk above 92% — immediate action required"
-            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full. Services (Ollama, OpenClaw, Paperclip) may be impacted."
+            description: "Mac Mini /System/Volumes/Data is {{ $value | humanizePercentage }} full. Services (Ollama, Paperclip) may be impacted."
 
         - alert: MacMiniHighCpu
           expr: (1 - avg by(instance) (rate(node_cpu_seconds_total{instance="mac-mini",mode="idle"}[5m]))) > 0.85
@@ -132,7 +132,7 @@ spec:
             severity: critical
           annotations:
             summary: "Mac Mini node_exporter is unreachable"
-            description: "Prometheus cannot scrape node_exporter at 192.168.1.105:9100. Mac Mini may be down or node_exporter stopped."
+            description: "Prometheus cannot scrape node_exporter at 192.168.1.168:9100. Mac Mini may be down or node_exporter stopped."
 
     - name: homelab-home-assistant
       rules:
@@ -177,7 +177,13 @@ spec:
     - name: homelab-backup
       rules:
         - alert: HomelabBackupFailed
-          expr: kube_job_status_failed{namespace="backup"} > 0
+          # Scoped to jobs started in the last 24h. CronJob keeps failedJobsHistoryLimit
+          # failed Jobs around indefinitely, so an unqualified `failed > 0` alerts forever
+          # on ancient failures long after backups have recovered.
+          expr: |
+            kube_job_status_failed{namespace="backup"} > 0
+              and on(job_name)
+            (time() - kube_job_status_start_time{namespace="backup"}) < 86400
           for: 5m
           labels:
             severity: critical

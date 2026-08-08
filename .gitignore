@@ -100,6 +100,6 @@ charts/
 
 .playwright-mcp
 
-voice-cloning/data/**
+not_in_use/voice-cloning/data/**
 output/**
-voice-cloning/styletts2/outputs/**
+not_in_use/voice-cloning/styletts2/outputs/**

@@ -11,4 +11,4 @@ spec:
         job: mac-mini-node-exporter
         instance: mac-mini
       targets:
-        - 192.168.1.105:9100
+        - 192.168.1.168:9100

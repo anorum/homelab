@@ -62,7 +62,7 @@ Pi Zero 2 W
   linux-voice-assistant (ESPHome, port 6053)  ← primary
   wyoming-satellite (Wyoming, port 10700)      ← fallback
 
-Mac Mini (192.168.1.105)
+Mac Mini (192.168.1.168)
   Wyoming Whisper :10300  — STT
   Wyoming Piper   :10200  — TTS
   Homelab MCP     :8080   — tools for Ollama
@@ -98,7 +98,7 @@ The wyoming role is preserved intact. To roll back: re-run it and remove the ESP
    cd mac-mini && docker compose up -d homelab-mcp
    ```
 2. In HA: **Settings > Devices & Services > Add Integration > Model Context Protocol**
-   - URL: `http://192.168.1.105:8080/mcp`
+   - URL: `http://192.168.1.168:8080/mcp`
    - Name: `Homelab Tools`
 
 To add new tools: edit `mac-mini/mcp-server/server.py`, add a `@mcp.tool()` function, restart the container. No HA config changes needed.
@@ -109,8 +109,8 @@ In HA, go to **Settings > Devices & Services > Add Integration > Wyoming Protoco
 
 | Service | Host | Port |
 |---------|------|------|
-| Whisper STT | `192.168.1.105` | `10300` |
-| Piper TTS | `192.168.1.105` | `10200` |
+| Whisper STT | `192.168.1.168` | `10300` |
+| Piper TTS | `192.168.1.168` | `10200` |
 
 ### Voice Pipeline Configuration
 
@@ -175,7 +175,7 @@ journalctl -u wyoming-satellite -f
 nc -zv voice-satellite.local 10700
 
 # MCP server (on Mac Mini)
-curl http://192.168.1.105:8080/mcp
+curl http://192.168.1.168:8080/mcp
 docker logs homelab-mcp
 ```
 

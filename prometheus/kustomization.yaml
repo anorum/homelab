@@ -80,12 +80,18 @@ helmCharts:
             key: additional-scrape-configs.yaml
         ingress:
           enabled: false
+      # k3s embeds etcd/scheduler/controller-manager/proxy in the server process and
+      # exposes no separate metrics endpoints, so these scrape targets can never come up.
+      # Disabling them removes both the ServiceMonitors and their permanently-firing
+      # *Down alert rules at the source, rather than muting them at the route.
       kubeEtcd:
-        enabled: true
+        enabled: false
       kubeScheduler:
-        enabled: true
+        enabled: false
       kubeControllerManager:
-        enabled: true
+        enabled: false
+      kubeProxy:
+        enabled: false
       alertmanager:
         enabled: true
         ingress:
@@ -128,7 +134,8 @@ helmCharts:
             group_wait: 30s
             group_interval: 5m
             repeat_interval: 12h
-            receiver: "null"
+            # Default receiver — anything not matched by a "null" route below is delivered.
+            receiver: "discord"
             routes:
               - receiver: "null"
                 matchers:
@@ -136,7 +143,9 @@ helmCharts:
               - receiver: "null"
                 matchers:
                   - alertname = "InfoInhibitor"
-              # k3s embeds these components — metrics not exposed, alerts always fire
+              # Belt-and-braces: the kubeScheduler/kubeControllerManager/kubeProxy/kubeEtcd
+              # exporters are disabled above, so these rules no longer exist. Kept so the
+              # alerts stay muted if a chart upgrade re-enables the components.
               - receiver: "null"
                 matchers:
                   - alertname =~ "KubeSchedulerDown|KubeControllerManagerDown|KubeProxyDown"
@@ -156,8 +165,9 @@ helmCharts:
                 matchers:
                   - alertname = "KubeJobFailed"
                   - namespace = "backup"
-              # Warnings re-notify every 24h instead of 12h for persistent non-critical issues
-              - receiver: "null"
+              # Warnings are delivered, but re-notify every 24h instead of 12h so
+              # persistent non-critical issues stay visible without being noisy.
+              - receiver: "discord"
                 matchers:
                   - severity = "warning"
                 repeat_interval: 24h
