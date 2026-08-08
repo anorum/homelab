@@ -1,0 +1,31 @@
+# gitleaks configuration
+#
+# Extends the upstream default ruleset and narrows it for this repo's conventions.
+# Historical findings are baselined by exact commit fingerprint in .gitleaksignore
+# rather than by path, so re-introducing one of those files would still fail.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Repo-wide allowlist"
+
+paths = [
+  # SOPS ciphertext. Encrypted payloads are high-entropy by construction and
+  # trip the generic-api-key rule on every commit. The CI job separately asserts
+  # that each of these files really is encrypted.
+  '''.*\.enc\.yaml$''',
+
+  # Deprecated configs kept for reference only. Nothing here is deployed; the
+  # one credential-shaped string is a placeholder its own comment marks as fake.
+  '''^not_in_use/''',
+
+  # Local-only working directories. Gitignored and never committed, but a
+  # filesystem scan (--no-git) walks them anyway.
+  '''^\.claude/''',
+
+  # Local env files holding real secrets. Gitignored by design — allowlisting
+  # keeps `gitleaks detect --no-git` usable locally without weakening CI, which
+  # runs against a clean checkout where these do not exist.
+  '''(^|/)\.env$''',
+]

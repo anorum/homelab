@@ -1,127 +1,152 @@
 # Home Lab Kubernetes Cluster
 
-My personal Kubernetes cluster running on Raspberry Pi 5. This repository contains the configuration and deployment files for various services running in my homelab.
+[![security](https://github.com/anorum/homelab/actions/workflows/security.yml/badge.svg)](https://github.com/anorum/homelab/actions/workflows/security.yml)
 
-## Overview
+A k3s cluster running on two Raspberry Pi 5s, managed entirely through GitOps. Everything is declared here — push to `main` and ArgoCD reconciles the cluster. Secrets are committed encrypted with SOPS + age and decrypted inside the ArgoCD repo-server at render time.
 
-This is a k3s-based Kubernetes cluster running on Raspberry Pi 5 hardware managed via GitOps with Argo CD. Everything is defined as code — push to `main` and ArgoCD syncs the cluster automatically.
+See [CLAUDE.md](CLAUDE.md) for the detailed architecture reference.
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
+## Architecture
 
-## Core Components
+```mermaid
+flowchart TB
+    subgraph ext [Outside the cluster]
+        user[Browser]
+        cf[Cloudflare Tunnel]
+        dns["AdGuard DNS<br/>home.alexnorum.com wildcard"]
+        mac["Mac Mini<br/>Ollama :11434"]
+    end
 
-### Infrastructure
-- **k3s**: Lightweight Kubernetes distribution (2 nodes)
-- **MetalLB**: L2 load balancer for bare metal Kubernetes
-- **Traefik**: Ingress via Gateway API (HTTPRoute)
-- **Cloudflared**: Cloudflare tunnel for secure external access
-- **SOPS + Age**: Secret encryption with KSOPS generators
-- **Argo CD**: GitOps app-of-apps pattern with auto-sync
+    subgraph git [GitHub]
+        repo["this repo<br/>branch: main"]
+    end
 
-### Applications
-- **Prometheus + Grafana**: Metrics, dashboards, and alerting (Discord)
-- **Loki + Promtail**: Log aggregation
-- **Alertmanager**: Alert routing to Discord
-- **Uptime Kuma**: Uptime monitoring
-- **AdGuard**: Network-wide DNS filtering
-- **Mealie**: Recipe management and meal planning
-- **Authentik**: Identity provider and SSO (OAuth/OIDC for Grafana, ArgoCD)
-- **Homepage**: Dashboard for services
-- **Ollama**: Self-hosted AI model server (runs on Mac Mini)
-- **Open WebUI**: Chat interface for Ollama
+    subgraph k3s [k3s cluster - 2x Raspberry Pi 5]
+        gw["Traefik Gateway API<br/>MetalLB LB 192.168.1.151"]
+        authentik["Authentik<br/>forward-auth + OIDC"]
+        svc["Services<br/>Grafana · Mealie · Open WebUI<br/>Uptime Kuma · Homepage · AdGuard"]
+        argo["ArgoCD<br/>app-of-apps"]
+        rs["repo-server<br/>KSOPS + age key"]
+        store["Storage<br/>local-path on SD<br/>local-hdd-storage on 12TB"]
+    end
 
-## Installation
+    user -->|external hostnames| cf --> gw
+    user -->|LAN| dns --> gw
+    gw -->|protected routes| authentik
+    authentik --> svc
+    gw --> svc
+    svc --> store
+    svc -.->|manual EndpointSlice| mac
 
-The cluster is bootstrapped using Ansible playbooks:
+    repo --> argo --> rs
+    rs -->|renders + decrypts| svc
+```
 
-1. Initial K3s setup:
+Two routes in: Cloudflare Tunnel for the handful of externally reachable hostnames, and AdGuard's wildcard DNS for everything on the LAN. Both land on the same Traefik Gateway. Routes that need auth get an Authentik forward-auth middleware; Grafana, ArgoCD and Open WebUI additionally use Authentik as an OIDC provider.
+
+All HTTP routing uses Gateway API `HTTPRoute` against a single `homelab-gateway` — not Ingress.
+
+## Components
+
+**Infrastructure**
+- **k3s** `v1.34.4+k3s1` — 2 nodes, one control plane
+- **MetalLB** — L2 load balancer, Traefik at `192.168.1.151`
+- **Traefik** — Gateway API provider
+- **Cloudflared** — outbound tunnel; no inbound ports are opened
+- **ArgoCD** — app-of-apps, auto-sync with `prune` and `selfHeal`
+- **SOPS + age + KSOPS** — encrypted secrets rendered at sync time
+- **Renovate** — automated dependency updates, patch images auto-merged
+- **Terragrunt + OpenTofu** — AWS IAM for the backup user, state in S3
+- **Ansible** — node bootstrap, k3s install, Tailscale subnet router
+
+**Applications**
+- **Prometheus + Grafana + Alertmanager** — metrics and Discord alerting, custom rules in `prometheus/homelab-rules.yaml`
+- **Loki + Promtail** — log aggregation, 14d retention on the HDD
+- **Uptime Kuma** — external uptime checks
+- **Authentik** — SSO/IdP, providers defined as blueprints in `authentik/`
+- **AdGuard** — network-wide DNS filtering
+- **Mealie** — recipes and meal planning
+- **Ollama + Open WebUI** — local models; Ollama runs natively on a Mac Mini and is reached via a manual EndpointSlice
+- **Homepage** — service dashboard
+- **Home Assistant** — running in-cluster at `ha.home.alexnorum.com`, but not yet declared here; it predates the app-of-apps layout and is still managed by hand (see Roadmap)
+
+## Repository layout
+
+```
+adguard/       authentik/     backup/        cloudflared/
+homepage/      loki/          mealie/        metallb/
+ollama/        open-webui/    prometheus/    reloader/
+traefik/       uptime-kuma/                  # one directory per service
+argo-apps/     # ArgoCD Application definitions (app-of-apps)
+argo-cd/       # ArgoCD config: OIDC, RBAC, KSOPS patch
+ansible/       # node bootstrap, k3s install, Tailscale
+storage/       # StorageClass + 11Ti PV for the 12TB HDD
+terraform/     # Terragrunt + OpenTofu (AWS IAM for backups)
+mac-mini/      # LaunchAgents and compose for the external Mac Mini
+scripts/       # bootstrap and utility scripts
+docs/          # disaster recovery, postmortems
+not_in_use/    # deprecated configs kept for reference
+```
+
+Each service directory follows the same shape: `kustomization.yaml`, `namespace.yaml`, workload, `service.yaml`, plus `httproute.yaml` if it's web-facing and `*-secret-generator.yaml` + `*.enc.yaml` if it needs secrets. Helm charts are inlined under `helmCharts:` in `kustomization.yaml` rather than managed as separate releases.
+
+## Bootstrap
+
+Node preparation and k3s install are handled by Ansible:
+
 ```bash
-ansible-playbook -i inventory/hosts.yaml playbook/install-k3s.yaml
+ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbook/install-k3s.yaml
+ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbook/deploy-cloudflared.yaml
 ```
 
-2. Cloudflared deployment:
+Then bring up the cluster itself — MetalLB, Traefik, storage, ArgoCD, apps, and secrets, in that order:
+
 ```bash
-ansible-playbook -i inventory/hosts.yaml playbook/deploy-cloudflared.yaml
+./scripts/bootstrap-cluster.sh
 ```
 
-## Directory Structure
+ArgoCD takes over from there and syncs everything else from `main`. Full rebuild procedures, including restoring stateful data from S3, are in [docs/disaster-recovery.md](docs/disaster-recovery.md).
 
-```
-.
-├── adguard/            # AdGuard DNS configuration
-├── ansible/            # Ansible playbooks and roles for k3s setup
-├── argo-apps/          # ArgoCD Application definitions (app-of-apps)
-├── argo-cd/            # ArgoCD configuration, OIDC, KSOPS
-├── authentik/          # Identity provider, SSO, OAuth blueprints
-├── cloudflared/        # Cloudflare tunnel setup
-├── backup/             # S3 backup CronJob (Mealie + Authentik)
-├── docs/               # Disaster recovery and operational docs
-├── homepage/           # Dashboard for services
-├── loki/               # Log aggregation (Loki + Promtail)
-├── mac-mini/           # Docker Compose (Wyoming Whisper + Piper)
-├── mealie/             # Recipe management system
-├── metallb/            # MetalLB L2 load balancer
-├── ollama/             # Ollama external service (Mac Mini)
-├── open-webui/         # Chat UI for Ollama
-├── prometheus/         # Monitoring (Prometheus, Grafana, Alertmanager)
-├── scripts/            # Bootstrap and utility scripts
-├── storage/            # StorageClass and PV for 12TB HDD
-├── terraform/          # Terragrunt + OpenTofu IaC (AWS IAM)
-├── traefik/            # Traefik + Gateway API
-├── uptime-kuma/        # Uptime monitoring
-└── not_in_use/         # Deprecated components (kept for reference)
+## Operations
+
+**Adding a service** — create the directory with a `kustomization.yaml` and `namespace.yaml`, add an `httproute.yaml` pointing at `homelab-gateway` in the `traefik` namespace if it's web-facing, add an entry to `argo-apps/applications.yaml`, and push. ArgoCD picks it up within a few minutes.
+
+**Secrets** — anything sensitive is committed encrypted:
+
+```bash
+sops -e secret.yaml > secret.enc.yaml   # create
+sops secret.enc.yaml                    # edit in place
 ```
 
-## Notes to Self
+The `*.enc.yaml` suffix is load-bearing: it's what `.sops.yaml` matches on, and what the KSOPS generators reference. CI fails if one of those files isn't actually encrypted.
 
-### Common Tasks
-- Cluster access: The kubeconfig is stored in the default location after k3s installation
-- ArgoCD UI is accessible through the configured ingress
-- Uptime Kuma dashboard provides monitoring status
-- AdGuard admin interface is available through ingress
-- Mealie handles recipe management and meal planning
-- Authentik manages authentication across services
+**Exposing something outside the cluster** — headless Service plus a manual EndpointSlice; `ollama/service.yaml` is the reference. Note that ArgoCD's default `resource.exclusions` covers EndpointSlice, so it will report `Synced` without ever applying that file — after changing an external IP you have to `kubectl apply -f <service>/service.yaml` yourself.
 
-### Maintenance
-- Monitor Prometheus alerts for cluster health
-- Check Uptime Kuma for service availability
-- Regularly update container images for security patches
-- Verify S3 backups: `aws s3 ls s3://anorum-homelab/backups/authentik/`
+## Documentation
 
-### Troubleshooting
-1. Check pod status: `kubectl get pods -A`
-2. View logs: `kubectl logs -n <namespace> <pod-name>`
-3. Verify ingress: `kubectl get ingress -A`
-4. Check node status: `kubectl get nodes`
-5. Inspect Argo CD application sync status: `kubectl get applications -n argocd`
-6. Review events: `kubectl get events -A --sort-by='.lastTimestamp'`
+- [docs/disaster-recovery.md](docs/disaster-recovery.md) — recovery scenarios and backup strategy
+- [docs/postmortems/](docs/postmortems/) — incident write-ups
 
-### Future Improvements
-- [x] Add monitoring dashboards (Grafana + kube-prometheus-stack)
-- [x] Configure alerting (Alertmanager → Discord, custom homelab rules)
-- [x] Document disaster recovery procedures ([docs/disaster-recovery.md](docs/disaster-recovery.md))
-- [x] Implement automated backup solution (S3 CronJob via ArgoCD, Terragrunt IaC)
-- [ ] Implement network policies for enhanced security
-- [x] Set up Tailscale for remote access (subnet router on both Pis)
+## Security
+
+- No inbound ports. External access is via Cloudflare Tunnel only; Tailscale subnet routers on both Pis cover remote admin.
+- Secrets are encrypted with SOPS + age before they are committed. The repo is public, so this is enforced rather than assumed — the [security workflow](.github/workflows/security.yml) runs gitleaks across full history and fails if any `*.enc.yaml` is missing its `sops:` block or a plaintext Secret manifest appears outside the convention.
+- Authentik provides SSO across services, with forward-auth on the sensitive ones.
+- The age private key lives only on the ArgoCD repo-server and offline backup — never in this repo.
+
+## Roadmap
+
+- [x] Monitoring dashboards (Grafana + kube-prometheus-stack)
+- [x] Alerting (Alertmanager → Discord, custom homelab rules)
+- [x] Disaster recovery documentation
+- [x] Automated backups (S3 CronJob, Terragrunt-managed IAM)
+- [x] Tailscale remote access
 - [x] Local AI voice assistant (Home Assistant + Ollama + Wyoming)
-- [ ] HomeKit Bridge for Siri device control
-- [x] Spotify integration via Music Assistant
 - [x] Voice satellite hardware (Pi 4B + ReSpeaker)
-- [x] Renovate Bot for automated dependency updates
-- [ ] Personal AI agent service (PydanticAI + tool registry, HA integration)
-- [ ] HomeAssistant custom bot with tools.
-
-## Not Currently Used
-Components in `not_in_use/` kept for reference:
-- Jellyfin, Plex (media servers)
-- Airflow, Home Assistant
-- Cert-Manager, External DNS, External Secrets
-- Sealed Secrets (replaced by SOPS + Age)
-- Kubernetes Dashboard, PiHole, and others
-
-## Security Notes
-- Cluster is accessible via Cloudflare Tunnel only
-- No direct external ports exposed
-- Secrets are encrypted with SOPS + Age (repo is public)
-- Authentication centralized with Authentik (SSO/OIDC)
-- Forward auth on sensitive services (Prometheus, Alertmanager)
+- [x] Renovate for automated dependency updates
+- [x] Secret scanning in CI
+- [ ] Network policies
+- [ ] Back up the remaining `local-path` PVCs (Uptime Kuma, AdGuard, Grafana)
+- [ ] Bring the in-cluster Home Assistant under ArgoCD management
+- [ ] HomeKit bridge for Siri device control
+- [ ] Personal AI agent service (PydanticAI + tool registry)

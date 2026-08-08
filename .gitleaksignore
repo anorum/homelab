@@ -1,0 +1,32 @@
+# gitleaks baseline — historical findings, each verified dead.
+#
+# Fingerprint format: <commit>:<file>:<rule>:<line>. Pinning to the exact commit
+# means re-introducing any of these files in a new commit still fails the scan.
+#
+# Verified 2026-08-08 (see docs/postmortems/ and the audit that produced this file):
+#   - homepage/config-secrets.yaml — AdGuard/Grafana/ArgoCD credentials. All
+#     rotated: the ArgoCD readonly JWT's jti is absent from the live token list,
+#     the admin password bcrypt check fails against the leaked value, Grafana is
+#     off prom-operator, and AdGuard runs with users: [].
+#   - sealed-*.yaml — SealedSecrets ciphertext, never plaintext.
+#   - not_in_use/pihole/helmchart.yaml — placeholder marked "Not real password";
+#     PiHole is not deployed (replaced by AdGuard).
+3d6b968a78dad8c537292c1067d564d8cd00f544:argo-cd/sealed-argocd-secret.yaml:generic-api-key:10
+3d6b968a78dad8c537292c1067d564d8cd00f544:argo-cd/sealed-argocd-secret.yaml:generic-api-key:11
+3d6b968a78dad8c537292c1067d564d8cd00f544:argo-cd/sealed-argocd-secret.yaml:generic-api-key:12
+3d6b968a78dad8c537292c1067d564d8cd00f544:argo-cd/sealed-argocd-secret.yaml:generic-api-key:13
+3d6b968a78dad8c537292c1067d564d8cd00f544:argo-cd/sealed-argocd-secret.yaml:generic-api-key:15
+fc0ffe6dbbc5f40ca697b500bcab03cee866aa2e:argo-cd/sealed-repo-secrets.yaml:generic-api-key:10
+0490167fe7de959d9782d730be89a001c16f7399:cloudflared/sealed-cloudflared-token.yaml:generic-api-key:10
+295bfb2dc707a10520f9615ebed9ed9124b43328:cloudflared/sealed-cloudflared-token.yaml:generic-api-key:10
+4cbd706ba23a06d5095b60f6278d267457c0798b:cloudflared/sealed-cloudflared-token.yaml:generic-api-key:10
+90c05df5ff502154c023f8c46c932386b912a631:cloudflared/sealed-cloudflared-token.yaml:generic-api-key:10
+5ceefd05d7e0a91fcc1ddb70c389094f26e0148e:homepage/config-secrets.yaml:generic-api-key:17
+81e3b7ab7b12a917e5abfa40a1a264dbb1f9d8e3:homepage/config-secrets.yaml:generic-api-key:15
+92c8ca12664a33dfcbf530abf984a86ffbe5db01:homepage/config-secrets.yaml:jwt-base64:16
+92c8ca12664a33dfcbf530abf984a86ffbe5db01:homepage/config-secrets.yaml:generic-api-key:16
+92c8ca12664a33dfcbf530abf984a86ffbe5db01:homepage/config-secrets.yaml:jwt:16
+fa0b21e6dd54b80f0ce1bc0012056d7a6a6a3dfd:homepage/sealed-secrets.yaml:generic-api-key:10
+fa0b21e6dd54b80f0ce1bc0012056d7a6a6a3dfd:homepage/sealed-secrets.yaml:generic-api-key:12
+fa0b21e6dd54b80f0ce1bc0012056d7a6a6a3dfd:homepage/sealed-secrets.yaml:generic-api-key:13
+afd664b5d43fdaf5a4132ed272f3c6cdc9efc5ec:not_in_use/pihole/helmchart.yaml:generic-api-key:48

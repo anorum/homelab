@@ -1,0 +1,81 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the scan covers every commit, not just the tip.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  sops-encrypted:
+    name: sops encryption check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .gitleaks.toml allowlists *.enc.yaml, because SOPS ciphertext is
+      # high-entropy and trips the generic-api-key rule on every commit. That
+      # allowlist is only safe while those files are genuinely encrypted — this
+      # job is what makes it safe. A plaintext secret committed as *.enc.yaml
+      # would otherwise sail past the scanner.
+      - name: Assert every *.enc.yaml is SOPS-encrypted
+        run: |
+          set -euo pipefail
+          status=0
+          found=0
+          while IFS= read -r f; do
+            found=$((found + 1))
+            if ! grep -q '^sops:' "$f"; then
+              echo "::error file=$f::$f is not SOPS-encrypted (no 'sops:' metadata block)"
+              status=1
+            fi
+          done < <(git ls-files '*.enc.yaml')
+
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No *.enc.yaml files found — the naming convention or this check has drifted"
+            exit 1
+          fi
+
+          echo "Checked $found encrypted file(s)."
+          exit $status
+
+      # Catches the inverse mistake: a plaintext Kubernetes Secret carrying real
+      # data committed under a normal filename, outside the *.enc.yaml convention.
+      - name: Assert no plaintext Secret manifests
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r f; do
+            case "$f" in
+              # *.template.yaml files carry deliberate "<SECRET>" placeholders
+              # and are the documented starting point for creating a real
+              # secret before encrypting it.
+              *.enc.yaml|*.template.yaml|not_in_use/*) continue ;;
+            esac
+            # A Secret with a populated data:/stringData: block. Secrets that only
+            # carry annotations (e.g. service-account-token stubs) have neither.
+            if grep -q '^kind: Secret' "$f" 2>/dev/null \
+               && grep -qE '^(data|stringData):[[:space:]]*$' "$f" 2>/dev/null \
+               && grep -qE '^[[:space:]]+[A-Za-z0-9_.-]+:[[:space:]]*[^[:space:]]' "$f" 2>/dev/null; then
+              echo "::error file=$f::$f looks like a plaintext Secret with populated data — encrypt it as *.enc.yaml"
+              status=1
+            fi
+          done < <(git ls-files '*.yaml' '*.yml')
+          exit $status

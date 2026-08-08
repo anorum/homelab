@@ -33,7 +33,9 @@
 - **ArgoCD integration**: repo-server has KSOPS + age key via init container (`argo-cd/ksops-patch.yaml`)
 - **Kustomize build flags**: `--enable-helm --enable-alpha-plugins --enable-exec` (set in argocd-cm)
 - **Bootstrap**: `scripts/bootstrap-cluster.sh` manually decrypts secrets for initial deploy before ArgoCD is running
-- **Repo is private** on GitHub, but treat it as public — all secrets MUST be SOPS-encrypted
+- **Repo is public** on GitHub — all secrets MUST be SOPS-encrypted. CI enforces this
+  (`.github/workflows/security.yml`: gitleaks over full history + an assertion that every
+  `*.enc.yaml` really carries a `sops:` block)
 
 ### Storage
 | StorageClass | Provisioner | Location | Used By |
@@ -55,7 +57,7 @@
 adguard, authentik, backup, cloudflared, homepage, loki, mealie, metallb, ollama, open-webui, prometheus, reloader, traefik, uptime-kuma (plus `app-of-apps` and `argo-cd` itself)
 
 ### Monitoring Stack
-- **Prometheus**: kube-prometheus-stack v82.2.1, 7d retention, 5Gi storage
+- **Prometheus**: kube-prometheus-stack v82.10.1, 7d retention, 5Gi storage
 - **Grafana**: OAuth via Authentik, Loki + Prometheus datasources
 - **Loki**: Single-binary mode with Promtail, 14d retention, 20Gi on HDD
 - **Alertmanager**: Discord webhook alerts, custom homelab rules in `prometheus/homelab-rules.yaml`
@@ -118,8 +120,16 @@ All at `*.home.alexnorum.com` resolving to 192.168.1.151. Configure via AdGuard 
 
 ## Inactive Components
 - `not_in_use/` — deprecated configs kept for reference (jellyfin, airflow, plex, pihole, etc.)
-- `not_in_use/home-assistant/` — blueprints/configs; HA runs on a separate Pi, not in the cluster
+- `not_in_use/home-assistant/` — blueprints and HA configs (SETUP.md, input_numbers, styrbar blueprint)
 - `not_in_use/website/`, `not_in_use/paperclip/`, `not_in_use/voice-cloning/` — no ArgoCD Application
+
+## Unmanaged Workloads (drift)
+Running in the cluster but **not** declared in `argo-apps/applications.yaml`, so ArgoCD neither
+syncs nor prunes them. Changes here must be made by hand and are lost on a rebuild.
+
+| Namespace | Resources | Notes |
+|---|---|---|
+| `home-assistant` | Deployment, Service, 10Gi PVC on `local-hdd-storage`, HTTPRoute `ha.home.alexnorum.com` | Running since ~2026-03. Manifests are not in the repo. |
 
 ## Key Files
 | File | Purpose |
