@@ -1,0 +1,31 @@
+# Public by design — the site is static assets with no accounts and no data,
+# so there is deliberately no authentik-forward-auth middleware here.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sightread
+  namespace: sightread
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Piano sight-reading practice
+    gethomepage.dev/group: Apps
+    gethomepage.dev/icon: mdi-music-clef-treble
+    gethomepage.dev/name: Sightread
+    gethomepage.dev/href: https://sightread.alexnorum.com
+    gethomepage.dev/pod-selector: "app=sightread"
+spec:
+  parentRefs:
+    - name: homelab-gateway
+      namespace: traefik
+      sectionName: web
+  hostnames:
+    - sightread.home.alexnorum.com
+    - sightread.alexnorum.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: sightread
+          port: 80

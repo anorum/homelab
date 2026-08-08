@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sightread
+  labels:
+    app: sightread
+  annotations:
+    # Static site, no state — safe to roll whenever a new :latest is pushed.
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sightread
+  template:
+    metadata:
+      labels:
+        app: sightread
+    spec:
+      containers:
+        - name: sightread
+          # Built for linux/arm64 by the sight-reader repo's GitHub Action.
+          # To pick up a new build: kubectl rollout restart deploy/sightread -n sightread
+          image: ghcr.io/anorum/sightread:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              memory: "24Mi"
+              cpu: "10m"
+            limits:
+              memory: "96Mi"
+              cpu: "300m"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 101
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
