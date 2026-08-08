@@ -178,13 +178,15 @@ helmCharts:
                 - api_url_file: "/etc/alertmanager/secrets/discord-webhook/webhook-url"
                   send_resolved: true
                   title: '{{ if eq .Status "firing" }}[FIRING:{{ .Alerts.Firing | len }}]{{ else }}[RESOLVED]{{ end }} {{ .CommonLabels.alertname }}'
+                  # Discord rejects bodies over 4096 chars with a 400. A group can hold
+                  # dozens of alerts (e.g. 64x HomelabArgoOutOfSync), so render at most 8
+                  # and drop the long description field — summary alone keeps us well under.
                   text: |-
-                    {{ range .Alerts -}}
-                    *Alert:* {{ .Labels.alertname }} ({{ .Labels.severity }})
-                    *Namespace:* {{ .Labels.namespace }}
-                    {{ if .Annotations.summary }}*Summary:* {{ .Annotations.summary }}{{ end }}
-                    {{ if .Annotations.description }}*Description:* {{ .Annotations.description }}{{ end }}
-                    {{ end -}}
+                    {{ range $i, $a := .Alerts }}{{ if lt $i 8 }}*Alert:* {{ $a.Labels.alertname }} ({{ $a.Labels.severity }})
+                    *Namespace:* {{ $a.Labels.namespace }}
+                    {{ if $a.Annotations.summary }}*Summary:* {{ $a.Annotations.summary }}{{ end }}
+                    {{ end }}{{ end }}{{ if gt (len .Alerts) 8 }}
+                    _...showing 8 of {{ len .Alerts }} alerts in this group_{{ end }}
                     {{ if not .Alerts }}(no alert details){{ end }}
           templates:
             - "/etc/alertmanager/config/*.tmpl"
