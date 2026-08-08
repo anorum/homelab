@@ -38,13 +38,13 @@ jobs:
       - name: Assert every *.enc.yaml is SOPS-encrypted
         run: |
           set -euo pipefail
-          status=0
+          rc=0
           found=0
           while IFS= read -r f; do
             found=$((found + 1))
             if ! grep -q '^sops:' "$f"; then
               echo "::error file=$f::$f is not SOPS-encrypted (no 'sops:' metadata block)"
-              status=1
+              rc=1
             fi
           done < <(git ls-files '*.enc.yaml')
 
@@ -54,14 +54,14 @@ jobs:
           fi
 
           echo "Checked $found encrypted file(s)."
-          exit $status
+          exit $rc
 
       # Catches the inverse mistake: a plaintext Kubernetes Secret carrying real
       # data committed under a normal filename, outside the *.enc.yaml convention.
       - name: Assert no plaintext Secret manifests
         run: |
           set -euo pipefail
-          status=0
+          rc=0
           while IFS= read -r f; do
             case "$f" in
               # *.template.yaml files carry deliberate "<SECRET>" placeholders
@@ -75,7 +75,7 @@ jobs:
                && grep -qE '^(data|stringData):[[:space:]]*$' "$f" 2>/dev/null \
                && grep -qE '^[[:space:]]+[A-Za-z0-9_.-]+:[[:space:]]*[^[:space:]]' "$f" 2>/dev/null; then
               echo "::error file=$f::$f looks like a plaintext Secret with populated data — encrypt it as *.enc.yaml"
-              status=1
+              rc=1
             fi
           done < <(git ls-files '*.yaml' '*.yml')
-          exit $status
+          exit $rc
