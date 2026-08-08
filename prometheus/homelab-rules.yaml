@@ -70,7 +70,10 @@ spec:
     - name: homelab-pods
       rules:
         - alert: HomelabPodCrashLooping
-          expr: kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"} > 5
+          # restarts_total is a cumulative counter, so a bare `> 5` fires forever once a
+          # container has ever restarted 6 times — even if it has been stable for months.
+          # increase() over 1h matches what the description actually claims.
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"}[1h]) > 5
           for: 10m
           labels:
             severity: warning
