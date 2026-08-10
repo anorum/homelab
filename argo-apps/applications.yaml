@@ -369,3 +369,35 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+---
+# The train-spotting project (private repo, read-only deploy key held as the
+# trainspotter-repo secret in argocd). Owns everything that would vanish if
+# the project died: its topics, its workloads, its FlinkDeployment. The
+# platform pieces it relies on (kafka, flink-operator) live in this repo.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blockade
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/trainspotter.git
+    targetRevision: HEAD
+    path: deploy
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: blockade
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+  ignoreDifferences:
+    - group: flink.apache.org
+      kind: FlinkDeployment
+      jsonPointers:
+        - /status
