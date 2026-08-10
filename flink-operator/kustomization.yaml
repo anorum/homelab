@@ -1,7 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: flink
+# No global namespace transformer: the chart renders RBAC into each watch
+# namespace (a Role in blockade as well as flink), and a blanket namespace
+# rewrite would collapse those into one namespace and collide.
 
 resources:
   - namespace.yaml
