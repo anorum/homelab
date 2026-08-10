@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kafka
+
+resources:
+  - namespace.yaml
+  - hdd-pv.yaml
+  - kafka.yaml
+  - kafka-ui.yaml
+
+helmCharts:
+  # Pinned to the version already running in the cluster; the chart's resource
+  # names match the install-YAML deployment it replaces, so Argo adopts the
+  # live operator without recreating it.
+  - name: strimzi-kafka-operator
+    repo: https://strimzi.io/charts/
+    version: 1.1.0
+    releaseName: strimzi
+    namespace: kafka

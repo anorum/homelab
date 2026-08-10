@@ -320,3 +320,52 @@ spec:
     automated:
       prune: true
       selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: kafka
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+  ignoreDifferences:
+    # Strimzi stamps live defaults into its own CRs; without this the app
+    # never reads Synced.
+    - group: kafka.strimzi.io
+      kind: Kafka
+      jsonPointers:
+        - /status
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flink-operator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:anorum/homelab.git
+    targetRevision: HEAD
+    path: flink-operator
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: flink
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
