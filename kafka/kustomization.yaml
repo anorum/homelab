@@ -27,3 +27,29 @@ helmCharts:
           cpu: 100m
         limits:
           memory: 640Mi
+
+# The Strimzi chart exposes only initialDelaySeconds and periodSeconds for its
+# probes and never templates timeoutSeconds, so the effective value is the
+# Kubernetes default of 1s. That is not survivable on swagman-2 under memory
+# pressure - this JVM operator was restarted for missing the deadline while
+# healthy - and since values cannot reach the field, it is patched directly.
+patches:
+  - target:
+      kind: Deployment
+      name: strimzi-cluster-operator
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: strimzi-cluster-operator
+      spec:
+        template:
+          spec:
+            containers:
+              - name: strimzi-cluster-operator
+                livenessProbe:
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+                readinessProbe:
+                  timeoutSeconds: 5
+                  failureThreshold: 5

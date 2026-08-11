@@ -33,6 +33,9 @@ helmCharts:
             memory: 256Mi
           limits:
             memory: 512Mi
+        readinessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
         # The dashboard/datasource sidecars are two more unlimited containers
         # hiding inside a pod that otherwise looks accounted for. 7-day peak is
         # 77Mi, so 96Mi would have left 19Mi of room - too thin to be a ceiling.
@@ -136,6 +139,12 @@ helmCharts:
             memory: 64Mi
           limits:
             memory: 192Mi
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
       kube-state-metrics:
         resources:
           requests:
@@ -150,6 +159,18 @@ helmCharts:
             memory: 32Mi
           limits:
             memory: 96Mi
+        # node-exporter accumulated over 1150 restarts, none of them a crash:
+        # the chart default is timeoutSeconds: 1, and on a memory-pressured Pi
+        # the scrape of /proc that backs "/" routinely takes longer than that.
+        # The irony is that the exporter answering the probe slowly is the very
+        # condition worth measuring, and the 1s deadline was killing the thing
+        # measuring it.
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
       alertmanager:
         enabled: true
         ingress:

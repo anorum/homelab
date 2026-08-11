@@ -36,6 +36,9 @@ helmCharts:
         limits:
           cpu: 200m
           memory: 256Mi
+      readinessProbe:
+        timeoutSeconds: 5
+        failureThreshold: 5
 
 labels:
 - pairs:
