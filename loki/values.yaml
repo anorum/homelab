@@ -33,6 +33,16 @@ singleBinary:
       cpu: 500m
       memory: 512Mi
 
+# The loki-sc-rules sidecar rides in the same pod and shipped without any
+# resources, so the pod was only half-accounted to the scheduler.
+sidecar:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 96Mi
+
 # Disable microservice components
 backend:
   replicas: 0

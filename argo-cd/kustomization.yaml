@@ -3,6 +3,13 @@ kind: Kustomization
 
 namespace: argocd
 
+# Single replica across the board. Two of each was HA for a cluster that does
+# not have a second failure domain to fail over into: both Pis are one power
+# strip and one switch, and the application-controller shards by cluster, so
+# with one registered cluster the second shard held no work at all. On 8GB Pis
+# that idle standby cost ~370Mi of the node that also carries the HDD
+# workloads. The trade is an ArgoCD-shaped gap during restarts and upgrades -
+# git stays the source of truth, so a missed reconcile window is recoverable.
 patches:
 - target:
     kind: Deployment
@@ -10,25 +17,164 @@ patches:
   patch: |-
     - op: replace
       path: /spec/replicas
-      value: 2
+      value: 1
 - target:
     kind: Deployment
     name: argocd-repo-server
   patch: |-
     - op: replace
       path: /spec/replicas
-      value: 2
+      value: 1
 - target:
     kind: StatefulSet
     name: argocd-application-controller
   patch: |-
     - op: replace
       path: /spec/replicas
-      value: 2
+      value: 1
 - path: ksops-patch.yaml
   target:
     kind: Deployment
     name: argocd-repo-server
+
+# Upstream's install.yaml declares no resources at all, so every ArgoCD pod was
+# invisible to the scheduler's accounting. Values are set from observed usage
+# with room to spike; repo-server gets the most because it is the one that
+# runs `kustomize build --enable-helm` over the kube-prometheus-stack chart,
+# and it no longer has a second replica to share that work.
+- target:
+    kind: StatefulSet
+    name: argocd-application-controller
+  patch: |-
+    apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: argocd-application-controller
+    spec:
+      template:
+        spec:
+          containers:
+            - name: argocd-application-controller
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  memory: 768Mi
+- target:
+    kind: Deployment
+    name: argocd-repo-server
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-repo-server
+    spec:
+      template:
+        spec:
+          containers:
+            - name: argocd-repo-server
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 192Mi
+                limits:
+                  memory: 768Mi
+- target:
+    kind: Deployment
+    name: argocd-server
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-server
+    spec:
+      template:
+        spec:
+          containers:
+            - name: argocd-server
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 96Mi
+                limits:
+                  memory: 384Mi
+- target:
+    kind: Deployment
+    name: argocd-applicationset-controller
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-applicationset-controller
+    spec:
+      template:
+        spec:
+          containers:
+            - name: argocd-applicationset-controller
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+- target:
+    kind: Deployment
+    name: argocd-notifications-controller
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-notifications-controller
+    spec:
+      template:
+        spec:
+          containers:
+            - name: argocd-notifications-controller
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+- target:
+    kind: Deployment
+    name: argocd-dex-server
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-dex-server
+    spec:
+      template:
+        spec:
+          containers:
+            - name: dex
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  memory: 192Mi
+- target:
+    kind: Deployment
+    name: argocd-redis
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: argocd-redis
+    spec:
+      template:
+        spec:
+          containers:
+            - name: redis
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  memory: 192Mi
 
 resources:
 - namespace.yaml

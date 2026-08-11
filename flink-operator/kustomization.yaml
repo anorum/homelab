@@ -24,3 +24,14 @@ helmCharts:
       # here. Scoped rather than cluster-wide RBAC.
       watchNamespaces:
         - blockade
+      # The chart ships no resources, and this is a JVM: measured at 424Mi on
+      # swagman-2, which made it the largest undeclared consumer on the node.
+      # The operator's footprint tracks the number of FlinkDeployments it
+      # reconciles, and there is exactly one, so 768Mi is generous.
+      operatorPod:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 768Mi

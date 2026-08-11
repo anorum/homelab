@@ -25,6 +25,23 @@ helmCharts:
         enabled: false
       grafana:
         enabled: true
+        # Measured ~340Mi. Dashboard rendering is the spiky part, so the limit
+        # sits well clear of steady state rather than hugging it.
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+        # The dashboard/datasource sidecars are two more unlimited containers
+        # hiding inside a pod that otherwise looks accounted for.
+        sidecar:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 96Mi
         service:
           selector:
             app.kubernetes.io/instance: prometheus
@@ -64,6 +81,20 @@ helmCharts:
         prometheusSpec:
           replicas: 1
           retention: 7d
+          # Prometheus is the second-largest consumer on swagman-2 and ran
+          # unbounded until now. Its TSDB is a node-local `local-path` PVC bound
+          # to swagman-2, so it cannot be moved to the emptier node without
+          # abandoning the data - capping it in place is the available lever.
+          #
+          # Measured at ~860Mi with 7d retention. 1536Mi leaves room for a
+          # compaction spike without letting a runaway query walk the node into
+          # a kernel OOM, where the victim would not necessarily be Prometheus.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 768Mi
+            limits:
+              memory: 1536Mi
           storageSpec:
             volumeClaimTemplate:
               spec:
@@ -92,6 +123,31 @@ helmCharts:
         enabled: false
       kubeProxy:
         enabled: false
+      # The stack's supporting components shipped without limits, which is what
+      # let the node's total limit commitment drift past 100% unnoticed - the
+      # scheduler cannot count what is not declared. All three are small and
+      # flat; these caps are headroom, not tuning.
+      prometheusOperator:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            memory: 192Mi
+      kube-state-metrics:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            memory: 192Mi
+      prometheus-node-exporter:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            memory: 96Mi
       alertmanager:
         enabled: true
         ingress:
@@ -99,6 +155,12 @@ helmCharts:
         alertmanagerSpec:
           secrets:
             - discord-webhook
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 192Mi
         config:
           global:
             resolve_timeout: 10m

@@ -40,7 +40,6 @@ blueprints:
     - google-oauth-blueprint
     - forward-auth-blueprint
     - grafana-blueprint
-    - open-webui-blueprint
 
 server:
   containerPorts:
@@ -50,10 +49,14 @@ server:
      value: /tmp
   ingress:
     enabled: false
+  # 2Gi was a guess made before there was anything to measure. Steady state is
+  # ~570Mi, so the old ceiling reserved a quarter of a node's memory against a
+  # spike that has never happened, while the scheduler treated it as real.
+  # 1Gi is still ~75% headroom over observed.
   resources:
     limits:
       cpu: 1000m
-      memory: 2Gi
+      memory: 1Gi
     requests:
       cpu: 200m
       memory: 512Mi
@@ -84,11 +87,6 @@ worker:
         secretKeyRef:
           name: grafana-oauth-secret
           key: clientSecret
-    - name: OPEN_WEBUI_OAUTH_CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: open-webui-oauth-secret
-          key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
     failureThreshold: 5
@@ -102,10 +100,11 @@ worker:
     initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 5
+  # Same reasoning as the server above: measured ~553Mi against a 2Gi ceiling.
   resources:
     limits:
       cpu: 1000m
-      memory: 2Gi
+      memory: 1Gi
     requests:
       cpu: 100m
       memory: 512Mi

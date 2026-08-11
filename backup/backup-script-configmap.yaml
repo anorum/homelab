@@ -29,19 +29,14 @@ data:
         --region "$AWS_DEFAULT_REGION"
     echo "Authentik backup complete."
 
-    # --- Open WebUI SQLite backup ---
-    echo "Backing up Open WebUI database..."
-    OW_POD=$(kubectl get pod -n open-webui -l app=open-webui -o jsonpath='{.items[0].metadata.name}')
-    kubectl cp "open-webui/$OW_POD:/app/backend/data/webui.db" /tmp/webui.db
-    aws s3 cp /tmp/webui.db "s3://$BUCKET/$BACKUP_PREFIX/open-webui/$DATE.db" \
-      --region "$AWS_DEFAULT_REGION"
-    rm -f /tmp/webui.db
-    echo "Open WebUI backup complete."
-
     # --- Cleanup old backups (keep 7 days) ---
     echo "Cleaning up old backups..."
     CUTOFF_DATE=$(date -d @$(($(date +%s) - 604800)) +%Y-%m-%d)
-    for prefix in authentik open-webui; do
+    # open-webui was dropped from this list when the service was retired. Its
+    # existing snapshots under $BACKUP_PREFIX/open-webui/ are deliberately left
+    # in S3 rather than aged out: they are the only surviving copy of that
+    # database once the PVC is gone. Delete the prefix by hand when sure.
+    for prefix in authentik; do
       aws s3 ls "s3://$BUCKET/$BACKUP_PREFIX/$prefix/" --region "$AWS_DEFAULT_REGION" \
         | awk '{print $4}' \
         | while read -r file; do

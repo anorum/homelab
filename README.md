@@ -24,7 +24,7 @@ flowchart TB
     subgraph k3s [k3s cluster - 2x Raspberry Pi 5]
         gw["Traefik Gateway API<br/>MetalLB LB 192.168.1.151"]
         authentik["Authentik<br/>forward-auth + OIDC"]
-        svc["Services<br/>Grafana · Mealie · Open WebUI<br/>Uptime Kuma · Homepage · AdGuard"]
+        svc["Services<br/>Grafana · Mealie · Kafka UI<br/>Uptime Kuma · Homepage · AdGuard"]
         argo["ArgoCD<br/>app-of-apps"]
         rs["repo-server<br/>KSOPS + age key"]
         store["Storage<br/>local-path on SD<br/>local-hdd-storage on 12TB"]
@@ -42,7 +42,7 @@ flowchart TB
     rs -->|renders + decrypts| svc
 ```
 
-Two routes in: Cloudflare Tunnel for the handful of externally reachable hostnames, and AdGuard's wildcard DNS for everything on the LAN. Both land on the same Traefik Gateway. Routes that need auth get an Authentik forward-auth middleware; Grafana, ArgoCD and Open WebUI additionally use Authentik as an OIDC provider.
+Two routes in: Cloudflare Tunnel for the handful of externally reachable hostnames, and AdGuard's wildcard DNS for everything on the LAN. Both land on the same Traefik Gateway. Routes that need auth get an Authentik forward-auth middleware; Grafana and ArgoCD additionally use Authentik as an OIDC provider.
 
 All HTTP routing uses Gateway API `HTTPRoute` against a single `homelab-gateway` — not Ingress.
 
@@ -66,7 +66,7 @@ All HTTP routing uses Gateway API `HTTPRoute` against a single `homelab-gateway`
 - **Authentik** — SSO/IdP, providers defined as blueprints in `authentik/`
 - **AdGuard** — network-wide DNS filtering
 - **Mealie** — recipes and meal planning
-- **Ollama + Open WebUI** — local models; Ollama runs natively on a Mac Mini and is reached via a manual EndpointSlice
+- **Ollama** — local models; runs natively on a Mac Mini and is reached via a manual EndpointSlice. Its in-cluster front end (Open WebUI) was retired; the manifests are in `not_in_use/open-webui/`
 - **Homepage** — service dashboard
 - **Home Assistant** — running in-cluster at `ha.home.alexnorum.com`, but not yet declared here; it predates the app-of-apps layout and is still managed by hand (see Roadmap)
 
@@ -74,9 +74,10 @@ All HTTP routing uses Gateway API `HTTPRoute` against a single `homelab-gateway`
 
 ```
 adguard/       authentik/     backup/        cloudflared/
-homepage/      loki/          mealie/        metallb/
-ollama/        open-webui/    prometheus/    reloader/
-traefik/       uptime-kuma/                  # one directory per service
+flink-operator/ homepage/     kafka/         loki/
+mealie/        metallb/       ollama/        prometheus/
+reloader/      sightread/     traefik/       uptime-kuma/
+                                             # one directory per service
 argo-apps/     # ArgoCD Application definitions (app-of-apps)
 argo-cd/       # ArgoCD config: OIDC, RBAC, KSOPS patch
 ansible/       # node bootstrap, k3s install, Tailscale
