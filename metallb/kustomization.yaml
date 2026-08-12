@@ -33,6 +33,12 @@ helmCharts:
           requests:
             cpu: 50m
             memory: 64Mi
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
       speaker:
         resources:
           limits:
@@ -41,33 +47,30 @@ helmCharts:
           requests:
             cpu: 50m
             memory: 50Mi
-        # The speaker pod carries three FRR sidecars beyond the `speaker`
-        # container itself, and only that one container was accounted for.
+        # FRR off: this cluster advertises purely over L2. metallb/ips.yaml
+        # declares one IPAddressPool and one L2Advertisement, and there is no
+        # BGPPeer or BGPAdvertisement anywhere in the cluster, so the three FRR
+        # sidecars (frr, reloader, frr-metrics) ran a routing daemon with no
+        # routes to speak. They were also the single worst casualty of
+        # swagman-2's memory pressure: frr alone was killed 13 times in 24h
+        # after the streaming pipeline landed, not because FRR was unhealthy -
+        # its own logs show all daemons up and config read in 0s - but because
+        # the node stalled long enough for a 1s liveness probe to time out.
         #
-        # This cluster runs MetalLB in L2 mode, so FRR does no work here - the
-        # honest fix is `frr.enabled: false`, which deletes all three. That is
-        # deliberately not done in this change: every LoadBalancer address,
-        # including the Traefik VIP that fronts the whole cluster, is announced
-        # by this DaemonSet, so flipping its mode belongs in its own change with
-        # someone watching. Bounding them is the safe half.
+        # Deleting them removes three containers per node, and with them the
+        # probe that was doing the killing.
         frr:
-          resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
-            limits:
-              memory: 128Mi
-        reloader:
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              memory: 64Mi
-        frrMetrics:
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              memory: 64Mi
+          enabled: false
+        # Probe timeouts. The chart ships timeoutSeconds: 1 on the speaker's
+        # liveness and readiness probes, which is optimistic for a Raspberry Pi
+        # that also hosts the HDD workloads: when swagman-2 goes into reclaim,
+        # a 1s HTTP deadline is missed by processes that are merely slow rather
+        # than broken, and failureThreshold: 3 then restarts a healthy speaker.
+        # Restarting the pod that announces the Traefik VIP is a real outage,
+        # so the deadline should be generous.
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5

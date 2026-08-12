@@ -33,18 +33,24 @@ spec:
             limits:
               memory: "96Mi"
               cpu: "300m"
+          # timeoutSeconds defaults to 1, which fails a healthy process whenever
+          # the node is busy. See the metallb speaker comment for the reasoning.
           livenessProbe:
             httpGet:
               path: /healthz
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /healthz
               port: 8080
             initialDelaySeconds: 2
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
           securityContext:
             runAsNonRoot: true
             runAsUser: 101

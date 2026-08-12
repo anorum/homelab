@@ -19,6 +19,12 @@ loki:
     retention_period: 14d
     ingestion_rate_mb: 4
     ingestion_burst_size_mb: 6
+  # Applies to all Loki pods. The chart default is timeoutSeconds: 1, and Loki
+  # runs on the HDD node where a slow /ready is expected under load rather than
+  # a sign of failure.
+  readinessProbe:
+    timeoutSeconds: 5
+    failureThreshold: 5
 
 singleBinary:
   replicas: 1

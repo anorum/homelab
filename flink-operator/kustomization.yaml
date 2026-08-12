@@ -35,3 +35,17 @@ helmCharts:
             memory: 256Mi
           limits:
             memory: 768Mi
+      # A JVM answering an HTTP health check inside 1s on a Pi under memory
+      # pressure is not a safe assumption; this operator was restarted twice in
+      # the last day for missing that deadline while healthy.
+      operatorHealth:
+        port: 8085
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 5
+          periodSeconds: 10
+          initialDelaySeconds: 30
+        startupProbe:
+          timeoutSeconds: 5
+          failureThreshold: 30
+          periodSeconds: 10

@@ -61,6 +61,13 @@ patches:
                   memory: 384Mi
                 limits:
                   memory: 1280Mi
+              # Upstream ships timeoutSeconds: 1 on these probes. On a Pi under
+              # memory pressure that fails a process that is merely slow, and
+              # the resulting restart makes the pressure worse. 5s is still far
+              # below any human-noticeable outage.
+              readinessProbe:
+                timeoutSeconds: 5
+                failureThreshold: 5
 - target:
     kind: Deployment
     name: argocd-repo-server
@@ -80,6 +87,9 @@ patches:
                   memory: 192Mi
                 limits:
                   memory: 768Mi
+              readinessProbe:
+                timeoutSeconds: 5
+                failureThreshold: 5
 - target:
     kind: Deployment
     name: argocd-server
@@ -99,6 +109,9 @@ patches:
                   memory: 96Mi
                 limits:
                   memory: 384Mi
+              readinessProbe:
+                timeoutSeconds: 5
+                failureThreshold: 5
 - target:
     kind: Deployment
     name: argocd-applicationset-controller
@@ -137,6 +150,9 @@ patches:
                   memory: 64Mi
                 limits:
                   memory: 256Mi
+              livenessProbe:
+                timeoutSeconds: 5
+                failureThreshold: 5
 - target:
     kind: Deployment
     name: argocd-dex-server
