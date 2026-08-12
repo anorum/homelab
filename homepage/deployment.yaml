@@ -38,6 +38,14 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
+          # Measured ~87Mi. Next.js, so the ceiling is mostly about bounding a
+          # leak rather than accommodating a known spike.
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              memory: 256Mi
           volumeMounts:
             - mountPath: /app/config/custom.js
               name: homepage-config

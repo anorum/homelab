@@ -23,13 +23,16 @@ helmCharts:
     namespace: metallb
     valuesInline:
       controller:
+        # Pre-existing limit, raised here: 7-day peak is 99Mi against a 100Mi
+        # ceiling. This controller assigns the LoadBalancer addresses, so it is
+        # a poor candidate for being OOMKilled at a random moment.
         resources:
           limits:
             cpu: 100m
-            memory: 100Mi
+            memory: 256Mi
           requests:
             cpu: 50m
-            memory: 50Mi
+            memory: 64Mi
       speaker:
         resources:
           limits:
@@ -38,3 +41,33 @@ helmCharts:
           requests:
             cpu: 50m
             memory: 50Mi
+        # The speaker pod carries three FRR sidecars beyond the `speaker`
+        # container itself, and only that one container was accounted for.
+        #
+        # This cluster runs MetalLB in L2 mode, so FRR does no work here - the
+        # honest fix is `frr.enabled: false`, which deletes all three. That is
+        # deliberately not done in this change: every LoadBalancer address,
+        # including the Traefik VIP that fronts the whole cluster, is announced
+        # by this DaemonSet, so flipping its mode belongs in its own change with
+        # someone watching. Bounding them is the safe half.
+        frr:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+        reloader:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        frrMetrics:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

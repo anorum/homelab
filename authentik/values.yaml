@@ -40,7 +40,6 @@ blueprints:
     - google-oauth-blueprint
     - forward-auth-blueprint
     - grafana-blueprint
-    - open-webui-blueprint
 
 server:
   containerPorts:
@@ -50,13 +49,20 @@ server:
      value: /tmp
   ingress:
     enabled: false
+  # 2Gi was a guess made before there was anything to measure, but the first
+  # attempt to correct it read a single instantaneous 570Mi and cut to 1Gi -
+  # which would have OOMKilled the SSO server, and with it login for Grafana
+  # and ArgoCD. Over 7 days this container sawtooths between 491Mi and 893Mi as
+  # its workers recycle; the trough is what a spot check happens to catch.
+  # 1536Mi clears the real peak with room, and still returns half a gigabyte of
+  # declared headroom over the original guess.
   resources:
     limits:
       cpu: 1000m
-      memory: 2Gi
+      memory: 1536Mi
     requests:
       cpu: 200m
-      memory: 512Mi
+      memory: 640Mi
 
 worker:
   podAnnotations:
@@ -84,11 +90,6 @@ worker:
         secretKeyRef:
           name: grafana-oauth-secret
           key: clientSecret
-    - name: OPEN_WEBUI_OAUTH_CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: open-webui-oauth-secret
-          key: clientSecret
   livenessProbe:
     initialDelaySeconds: 180
     failureThreshold: 5
@@ -102,10 +103,12 @@ worker:
     initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 5
+  # Same reasoning as the server above, but the worker's 7-day peak is 596Mi
+  # rather than 893Mi, so 1Gi genuinely does clear it.
   resources:
     limits:
       cpu: 1000m
-      memory: 2Gi
+      memory: 1Gi
     requests:
       cpu: 100m
       memory: 512Mi
@@ -119,13 +122,17 @@ postgresql:
   primary:
     persistence:
       enabled: true
+    # Pre-existing limit, raised here because the 7-day peak is 481Mi against a
+    # 512Mi ceiling - 94% of the limit, and Postgres growing its shared buffers
+    # under load is normal rather than a fault. This is the identity store for
+    # the whole cluster; it should not be the first thing the OOM killer finds.
     resources:
       limits:
         cpu: 500m
-        memory: 512Mi
+        memory: 768Mi
       requests:
         cpu: 100m
-        memory: 256Mi
+        memory: 320Mi
   auth:
     username: authentik
     database: authentik

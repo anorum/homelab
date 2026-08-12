@@ -108,11 +108,6 @@ data:
           description: Recipe manager
           icon: mealie.png
           siteMonitor: http://mealie.mealie.svc.cluster.local:9000
-      - Open WebUI:
-          href: http://chat.home.alexnorum.com
-          description: Local AI assistant
-          icon: open-webui.png
-          siteMonitor: http://open-webui.open-webui.svc.cluster.local:8080
   widgets.yaml: |
     - datetime:
         text_size: xl

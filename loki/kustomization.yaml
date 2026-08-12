@@ -26,13 +26,16 @@ helmCharts:
       config:
         clients:
           - url: http://loki:3100/loki/api/v1/push
+      # Pre-existing limit, raised here: promtail's 7-day peak is exactly its
+      # 128Mi ceiling, so it has been running against the wall. A log shipper
+      # that dies during a log burst loses the logs explaining the burst.
       resources:
         requests:
           cpu: 50m
-          memory: 64Mi
+          memory: 96Mi
         limits:
           cpu: 200m
-          memory: 128Mi
+          memory: 256Mi
 
 labels:
 - pairs:

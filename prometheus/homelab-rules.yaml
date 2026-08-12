@@ -73,7 +73,7 @@ spec:
           # restarts_total is a cumulative counter, so a bare `> 5` fires forever once a
           # container has ever restarted 6 times — even if it has been stable for months.
           # increase() over 1h matches what the description actually claims.
-          expr: increase(kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"}[1h]) > 5
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|ollama|uptime-kuma"}[1h]) > 5
           for: 10m
           labels:
             severity: warning
@@ -82,7 +82,7 @@ spec:
             description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times in the last hour."
 
         - alert: HomelabPodNotReady
-          expr: kube_pod_status_ready{condition="true",namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|open-webui|ollama|uptime-kuma"} == 0
+          expr: kube_pod_status_ready{condition="true",namespace=~"adguard|authentik|mealie|prometheus|loki|traefik|argocd|cloudflared|homepage|ollama|uptime-kuma"} == 0
           for: 10m
           labels:
             severity: warning

@@ -33,6 +33,18 @@ singleBinary:
       cpu: 500m
       memory: 512Mi
 
+# The loki-sc-rules sidecar rides in the same pod and shipped without any
+# resources, so the pod was only half-accounted to the scheduler. Its 7-day
+# peak is 99Mi, which the first attempt at this limit (96Mi) sat *below* - it
+# would have OOMKilled the sidecar on day one.
+sidecar:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      memory: 256Mi
+
 # Disable microservice components
 backend:
   replicas: 0

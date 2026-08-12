@@ -28,10 +28,9 @@ These are NOT in git and would be lost if your local machine dies:
 | Service | Data Location | Storage | Priority | Notes |
 |---------|--------------|---------|----------|-------|
 | Mealie | `/mnt/hd/mealie` on swagman-2 | local-hdd-storage | High | Recipes, user data |
-| Authentik | PostgreSQL PVC on swagman-? | local-path | High | Identity provider, SSO config, all OAuth providers |
+| Authentik | PostgreSQL PVC on swagman-2 | local-path | High | Identity provider, SSO config, all OAuth providers |
 | Grafana | PVC on local-path | local-path | Medium | Custom dashboards (default ones regenerate from helm) |
 | AdGuard | PVC on local-path | local-path | Medium | DNS config, rewrites (can rebuild from configmap) |
-| Open WebUI | PVC on local-path | local-path | Medium | Chat history, user preferences — backed up daily to S3 |
 | Loki | `/mnt/hd/loki` on swagman-2 | local-hdd-storage | Low | Logs are ephemeral (14d retention) |
 | Prometheus | PVC on local-path | local-path | Low | Metrics repopulate (7d retention) |
 
@@ -131,14 +130,15 @@ A k8s CronJob (`homelab-backup` in `backup` namespace) runs daily at 3 AM, manag
 **What gets backed up:**
 - Mealie data (`aws s3 sync` from hostPath `/mnt/hd/mealie` on swagman-2)
 - Authentik PostgreSQL dump (`pg_dump` via `kubectl exec`, uploaded to S3)
-- Open WebUI SQLite DB (`kubectl cp` from pod, uploaded to S3)
 
 **S3 bucket:** `s3://anorum-homelab/backups/`
 - `backups/mealie/` — full sync of Mealie data
 - `backups/authentik/YYYY-MM-DD.sql` — daily pg dumps
-- `backups/open-webui/YYYY-MM-DD.db` — daily SQLite snapshots
+- `backups/open-webui/YYYY-MM-DD.db` — **frozen.** Open WebUI was retired; no new
+  snapshots are written and the retention sweep no longer touches this prefix,
+  so these files are the last surviving copy of that database.
 
-**Retention:** Mealie is a live sync. Authentik and Open WebUI keep 7 daily backups.
+**Retention:** Mealie is a live sync. Authentik keeps 7 daily backups.
 
 **AWS credentials:** IAM user `homelab-backup` managed by Terragrunt/OpenTofu in `terraform/homelab/`. Credentials stored as a SOPS-encrypted k8s Secret.
 
@@ -156,7 +156,6 @@ kubectl logs -n backup -l job-name --tail=100
 ```bash
 aws s3 ls s3://anorum-homelab/backups/mealie/ --summarize
 aws s3 ls s3://anorum-homelab/backups/authentik/
-aws s3 ls s3://anorum-homelab/backups/open-webui/
 ```
 
 ### Restoring from S3 Backup
@@ -180,16 +179,12 @@ cat /tmp/authentik-restore.sql | \
   bash -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U authentik authentik'
 ```
 
-**Open WebUI:**
-```bash
-# Download the latest SQLite backup
-aws s3 cp s3://anorum-homelab/backups/open-webui/YYYY-MM-DD.db /tmp/webui.db
-
-# Copy into the pod and restart
-OW_POD=$(kubectl get pod -n open-webui -l app=open-webui -o jsonpath='{.items[0].metadata.name}')
-kubectl cp /tmp/webui.db "open-webui/$OW_POD:/app/backend/data/webui.db"
-kubectl rollout restart deployment/open-webui -n open-webui
-```
+**Open WebUI:** retired. Manifests are preserved under `not_in_use/open-webui/`
+(including the Authentik blueprint and both SOPS-encrypted OAuth secrets), and
+the final SQLite snapshots remain at `s3://anorum-homelab/backups/open-webui/`.
+Bringing it back means restoring that directory, re-adding the Application to
+`argo-apps/applications.yaml`, and re-registering the blueprint in
+`authentik/kustomization.yaml` and `authentik/values.yaml`.
 
 ## Testing Recovery
 

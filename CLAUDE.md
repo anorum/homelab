@@ -40,11 +40,18 @@
 ### Storage
 | StorageClass | Provisioner | Location | Used By |
 |-------------|-------------|----------|---------|
-| `local-path` | k3s default | Node-local (SD card) | Prometheus, Grafana, Open WebUI, AdGuard, Authentik |
-| `local-hdd-storage` | manual (`no-provisioner`) | `/mnt/hd` on swagman-2 | Mealie, Loki |
+| `local-path` | k3s default | Node-local (SD card) | Prometheus, Grafana, AdGuard, Authentik, Uptime Kuma |
+| `local-hdd-storage` | manual (`no-provisioner`) | `/mnt/hd` on swagman-2 | Mealie, Loki, Kafka, Home Assistant, blockade poller |
 
 - Single 11Ti PV `hdd-pv` with Retain reclaim policy and nodeAffinity to swagman-2
 - Defined in `storage/storage.yaml`
+
+**Scheduling consequence:** every `local-hdd-storage` PV carries nodeAffinity to
+swagman-2, so those workloads cannot be rescheduled to swagman-1 - and the two
+`local-path` PVCs that happen to be bound on swagman-2 (Prometheus TSDB,
+Authentik PostgreSQL) are equally stuck.
+swagman-2 therefore runs hot by construction.
+When something needs to move off it, the only candidates are stateless pods; see the nodeAffinity comment in `kafka/kafka-ui.yaml`.
 
 ### Deployment Model
 1. **App-of-apps**: `argo-cd/app-of-apps.yaml` deploys `argo-apps/applications.yaml`
@@ -54,7 +61,11 @@
 5. Source repo: `git@github.com:anorum/homelab.git` at HEAD
 
 ### Active ArgoCD Apps
-adguard, authentik, backup, cloudflared, homepage, loki, mealie, metallb, ollama, open-webui, prometheus, reloader, traefik, uptime-kuma (plus `app-of-apps` and `argo-cd` itself)
+adguard, authentik, backup, blockade, cloudflared, flink-operator, homepage, kafka, loki, mealie, metallb, ollama, prometheus, reloader, sightread, traefik, uptime-kuma (plus `app-of-apps` and `argo-cd` itself)
+
+`blockade` is the only app sourced from a different repo
+(`git@github.com:anorum/trainspotter.git`, path `deploy`); everything else comes
+from this one.
 
 ### Monitoring Stack
 - **Prometheus**: kube-prometheus-stack v82.10.1, 7d retention, 5Gi storage

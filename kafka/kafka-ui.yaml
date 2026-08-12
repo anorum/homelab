@@ -8,7 +8,7 @@
 # BSL, and it has a genuine read-only mode. Redpanda Console is Go rather than
 # JVM and would use meaningfully less memory, which on these Pis is a real
 # argument - but an unauthenticated page that can delete topics is the worse
-# trade. Measured at 294Mi in practice, against the 512Mi limit below.
+# trade. Measured at 389Mi in practice, against the 640Mi limit below.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,6 +26,24 @@ spec:
       labels:
         app: kafka-ui
     spec:
+      # Everything else in this namespace is anchored to swagman-2 by the HDD at
+      # /mnt/hd - the broker's log directory is a local-hdd-storage PV with node
+      # affinity, and it cannot move. kafka-ui has no such tie: it is stateless
+      # (emptyDir only) and reaches the cluster over the bootstrap Service, so
+      # the node it lands on is invisible to it. Preferring swagman-1 keeps that
+      # ~390Mi off the node carrying the storage-pinned workloads.
+      #
+      # Preferred rather than required on purpose: if swagman-1 is down, a Kafka
+      # UI that refuses to schedule is worse than one running beside the broker.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["swagman-1"]
       containers:
         - name: kafka-ui
           image: ghcr.io/kafbat/kafka-ui:v1.5.0
@@ -54,12 +72,16 @@ spec:
             # than garbage collected.
             - name: JAVA_OPTS
               value: "-Xms128m -Xmx320m"
+          # Raised from 512Mi: the 294Mi in the comment above was measured on an
+          # idle cluster, and steady state with the pipeline actually running is
+          # 389Mi - 76% of the old limit, which is too close for a JVM whose
+          # non-heap footprint grows with the number of topics it is watching.
           resources:
             requests:
               cpu: 50m
-              memory: 256Mi
+              memory: 320Mi
             limits:
-              memory: 512Mi
+              memory: 640Mi
           readinessProbe:
             httpGet:
               path: /actuator/health
