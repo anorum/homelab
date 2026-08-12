@@ -34,14 +34,15 @@ helmCharts:
           limits:
             memory: 512Mi
         # The dashboard/datasource sidecars are two more unlimited containers
-        # hiding inside a pod that otherwise looks accounted for.
+        # hiding inside a pod that otherwise looks accounted for. 7-day peak is
+        # 77Mi, so 96Mi would have left 19Mi of room - too thin to be a ceiling.
         sidecar:
           resources:
             requests:
               cpu: 10m
               memory: 32Mi
             limits:
-              memory: 96Mi
+              memory: 192Mi
         service:
           selector:
             app.kubernetes.io/instance: prometheus
@@ -86,15 +87,16 @@ helmCharts:
           # to swagman-2, so it cannot be moved to the emptier node without
           # abandoning the data - capping it in place is the available lever.
           #
-          # Measured at ~860Mi with 7d retention. 1536Mi leaves room for a
-          # compaction spike without letting a runaway query walk the node into
-          # a kernel OOM, where the victim would not necessarily be Prometheus.
+          # Sized from max_over_time(...[7d]) rather than a spot reading: the
+          # instantaneous 860Mi is a trough, and the real 7-day peak is 1204Mi.
+          # Compaction is what puts it there, so the limit has to clear the
+          # peak, not the average.
           resources:
             requests:
               cpu: 100m
               memory: 768Mi
             limits:
-              memory: 1536Mi
+              memory: 1792Mi
           storageSpec:
             volumeClaimTemplate:
               spec:

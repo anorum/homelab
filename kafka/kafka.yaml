@@ -29,12 +29,17 @@ spec:
         # corpus lives in S3 - but losing the volume mid-flight would drop
         # records the outbox had already marked published.
         deleteClaim: false
+  # Raised from 1400Mi: the broker's 7-day peak is 1215Mi, 87% of that ceiling.
+  # The JVM heap below is fixed at 768m, so the rest is direct buffers and page
+  # cache for the log segments, which grows with partition count rather than
+  # staying flat. Being OOMKilled mid-append is how a transport loses records
+  # the outbox has already marked published.
   resources:
     requests:
       memory: 1Gi
       cpu: 200m
     limits:
-      memory: 1400Mi
+      memory: 1792Mi
   jvmOptions:
     # Deliberately small. Two nodes with ~6.7Gi free between them also have to
     # carry Flink, and an oversized heap here is memory the stream processor

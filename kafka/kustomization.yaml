@@ -18,3 +18,12 @@ helmCharts:
     version: 1.1.0
     releaseName: strimzi
     namespace: kafka
+    valuesInline:
+      # Chart default is a 384Mi limit against a 7-day peak of 317Mi, which is
+      # 82% and too close for a JVM operator that reconciles on a timer.
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 100m
+        limits:
+          memory: 640Mi

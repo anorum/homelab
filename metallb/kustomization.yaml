@@ -23,13 +23,16 @@ helmCharts:
     namespace: metallb
     valuesInline:
       controller:
+        # Pre-existing limit, raised here: 7-day peak is 99Mi against a 100Mi
+        # ceiling. This controller assigns the LoadBalancer addresses, so it is
+        # a poor candidate for being OOMKilled at a random moment.
         resources:
           limits:
             cpu: 100m
-            memory: 100Mi
+            memory: 256Mi
           requests:
             cpu: 50m
-            memory: 50Mi
+            memory: 64Mi
       speaker:
         resources:
           limits:

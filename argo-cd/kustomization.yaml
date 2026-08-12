@@ -38,10 +38,10 @@ patches:
     name: argocd-repo-server
 
 # Upstream's install.yaml declares no resources at all, so every ArgoCD pod was
-# invisible to the scheduler's accounting. Values are set from observed usage
-# with room to spike; repo-server gets the most because it is the one that
-# runs `kustomize build --enable-helm` over the kube-prometheus-stack chart,
-# and it no longer has a second replica to share that work.
+# invisible to the scheduler's accounting. Limits are set from
+# max_over_time(...[7d]) rather than a spot reading - the application
+# controller's 7-day peak is 760Mi against an instantaneous 385Mi, so sizing
+# from the latter would have produced a limit it walks straight through.
 - target:
     kind: StatefulSet
     name: argocd-application-controller
@@ -58,9 +58,9 @@ patches:
               resources:
                 requests:
                   cpu: 100m
-                  memory: 256Mi
+                  memory: 384Mi
                 limits:
-                  memory: 768Mi
+                  memory: 1280Mi
 - target:
     kind: Deployment
     name: argocd-repo-server
