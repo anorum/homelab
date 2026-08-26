@@ -347,6 +347,11 @@ spec:
     path: deploy
     directory:
       recurse: true
+      # deploy/cloud is the Hetzner overlay - a different cluster's world.
+      # The base kustomization.yaml files exist for that overlay to consume;
+      # as raw documents they are not applyable resources. Neither may reach
+      # this cluster.
+      exclude: '{cloud/**,**/kustomization.yaml}'
   destination:
     server: https://kubernetes.default.svc
     namespace: blockade
