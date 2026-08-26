@@ -1,0 +1,66 @@
+---
+# The pdxtrain.com tunnel: its own connector, separate from the homelab
+# tunnel on purpose - this hostname is a product's public address, its
+# routing lives here in git rather than in the dashboard, and the same
+# config moves to the cloud box unchanged if hosting ever migrates.
+# Credentials are imperative (cloudflared-pdxtrain-creds), like every
+# credential in this cluster.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-pdxtrain-config
+  namespace: cloudflared
+data:
+  config.yml: |
+    tunnel: 747aba23-f6e6-45ba-a2fc-3f92809a00a2
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    ingress:
+      # Straight to the api Service - no gateway hop, no Host-header
+      # coupling to the homelab's Traefik.
+      - hostname: pdxtrain.com
+        service: http://api.blockade.svc.cluster.local:80
+      - hostname: www.pdxtrain.com
+        service: http://api.blockade.svc.cluster.local:80
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared-pdxtrain
+  namespace: cloudflared
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared-pdxtrain
+  template:
+    metadata:
+      labels:
+        app: cloudflared-pdxtrain
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-pdxtrain-config
+        - name: creds
+          secret:
+            secretName: cloudflared-pdxtrain-creds
