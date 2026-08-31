@@ -31,7 +31,11 @@ metadata:
   annotations:
     reloader.stakater.com/auto: "true"
 spec:
-  replicas: 1
+  # Three, because one was the ceiling on the whole public site: a single
+  # connector held throughput to ~20 req/s while the API served 250 on the
+  # LAN. Cloudflare balances across every connector registered to the
+  # tunnel, so replicas are the scaling knob, and each costs ~26 MiB.
+  replicas: 3
   selector:
     matchLabels:
       app: cloudflared-pdxtrain
@@ -40,6 +44,17 @@ spec:
       labels:
         app: cloudflared-pdxtrain
     spec:
+      # Spread over nodes where possible: three connectors on one node still
+      # share that node's fate, which is the thing replicas exist to avoid.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: cloudflared-pdxtrain
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:latest
