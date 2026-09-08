@@ -79,7 +79,29 @@ spec:
       resources:
         requests: { memory: 256Mi, cpu: 50m }
         limits: { memory: 384Mi }
-    userOperator:
-      resources:
-        requests: { memory: 256Mi, cpu: 50m }
-        limits: { memory: 384Mi }
+      # Strimzi gives the topic operator a startupProbe with a 135s budget,
+      # which is what let it survive the cluster-wide restart storm that killed
+      # its sibling. Liveness is widened anyway: the default kills a healthy JVM
+      # after 30s of missed checks, and on a contended Pi that is a coin flip.
+      livenessProbe:
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+        periodSeconds: 15
+        failureThreshold: 6
+      readinessProbe:
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+        periodSeconds: 15
+        failureThreshold: 6
+    # userOperator is deliberately absent. It exists to reconcile KafkaUser
+    # resources and ACLs, and this cluster has neither: one plaintext listener
+    # with no authentication, no cluster authorization, and zero KafkaUser
+    # objects. It was doing nothing, and doing it expensively - unlike the topic
+    # operator it gets no startupProbe from Strimzi, so its liveness check began
+    # at 10s and killed it after three misses, roughly 40s for a JVM cold start.
+    # It then crashlooped, and each restart burned close to a full core on the
+    # node with the least to spare, which slowed the very startup being timed.
+    #
+    # Same reasoning as the FRR sidecars: the fix for a component with no work
+    # is to remove it, not to widen the deadline it keeps missing. Restore this
+    # block if the cluster ever gains authentication or a KafkaUser.
