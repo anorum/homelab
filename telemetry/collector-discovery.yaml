@@ -17,6 +17,14 @@ processors:
       - metric.name != "node_thermal_zone_temp"
       - datapoint.attributes["type"] != "cpu-thermal"
       - datapoint.attributes["zone"] != "0"
+  resource/device:
+    attributes:
+      - key: host.id
+        value: ${env:TELEMETRY_HOST_ID}
+        action: upsert
+      - key: host.name
+        value: ${env:TELEMETRY_HOST_NAME}
+        action: upsert
 
 exporters:
   file:
@@ -31,5 +39,5 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [filter/temperature]
+      processors: [filter/temperature, resource/device]
       exporters: [file]

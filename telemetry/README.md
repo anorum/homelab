@@ -16,6 +16,16 @@ Its own metrics listener is disabled for this temporary experiment to avoid occu
 Production pipeline monitoring will need a separate decision.
 The output uses the native OTLP metric representation, without a custom event schema or Java producer.
 
+## Device identity
+
+`host.id` is `raspberrypi:<board-serial>`, read from `/sys/firmware/devicetree/base/serial-number` at startup.
+The prefix distinguishes the identifier's source; it does not guarantee global uniqueness across an arbitrary fleet.
+`host.name` is the current hostname, retained as a readable label rather than the identity used to connect history.
+The setup commands refresh both values when starting a new experiment; changing the OS hostname does not update an already-running Collector's environment.
+Renaming or reinstalling the OS preserves the board-derived ID; replacing the board changes it.
+Queries that need continuity across renames should group by `host.id`, not the complete set of resource attributes.
+This identifies the Pi's board, not a logical robot that might outlive a computer replacement.
+
 ## Dependencies
 
 The experiment uses Linux ARM64 release binaries, Bash, curl, tar, sha256sum, timeout, and Python 3's standard library.
@@ -58,6 +68,10 @@ CHECKSUMS
 
 tar -xzf node_exporter-1.12.1.linux-arm64.tar.gz
 tar -xzf otelcol-contrib_0.161.0_linux_arm64.tar.gz otelcol-contrib
+telemetry_serial=$(tr -d '\000\n' < /sys/firmware/devicetree/base/serial-number)
+[[ "$telemetry_serial" =~ ^[[:xdigit:]]{16}$ ]] || { printf 'Invalid Pi board serial\n' >&2; exit 1; }
+export TELEMETRY_HOST_ID="raspberrypi:$telemetry_serial"
+export TELEMETRY_HOST_NAME="$(hostname)"
 export TELEMETRY_OUTPUT="$telemetry_run/metrics.jsonl"
 ./otelcol-contrib validate --config collector-discovery.yaml
 ```
@@ -123,12 +137,15 @@ The timing limits allow startup alignment and a small amount of scheduling jitte
 
 ```bash
 python3 - <<'PY'
-import json, math
+import json, math, os
 from datetime import datetime, timezone
 from pathlib import Path
 
 path = Path('metrics.jsonl')
 timing = json.loads(Path('timing.json').read_text())
+expected_id = os.environ['TELEMETRY_HOST_ID']
+expected_name = os.environ['TELEMETRY_HOST_NAME']
+assert expected_id.startswith('raspberrypi:') and expected_name
 points = []
 for line in path.read_text().splitlines():
     for resource in json.loads(line)['resourceMetrics']:
@@ -136,6 +153,8 @@ for line in path.read_text().splitlines():
                  for a in resource['resource']['attributes']}
         assert attrs['service.name'] == 'pi-thermal-discovery', attrs
         assert attrs['service.instance.id'] == '127.0.0.1:19100', attrs
+        assert attrs['host.id'] == expected_id, 'Incorrect board identity'
+        assert attrs['host.name'] == expected_name, 'Incorrect hostname label'
         for scope in resource['scopeMetrics']:
             for metric in scope['metrics']:
                 assert metric['name'] == 'node_thermal_zone_temp', metric
@@ -193,14 +212,15 @@ Uncompressed file size is not S3 object size, queue footprint, or a measurement 
 It does not test a week of buffering, S3 acknowledgments, process-failure recovery, or power-loss durability.
 
 The observed source unit is described as Celsius, but the initial OTLP output does not contain an explicit metric `unit` field.
-The default resource identity is the loopback endpoint, which cannot distinguish devices in a fleet.
-Explicit units and durable device identity therefore need decisions before multi-device S3 ingestion.
+The resource processor adds board identity alongside the receiver's loopback service endpoint.
+Explicit metric units still need a decision before S3 ingestion.
 
 ## Verified result: 2026-09-18
 
 The experiment ran on swagman-2, confirmed as a Raspberry Pi 4 Model B with Debian 12 and aarch64 architecture.
 Both archive checksums passed, and `otelcol-contrib validate --config collector-discovery.yaml` exited successfully.
-The verification snippet above passed on the Pi and again against the copied evidence on the workstation.
+The verification snippet at commit `d60eb9f` passed on the Pi and again against the copied evidence on the workstation.
+This initial run predates the board-identity attributes; its byte measurements exclude their overhead.
 
 | Measurement | Result |
 | --- | --- |
@@ -225,3 +245,19 @@ Temporary-directory evidence can expire; the measurements and reproduction proce
 
 Fresh-context standards and plan-conformance reviews found no issues in the configuration or runbook.
 The simplification pass found no additional abstractions to remove.
+
+## Verified board identity: 2026-09-18
+
+The updated configuration validated successfully with the same pinned Collector binary.
+Two 20-second captures produced three temperature samples each, preserving the five-second cadence.
+The first used the Pi's current hostname; the second set `TELEMETRY_HOST_NAME=identity-test-renamed` and restarted the Collector.
+Every resource in both captures had the same `host.id`, checked independently against the board's serial-number file, and the expected distinct `host.name`.
+This verifies independence from the hostname label and continuity across Collector restarts; it did not rename the OS or reinstall it.
+
+To repeat this check, follow the capture procedure twice with fresh output paths and a 20-second timeout, changing only `TELEMETRY_HOST_NAME` before the second Collector launch.
+Compare the `host.id` and `host.name` resource attributes in both outputs against the board serial and the chosen labels.
+The five-minute verifier's count and timing limits apply to the full discovery run, not these short identity checks.
+
+Both temporary processes stopped, the original port 9100 exporter still responded, and the temporary binaries were removed.
+Evidence remains at `/tmp/pi-telemetry-identity.gXyjYk` on the Pi, approximately 44 KiB, and `/private/tmp/pi-telemetry-identity-evidence-20260918` on the workstation.
+Fresh-context standards and scope reviews found no issues in the identity change.
