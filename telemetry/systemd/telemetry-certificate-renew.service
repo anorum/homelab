@@ -1,0 +1,18 @@
+[Unit]
+Description=Renew the Pi telemetry device certificate
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/etc/telemetry/certificate.env
+ExecStart=/usr/local/libexec/telemetry/renew-certificate.sh
+TimeoutStartSec=90s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/telemetry/identity
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
