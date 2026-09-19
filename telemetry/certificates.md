@@ -2,8 +2,8 @@
 
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
 The real issuer, device credentials, and hourly renewal timer are deployed as of 2026-09-19.
-AWS certificate authentication is deployed; Prometheus monitoring is approved and being verified.
-See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
+AWS certificate authentication and Prometheus certificate monitoring are deployed and verified as of 2026-09-19.
+See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) and [monitoring evidence](../docs/plans/2026-09-19-certificate-alerts.md) for deployment details.
 Root-key custody is settled: an encrypted file on Alex's Mac, backed up in iCloud Drive, with its password in Apple Passwords.
 Root and intermediate material now exist on the Mac.
 The local-copy check and iCloud backup recovery check passed on 2026-09-19.
