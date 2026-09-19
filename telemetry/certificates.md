@@ -3,9 +3,9 @@
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
 The real issuer, device credentials, timer installation, expiry alerts, and AWS authentication are not deployed.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
-Root-key custody is settled: an encrypted file on Alex's Mac with a password-manager backup.
+Root-key custody is settled: an encrypted file on Alex's Mac, backed up in iCloud Drive, with its password in Apple Passwords.
 Root and intermediate material now exist on the Mac.
-The current interactive step checks agent-prepared local copies in Downloads; off-device backup remains unverified.
+The local-copy check and iCloud backup recovery check passed on 2026-09-19.
 
 ## Bootstrap custody
 
@@ -19,8 +19,10 @@ The root certificate is public and can be copied to the issuer, Pi, and AWS trus
 
 The one-time setup uses Smallstep's [existing-root initialization](https://smallstep.com/docs/step-cli/reference/ca/init/) to keep root and intermediate protection separate.
 A disposable-key check with `step` 0.30.6 verified that initialization does not copy the root private key into the issuer directory, and that the intermediate password cannot decrypt the root key.
-Back up the encrypted root key and its public certificate as attachments in the password manager, along with the root password.
-Download both attachments and verify the key decrypts and matches the certificate before deploying the issuer.
+The encrypted root key and public certificate are backed up in `iCloud Drive/Homelab CA Backup/`; the password stays in Apple Passwords.
+The bootstrap wizard verified decryption and the key/certificate match locally.
+On 2026-09-19, macOS confirmed both backup files uploaded; each local iCloud cache was then evicted, confirmed not downloaded, downloaded again, and compared byte-for-byte with the verified originals.
+Both recovered files matched; no password or unencrypted root key was copied into iCloud Drive.
 This root backup is separate from the planned backup of issuer configuration, credentials, and database state.
 
 ## What runs on the Pi

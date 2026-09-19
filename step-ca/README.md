@@ -2,7 +2,7 @@
 
 Status: manifests prepared and validated; the issuer is not deployed.
 The [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) defines the remaining acceptance checks.
-Root-key backup remains unverified; the completed bootstrap check covered local copies only.
+Root-key backup recovery passed on 2026-09-19: both files were uploaded to iCloud Drive, evicted locally, downloaded again, and matched the verified originals.
 
 ## Runtime
 
@@ -49,7 +49,7 @@ Both test pods were deleted; this checks container execution, not issuer startup
 
 ## Before deployment is complete
 
-Finish an off-device root-key backup, then deploy the reviewed issuer resources.
+The off-device root-key backup is verified; deploy the reviewed issuer resources next.
 After MetalLB allocates an address, add the exact `ca.home.alexnorum.com` AdGuard rewrite and verify it resolves to that address.
 AdGuard copies its ConfigMap only during pod initialization, so applying the DNS configuration also requires a controlled rollout and a resolution check.
 Verify HTTPS using the pinned root and expected hostname before device enrollment; the Kubernetes HTTPS probes check health, not CA trust.

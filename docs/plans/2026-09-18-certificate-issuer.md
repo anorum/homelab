@@ -1,7 +1,7 @@
 # Certificate issuer and automatic renewal
 
 Status: issuer placement and root-key custody accepted; renewal client verified with disposable keys.
-Bootstrap keys and the local-copy check are complete; off-device root-key backup remains unverified.
+Bootstrap keys, the local-copy check, and iCloud root-key backup recovery are complete.
 The [issuer manifests](../../step-ca/README.md) are prepared, with secret rendering, structural validation, and disposable policy/database-recovery checks completed; live deployment acceptance remains outstanding.
 The [client runbook](../../telemetry/certificates.md) records eight passing Pi integration tests and the remaining deployment checks.
 This narrows the larger [Roles Anywhere plan](2026-09-18-pi-roles-anywhere.md) to the certificate lifecycle needed before AWS authentication.
@@ -11,12 +11,13 @@ The [compatibility research](../research/step-ca-roles-anywhere.md) records sour
 
 Run open-source `step-ca` as a private homelab service, with `step` and a systemd renewal timer on the Pi.
 The Pi reads sensors and manages its local credentials as host processes; Kubernetes hosts the separate issuer only.
-Keep the root key in an encrypted file on Alex's Mac, backed up in Alex's password manager, and use an online intermediate for issuance.
+Keep the root key in an encrypted file on Alex's Mac, backed up in iCloud Drive with the password in Apple Passwords, and use an online intermediate for issuance.
 Keep the root private key outside the cluster, repository, and infrastructure state; use the existing SOPS/KSOPS pattern for the online issuer's encrypted secret manifest.
 This keeps the root key off the issuer but is not offline storage.
 Use a separate randomly generated password for the intermediate; the root password stays outside the issuer, repository, and infrastructure state.
 Store bootstrap material under `~/.local/share/homelab-telemetry-ca` with owner-only permissions.
-Verify that a downloaded password-manager backup of the encrypted root key decrypts and matches the root certificate before deployment.
+Verify local decryption and the key/certificate match, then confirm upload and download the iCloud backup to compare against those verified originals before deployment.
+Alex approved iCloud Drive as the backup destination on 2026-09-19; both files passed the upload, eviction, download, and byte-for-byte recovery check that day.
 
 The issuer should use a dedicated private MetalLB HTTPS endpoint instead of the current HTTP-only Traefik gateway.
 Add a specific local DNS entry for `ca.home.alexnorum.com` once the service's address is allocated and verified.
