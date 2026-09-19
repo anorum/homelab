@@ -1,5 +1,7 @@
 # Pi telemetry discovery
 
+Certificate enrollment and AWS authentication are described in [the certificate runbook](certificates.md) and [the Roles Anywhere runbook](roles-anywhere.md).
+
 This experiment collects CPU temperature on the Pi through existing software.
 It runs standalone host processes and writes local OTLP JSON for inspection.
 The [approved plan](../docs/plans/2026-09-18-pi-telemetry-discovery.md) defines the scope and later S3 direction.
