@@ -25,8 +25,8 @@ Publication failure does not change renewal's exit status; stale or absent metri
 - [x] Add the publisher and systemd post-stop hook, then node-exporter configuration and Prometheus rules.
 - [x] Use promtool rule tests for normal, warning/critical expiry, failure/recovery, stale and missing status.
 - [x] Verify installed systemd integration on the Pi, including a failed service and recovery.
-- [ ] Simplify and obtain fresh-context standards/spec review; run secret scan and PR CI.
-- [ ] Deploy and verify live metrics, healthy rule evaluation, and ArgoCD synchronization.
+- [x] Simplify and obtain fresh-context standards/spec review; run secret scan and PR CI.
+- [x] Deploy and verify live metrics, healthy rule evaluation, and ArgoCD synchronization.
   Synthetic alert conditions stay in offline tests to avoid unnecessary notifications.
 
 ## Verification evidence
@@ -39,3 +39,11 @@ An isolated service with the same post-stop hook published unsuccessful status a
 The real renewal service then restored success; the normal hourly timer remained active.
 UID `nobody` could read the metrics, while identity-directory mode remained `0700` and private-key mode `0600`.
 `gitleaks dir . --redact --no-banner` found no leaks.
+
+PR [#20](https://github.com/anorum/homelab/pull/20) merged after GitGuardian, secret scan, and SOPS encryption checks passed.
+Fresh-context spec and standards reviews and the simplification pass found no issues.
+After deployment, node-exporter exposed all five samples and Prometheus ingested `telemetry_certificate_check_success=1`.
+Both node-exporters reported `node_textfile_scrape_error=0`.
+All four live alert rules evaluated with `health=ok`, `state=inactive`, and no errors.
+ArgoCD reported `Synced`, `Healthy`, and operation `Succeeded` at revision `e5e6edb6ce7549423a2873ff0d0bb13722bb2818`.
+No synthetic notification was sent to Discord.
