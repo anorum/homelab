@@ -40,6 +40,7 @@ blueprints:
     - google-oauth-blueprint
     - forward-auth-blueprint
     - grafana-blueprint
+    - learning-hub-blueprint
 
 server:
   containerPorts:
@@ -68,6 +69,11 @@ worker:
   podAnnotations:
     reloader.stakater.com/auto: "true"
   env:
+    - name: LEARNING_HUB_OIDC_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: learning-hub-oidc
+          key: clientSecret
     - name: TMPDIR
       value: /tmp
     - name: ARGOCD_OAUTH_CLIENT_SECRET
