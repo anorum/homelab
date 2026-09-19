@@ -23,7 +23,7 @@ Repository inspection found no CA configuration; this does not rule out an exter
 Manual certificate renewal is no longer an acceptable proposed endpoint.
 Use the existing open-source `step-ca` service and `step` renewal client, with the verified shell wrapper limited to validation and atomic certificate publication.
 The issuer runs in k3s, and the supervised renewal client runs directly on the Pi.
-The root key stays encrypted on Alex's Mac with a password-manager backup; a separately protected intermediate signs certificates on the issuer.
+The root key stays encrypted on Alex's Mac with a verified iCloud Drive backup and its password in Apple Passwords; a separately protected intermediate signs certificates on the issuer.
 The Mac root is outside the running issuer, not offline storage.
 
 ## Interfaces and identity
@@ -47,7 +47,7 @@ This unit adds no S3 permissions to the role; it must not borrow the existing ba
 - Use a separate state key, `terraform/telemetry/roles-anywhere.tfstate`, in the existing homelab state bucket after confirming its ownership and access; enable S3 state locking for this new state.
 - `telemetry/roles-anywhere.md`: enrollment, helper configuration, verification, renewal, and emergency access-removal procedure.
 - `telemetry/README.md`: link to the authentication procedure and explain its connection to the Collector.
-- Root CA material: keep the encrypted private key on Alex's Mac, off the Pi and outside git and OpenTofu state, with a verified password-manager backup.
+- Root CA material: keep the encrypted private key on Alex's Mac, off the Pi and outside git and OpenTofu state, with the verified iCloud Drive backup.
 - Pi certificate/key: `/var/lib/telemetry/identity`, with directory mode 0700 and private-key mode 0600; public trust files and renewal configuration live under `/etc/telemetry` as described in the issuer runbook.
 - Set the AWS credential consumer's runtime account and identity-file access explicitly during its integration.
 - Pin and checksum-verify the official helper; verify compatibility on Debian 12 ARM64 before enrollment changes.
