@@ -3,7 +3,24 @@
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
 The real issuer, device credentials, timer installation, expiry alerts, and AWS authentication are not deployed.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
-Root-key custody must be settled before creating the real CA.
+Root-key custody is settled: an encrypted file on Alex's Mac with a password-manager backup.
+Bootstrap still requires local password entry and verification of the downloaded backup.
+
+## Bootstrap custody
+
+Bootstrap material lives outside this repository under `~/.local/share/homelab-telemetry-ca`, with directory mode `0700` and secret-file mode `0600`.
+The root key is encrypted with a password entered locally and kept in the password manager.
+Its password is used through a temporary owner-only file during bootstrap and removed when the setup exits.
+The intermediate and enrollment authority use separate generated passwords; those operational passwords are owner-only files on the Mac during bootstrap.
+Only the intermediate key and its unlock password are destined for the cluster's SOPS-encrypted secret manifest.
+The root key/password and enrollment password must not be copied to the cluster.
+The root certificate is public and can be copied to the issuer, Pi, and AWS trust anchor.
+
+The one-time setup uses Smallstep's [existing-root initialization](https://smallstep.com/docs/step-cli/reference/ca/init/) to keep root and intermediate protection separate.
+A disposable-key check with `step` 0.30.6 verified that initialization does not copy the root private key into the issuer directory, and that the intermediate password cannot decrypt the root key.
+Back up the encrypted root key and its public certificate as attachments in the password manager, along with the root password.
+Download both attachments and verify the key decrypts and matches the certificate before deploying the issuer.
+This root backup is separate from the planned backup of issuer configuration, credentials, and database state.
 
 ## What runs on the Pi
 

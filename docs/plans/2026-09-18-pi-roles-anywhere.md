@@ -1,6 +1,6 @@
 # Pi certificate authentication plan
 
-Status: Roles Anywhere selected; revise the implementation scope to include automatic certificate renewal before requesting approval.
+Status: Roles Anywhere and the private step-ca issuer selected; implementing the separate [issuer plan](2026-09-18-certificate-issuer.md) before AWS integration.
 Read-only AWS discovery completed after Alex renewed the workstation's default CLI session.
 
 ## Outcome
@@ -21,9 +21,10 @@ The existing `anorum-homelab` state bucket is accessible and its ownership match
 Repository inspection found no CA configuration; this does not rule out an external CA managed elsewhere.
 
 Manual certificate renewal is no longer an acceptable proposed endpoint.
-Evaluate the existing open-source `step-ca` service and `step` renewal client before introducing custom renewal logic.
-This would add an online issuer and a supervised renewal client on the Pi; hosting, enrollment policy, signing-key protection, and CA-certificate rotation must be agreed before implementation.
-An offline root with an online intermediate is the proposed trust structure, not yet an approved dependency or deployment boundary.
+Use the existing open-source `step-ca` service and `step` renewal client, with the verified shell wrapper limited to validation and atomic certificate publication.
+The issuer runs in k3s, and the supervised renewal client runs directly on the Pi.
+The root key stays encrypted on Alex's Mac with a password-manager backup; a separately protected intermediate signs certificates on the issuer.
+The Mac root is outside the running issuer, not offline storage.
 
 ## Interfaces and identity
 
@@ -46,13 +47,14 @@ This unit adds no S3 permissions to the role; it must not borrow the existing ba
 - Use a separate state key, `terraform/telemetry/roles-anywhere.tfstate`, in the existing homelab state bucket after confirming its ownership and access; enable S3 state locking for this new state.
 - `telemetry/roles-anywhere.md`: enrollment, helper configuration, verification, renewal, and emergency access-removal procedure.
 - `telemetry/README.md`: link to the authentication procedure and explain its connection to the Collector.
-- Root CA material: keep the private key off the Pi and outside git and OpenTofu state; agree issuer key custody and backup before provisioning.
-- Pi certificate/key/config: a dedicated directory under `~/.config/homelab-telemetry`, with directory mode 0700 and private-key/config mode 0600 for the current discovery user.
+- Root CA material: keep the encrypted private key on Alex's Mac, off the Pi and outside git and OpenTofu state, with a verified password-manager backup.
+- Pi certificate/key: `/var/lib/telemetry/identity`, with directory mode 0700 and private-key mode 0600; public trust files and renewal configuration live under `/etc/telemetry` as described in the issuer runbook.
+- Set the AWS credential consumer's runtime account and identity-file access explicitly during its integration.
 - Pin and checksum-verify the official helper; verify compatibility on Debian 12 ARM64 before enrollment changes.
 - Keep account IDs, concrete role ARNs, private keys, and session credentials out of repository files, following homelab conventions.
 
-Use existing tools for certificate issuance and renewal; the proposed new dependencies are `step-ca` and `step`, pending comparison and approval.
-Keep collection and renewal clients on the Pi independent of Kubernetes; the issuer's hosting is a separate decision.
+Use the selected `step-ca` and `step` dependencies for certificate issuance and renewal.
+Keep collection and renewal clients on the Pi independent of Kubernetes; only the issuer is hosted there.
 Supervised renewal and safe certificate replacement are part of unattended authentication, not deferred operational instructions.
 
 ## Certificate lifecycle
@@ -83,7 +85,7 @@ Fleet enrollment and CRL distribution remain outside the initial lab scope; auto
 11. Record exact commands, results, and resource ownership; run simplification and fresh-context review before presenting the change.
 
 S3 writes, explicit metric units, and the telemetry persistent queue remain outside the authentication scope.
-Issuer deployment and lifecycle choices must be resolved and the revised implementation units approved before resources or keys are created.
+The approved issuer plan governs bootstrap and deployment; prepare and review the AWS resource plan separately before applying it.
 
 ## Primary references
 
