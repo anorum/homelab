@@ -5,6 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+User=telemetry
+Group=telemetry
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 EnvironmentFile=/etc/telemetry/certificate.env
 ExecStart=/usr/local/libexec/telemetry/renew-certificate.sh

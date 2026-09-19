@@ -1,12 +1,13 @@
 # Private telemetry certificate issuer
 
-Status: manifests prepared and validated; the issuer is not deployed.
+Status: issuer deployed on 2026-09-19; live enrollment and pinned-root HTTPS succeeded.
 The [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) defines the remaining acceptance checks.
 Root-key backup recovery passed on 2026-09-19: both files were uploaded to iCloud Drive, evicted locally, downloaded again, and matched the verified originals.
 
 ## Runtime
 
 One `step-ca` replica listens on container port 9000 behind a private MetalLB service on port 443.
+MetalLB allocated `192.168.1.152`; the Service now requests that address explicitly to preserve the matching DNS record across recreation.
 TLS terminates at the issuer so device-certificate authentication reaches it directly.
 This intentionally uses the approved private LoadBalancer instead of the HTTP-only shared gateway.
 The [official container](https://smallstep.com/docs/tutorials/docker-tls-certificate-authority/) is pinned to version 0.30.2 and image-index digest `sha256:a2b17872915c193259b75a5474c398326f41bd199f0842093e52cf4182bc8270`; its Linux ARM64 image was verified in the registry.
@@ -41,7 +42,7 @@ python3 step-ca/tests/test_issuer.py
 It substitutes disposable keys and loopback paths into the repository's CA policy, then checks trusted HTTPS, rejection without the pinned root, subject binding, the certificate lifetime limit, single-use tokens, and replay protection after a cold database copy/restore.
 It does not exercise the real cluster deployment or encrypted backup transport.
 
-On 2026-09-19, this test passed in 2.031 seconds.
+On 2026-09-19, this test passed in 2.052 seconds.
 The cluster's existing ArgoCD/KSOPS tools rendered six resources, and `kubectl create --dry-run=client --validate=strict` accepted them.
 A comparison of the rendered Secret confirmed the intermediate key/password matched bootstrap and that the root key and enrollment password were absent.
 Disposable cluster pods tested the pinned ARM64 image with the deployment's security context: dropping all capabilities failed with exit 255; retaining `NET_BIND_SERVICE` returned `Smallstep CA/0.30.2` with exit 0.
@@ -49,11 +50,11 @@ Both test pods were deleted; this checks container execution, not issuer startup
 
 ## Before deployment is complete
 
-The off-device root-key backup is verified; deploy the reviewed issuer resources next.
-After MetalLB allocates an address, add the exact `ca.home.alexnorum.com` AdGuard rewrite and verify it resolves to that address.
+The off-device root-key backup is verified and the issuer rollout passed with one ready replica and its PVC bound.
+The exact `ca.home.alexnorum.com` AdGuard rewrite targets `192.168.1.152`; verify it resolves to that address after GitOps sync.
 AdGuard copies its ConfigMap only during pod initialization, so applying the DNS configuration also requires a controlled rollout and a resolution check.
 Verify HTTPS using the pinned root and expected hostname before device enrollment; the Kubernetes HTTPS probes check health, not CA trust.
-Then enroll the Pi, install and test its renewal timer, and agree the expiry-monitoring integration.
+The Pi is enrolled and its renewal timer is installed; due-renewal acceptance and the expiry-monitoring integration remain pending.
 
 The issuer-state recovery procedure must preserve the database together with the matching configuration and intermediate credentials.
 Stop the issuer before taking a cold database archive, encrypt the archive using the existing SOPS/age setup, and store it outside the node holding the PVC.

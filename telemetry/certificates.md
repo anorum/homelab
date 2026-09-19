@@ -1,7 +1,8 @@
 # Device certificate renewal
 
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
-The real issuer, device credentials, timer installation, expiry alerts, and AWS authentication are not deployed.
+The real issuer, device credentials, and hourly renewal timer are deployed as of 2026-09-19.
+Expiry alerts and AWS authentication remain pending.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
 Root-key custody is settled: an encrypted file on Alex's Mac, backed up in iCloud Drive, with its password in Apple Passwords.
 Root and intermediate material now exist on the Mac.
@@ -44,8 +45,8 @@ The issuer cannot recover samples that were never collected while the Pi was pow
 ## Runtime contract
 
 The service reads `/etc/telemetry/certificate.env`, which contains paths and public identity settings, never private key contents.
-The service currently runs as root, with a read-only filesystem except for `/var/lib/telemetry/identity`.
-The credential consumer's runtime account and access must be set explicitly when integrating the AWS helper; do not make the private key world-readable to accommodate it.
+The service runs as the dedicated `telemetry` system account, with a read-only filesystem except for `/var/lib/telemetry/identity`.
+The AWS helper and subsequent Collector use this same account; the identity directory is mode `0700` and key/certificate are mode `0600`, all owned by `telemetry`.
 
 ```ini
 CERTIFICATE=/var/lib/telemetry/identity/device.crt
@@ -102,3 +103,8 @@ Latest verification: `python3 telemetry/tests/test_renewal.py` passed all eight 
 `bash -n telemetry/renew-certificate.sh` and `git diff --cached --check` passed.
 On the Pi, `systemd-analyze verify --man=no` accepted both units after substituting only the temporary test script's path for `ExecStart`; no units were installed or enabled.
 The simplification pass and fresh-context standards/spec reviews found no remaining issues in this client slice.
+
+On 2026-09-19, the pinned CLI was installed on the Pi after its archive checksum passed again.
+The Pi generated its private key locally, and the issuer signed its board-serial-bound CSR using an operator token.
+The installed service passed `systemd-analyze verify`, ran as `telemetry` with `Result=success` and `ExecMainStatus=0`, and reported `renewal=not_due` for the new 90-day certificate.
+The hourly timer is enabled; a real due-renewal test and AWS adoption check remain pending.
