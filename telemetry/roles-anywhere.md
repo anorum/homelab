@@ -73,6 +73,7 @@ These Go dependencies and the probe binary are acceptance tooling, not a permane
 Verified on 2026-09-19:
 
 - OpenTofu validation passed with zero errors/warnings, and the saved three-create plan applied successfully.
+- The post-apply plan returned exit 0 with no changes after preserving the public PEM's final newline to match AWS's returned format.
 - Live profile inspection confirmed one permitted role, 900-second duration, and subject/issuer mappings covering CN.
 - Live IAM inspection found zero attached policies and zero inline permission policies.
 - The helper ran as `telemetry`, returned valid session credentials, and reported 899 seconds remaining without exposing credential values.
@@ -80,7 +81,8 @@ Verified on 2026-09-19:
 - The installed renewal service published a new real certificate with the same private key, and a subsequent helper invocation authenticated successfully with it.
 - The installed timer automatically triggered renewal under an accelerated test schedule; normal scheduling was restored, and an issuer-path failure/recovery test preserved the working certificate.
 - `go vet` and ARM64 cross-compilation passed; a fault-injected helper emitting sentinel values on stdout/stderr produced only sanitized failure JSON, with no sentinels in probe output.
-- The real-expiration SDK refresh test is still running; record its final outcome before claiming unattended AWS refresh is verified.
+- One SDK process ran from 18:43:10 UTC through the initial expiration at 18:58:10 UTC; at 18:58:11 UTC it obtained different credentials expiring at 19:13:11 UTC and successfully verified the expected role through the same STS client.
+- The probe reported `expiration_driven_refresh`, `credentials_changed=true`, and `identity_matches=true`, then exited 0; no cache invalidation, client restart, or operator login was used.
 
 ## Recovery and rotation
 
