@@ -4,7 +4,8 @@ Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-
 The real issuer, device credentials, timer installation, expiry alerts, and AWS authentication are not deployed.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
 Root-key custody is settled: an encrypted file on Alex's Mac with a password-manager backup.
-Bootstrap still requires local password entry and verification of the downloaded backup.
+Root and intermediate material now exist on the Mac.
+The current interactive step checks agent-prepared local copies in Downloads; off-device backup remains unverified.
 
 ## Bootstrap custody
 
