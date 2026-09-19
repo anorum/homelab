@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: step-ca
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - pvc.yaml
+configMapGenerator:
+  - name: step-ca-config
+    files:
+      - ca.json=config/ca.json
+      - root_ca.crt=config/root_ca.crt
+      - intermediate_ca.crt=config/intermediate_ca.crt
+generators:
+  - secret-generator.yaml

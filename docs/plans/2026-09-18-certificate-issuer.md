@@ -1,7 +1,8 @@
 # Certificate issuer and automatic renewal
 
 Status: issuer placement and root-key custody accepted; renewal client verified with disposable keys.
-Bootstrap awaits local password entry and verification of the password-manager backup.
+Bootstrap keys and the local-copy check are complete; off-device root-key backup remains unverified.
+The [issuer manifests](../../step-ca/README.md) are prepared, with secret rendering, structural validation, and disposable policy/database-recovery checks completed; live deployment acceptance remains outstanding.
 The [client runbook](../../telemetry/certificates.md) records eight passing Pi integration tests and the remaining deployment checks.
 This narrows the larger [Roles Anywhere plan](2026-09-18-pi-roles-anywhere.md) to the certificate lifecycle needed before AWS authentication.
 The [compatibility research](../research/step-ca-roles-anywhere.md) records source-backed findings and tests still needed against pinned releases.
