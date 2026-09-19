@@ -10,11 +10,13 @@ Group=telemetry
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 EnvironmentFile=/etc/telemetry/certificate.env
 ExecStart=/usr/local/libexec/telemetry/renew-certificate.sh
+# Monitoring failure must not turn a successful renewal into a failure.
+ExecStopPost=-/usr/local/libexec/telemetry/certificate-status.sh
 TimeoutStartSec=90s
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/lib/telemetry/identity
+ReadWritePaths=/var/lib/telemetry/identity -/var/lib/telemetry/metrics
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

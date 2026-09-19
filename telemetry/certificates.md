@@ -2,7 +2,7 @@
 
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
 The real issuer, device credentials, and hourly renewal timer are deployed as of 2026-09-19.
-AWS certificate authentication is deployed; expiry alerts remain pending Alex's monitoring choice.
+AWS certificate authentication is deployed; Prometheus monitoring is approved and being verified.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
 Root-key custody is settled: an encrypted file on Alex's Mac, backed up in iCloud Drive, with its password in Apple Passwords.
 Root and intermediate material now exist on the Mac.
@@ -45,7 +45,7 @@ The issuer cannot recover samples that were never collected while the Pi was pow
 ## Runtime contract
 
 The service reads `/etc/telemetry/certificate.env`, which contains paths and public identity settings, never private key contents.
-The service runs as the dedicated `telemetry` system account, with a read-only filesystem except for `/var/lib/telemetry/identity`.
+The service runs as the dedicated `telemetry` system account, with a read-only filesystem except for `/var/lib/telemetry/identity` and the public `/var/lib/telemetry/metrics` directory.
 The AWS helper and subsequent Collector use this same account; the identity directory is mode `0700` and key/certificate are mode `0600`, all owned by `telemetry`.
 
 ```ini
@@ -68,8 +68,10 @@ Do not enable the timer before enrollment and live endpoint verification.
 
 Output reports `certificate_expires_at_seconds`, plus `renewal=not_due` or `renewal=published` on success.
 Failures exit nonzero and retain the live certificate.
-These journal messages are diagnostic evidence, not a configured expiry alert.
-The monitoring integration remains a design decision before unattended deployment is complete; using the existing Prometheus/Alertmanager has been proposed and awaits Alex's answer.
+Systemd also invokes `certificate-status.sh` through `ExecStopPost`, passing the service result even after an unsuccessful start or timeout.
+The publisher writes numeric status through an atomic rename; failure to publish does not change renewal success.
+Prometheus detects a stale or missing publication independently.
+See [certificate monitoring](#certificate-monitoring) for alerts and installation.
 
 The AWS helper must later receive the intermediate explicitly with `--intermediates`.
 Normal renewal assumes the same intermediate and private key.
@@ -112,3 +114,62 @@ A temporary due threshold exercised the installed service against the real issue
 The normal 30-day renewal threshold was restored after the test.
 With the installed service's issuer URL temporarily pointed at an unavailable local port, renewal failed visibly while the certificate remained byte-identical; restoring the real endpoint allowed the next run to publish a valid replacement.
 The actual installed timer also triggered renewal automatically under a temporary accelerated schedule; its hourly schedule and normal threshold were restored afterward.
+
+## Certificate monitoring
+
+The existing [node-exporter textfile collector](https://github.com/prometheus/node_exporter/blob/v1.10.2/README.md#textfile-collector) exports the Pi's status file.
+No separate exporter, Pushgateway, or Kubernetes dependency is added to renewal or AWS authentication.
+Metrics contain the check timestamp, success flag, and three certificate expiry timestamps labeled `device`, `intermediate`, or `root`.
+No key, certificate contents, subject, board serial, or AWS credential is published.
+
+| Alert | Condition | Hold time |
+|---|---|---|
+| Check failed | Last renewal attempt failed, or a certificate could not be read | 5 minutes |
+| Status missing | No status for enrolled endpoint, or timestamp older than 2 hours | 10 minutes |
+| Expiring, warning | Device below 21 days; intermediate/root below 90 days | 5 minutes |
+| Expiring, critical | Device below 7 days; intermediate/root below 30 days, including unreadable or expired | 5 minutes |
+
+Warning expiry stops when critical expiry applies.
+Existing Alertmanager routing sends notifications to the existing Discord receiver.
+Normal device renewal starts at 30 days; CA certificates require coordinated operator rotation.
+The missing-status rule explicitly expects `192.168.1.102:9100`.
+Update that selector when moving enrollment to another endpoint; it is monitoring inventory, not the stable device identity.
+If Prometheus/Alertmanager itself is unavailable, it cannot deliver these alerts; certificate renewal continues independently.
+
+Before deploying the node-exporter flag, create `/var/lib/telemetry/metrics` on both cluster nodes, with searchable parent directories and mode `0755`.
+On the enrolled worker, that directory must be owned by `telemetry:telemetry`; on other nodes it stays empty and root-owned.
+Install the publisher and updated service from the repository:
+
+```sh
+sudo install -d -o telemetry -g telemetry -m 0755 /var/lib/telemetry/metrics
+sudo install -o root -g root -m 0755 telemetry/certificate-status.sh /usr/local/libexec/telemetry/certificate-status.sh
+sudo install -o root -g root -m 0644 telemetry/systemd/telemetry-certificate-renew.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl start telemetry-certificate-renew.service
+```
+
+The status file is mode `0644`; the private identity directory remains `0700` and the key/certificate `0600`.
+The optional writable metrics path in the unit allows renewal to continue if that directory is missing.
+Node-exporter reads status through its existing read-only host-root mount.
+
+For failures, inspect `journalctl -u telemetry-certificate-renew.service`, the timer's next trigger, and `/var/lib/telemetry/metrics/certificate.prom`.
+A failed publisher leaves the previous complete file, which will become stale.
+A missing or invalid certificate publishes zero expiry and unsuccessful status.
+A service failure before the post-stop command can run is also caught by staleness.
+
+Run status tests on Linux as a non-root user:
+
+```sh
+python3 telemetry/tests/test_certificate_status.py
+```
+
+Extract the PrometheusRule spec into a standalone rules file beside the test fixture, then run the stack's `promtool` version:
+
+```sh
+ruby -ryaml -e 'puts YAML.dump(YAML.load_file(ARGV[0])["spec"])' prometheus/telemetry-certificate-rules.yaml > /tmp/telemetry-certificate-rules.yaml
+cp prometheus/tests/telemetry-certificates.test.yaml /tmp/
+promtool test rules /tmp/telemetry-certificates.test.yaml
+```
+
+The rule tests cover normal operation, every expiry threshold, failed checks and recovery, stopped timers, missing targets/files, and missing-status recovery.
+Synthetic alert conditions run offline and do not send notifications.

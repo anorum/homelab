@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: telemetry-certificates
+  namespace: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: prometheus
+    release: prometheus
+spec:
+  groups:
+    - name: telemetry-certificates
+      rules:
+        - alert: TelemetryCertificateCheckFailed
+          expr: telemetry_certificate_check_success{job="node-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Telemetry certificate check failed on {{ $labels.instance }}"
+            description: "Inspect journalctl -u telemetry-certificate-renew.service on the Pi; the next hourly run retries."
+        - alert: TelemetryCertificateStatusMissing
+          # Expected enrollment is configuration, not inferred from the file that can disappear.
+          expr: |
+            (time() - telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"} > 7200)
+            or absent(telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"})
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Telemetry certificate status is missing or stale on {{ $labels.instance }}"
+            description: "Check Pi availability, the hourly renewal timer, certificate-status.sh, and node-exporter's textfile collector."
+        - alert: TelemetryCertificateExpiring
+          expr: |
+            ((telemetry_certificate_expires_at_seconds{job="node-exporter",certificate="device"} - time() < 21 * 86400)
+              and (telemetry_certificate_expires_at_seconds{job="node-exporter",certificate="device"} - time() >= 7 * 86400))
+            or
+            ((telemetry_certificate_expires_at_seconds{job="node-exporter",certificate=~"root|intermediate"} - time() < 90 * 86400)
+              and (telemetry_certificate_expires_at_seconds{job="node-exporter",certificate=~"root|intermediate"} - time() >= 30 * 86400))
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Telemetry {{ $labels.certificate }} certificate expires soon on {{ $labels.instance }}"
+            description: "Device renewal starts at 30 days remaining; root/intermediate rotation requires operator action. See telemetry/certificates.md."
+        - alert: TelemetryCertificateExpiryCritical
+          expr: |
+            (telemetry_certificate_expires_at_seconds{job="node-exporter",certificate="device"} - time() < 7 * 86400)
+            or (telemetry_certificate_expires_at_seconds{job="node-exporter",certificate=~"root|intermediate"} - time() < 30 * 86400)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Telemetry {{ $labels.certificate }} certificate is near expiry or unreadable on {{ $labels.instance }}"
+            description: "Restore renewal before expiry; an expired device needs re-enrollment. Root/intermediate rotation requires operator action."

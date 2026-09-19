@@ -3,7 +3,7 @@
 Status: issuer, device enrollment, and renewal timer deployed; real renewal and encrypted-state recovery verified.
 Bootstrap keys, the local-copy check, and iCloud root-key backup recovery are complete.
 The [issuer manifests](../../step-ca/README.md) are merged and GitOps reports Synced/Healthy; the [recovery runbook](../../step-ca/recovery.md) records the verified encrypted snapshot and isolated restore.
-Expiry monitoring remains pending Alex's choice; the proposed integration uses existing Prometheus/Alertmanager.
+Alex approved existing Prometheus/Alertmanager monitoring on 2026-09-19; implementation and verification are tracked in [the monitoring plan](2026-09-19-certificate-alerts.md).
 The [client runbook](../../telemetry/certificates.md) records eight passing Pi integration tests and the remaining deployment checks.
 This narrows the larger [Roles Anywhere plan](2026-09-18-pi-roles-anywhere.md) to the certificate lifecycle needed before AWS authentication.
 The [compatibility research](../research/step-ca-roles-anywhere.md) records source-backed findings and tests still needed against pinned releases.

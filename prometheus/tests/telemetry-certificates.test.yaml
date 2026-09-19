@@ -1,0 +1,377 @@
+---
+rule_files:
+- telemetry-certificate-rules.yaml
+evaluation_interval: 1m
+tests:
+- name: healthy device and unrelated node
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="device"}
+    values: 7776000x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="intermediate"}
+    values: 31536000x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="root"}
+    values: 315360000x200
+  - series: node_uname_info{job="node-exporter",instance="192.168.1.101:9100"}
+    values: 1x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateCheckFailed"})
+      or vector(0)
+    eval_time: 15m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 15m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 15m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 15m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: failure fires after hold and resolves
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0x9 1x20
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateCheckFailed"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateCheckFailed"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateCheckFailed"})
+      or vector(0)
+    eval_time: 11m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: stopped timer
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: '0x200'
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 120m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 132m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+- name: missing publisher or target
+  interval: 1m
+  input_series: []
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 9m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 11m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+- name: status disappears and recovers
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x4 stale _x15 1260+60x10
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 16m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateStatusMissing"})
+      or vector(0)
+    eval_time: 23m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: device remaining 20 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="device"}
+    values: 1728000x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: device remaining 6 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="device"}
+    values: 518400x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: device remaining 0 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="device"}
+    values: '0x200'
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: intermediate remaining 89 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="intermediate"}
+    values: 7689600x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: intermediate remaining 29 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="intermediate"}
+    values: 2505600x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: intermediate remaining 0 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="intermediate"}
+    values: '0x200'
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: root remaining 89 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="root"}
+    values: 7689600x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: root remaining 29 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="root"}
+    values: 2505600x200
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+- name: root remaining 0 days
+  interval: 1m
+  input_series:
+  - series: telemetry_certificate_check_timestamp_seconds{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 0+60x200
+  - series: telemetry_certificate_check_success{job="node-exporter",instance="192.168.1.102:9100"}
+    values: 1x200
+  - series: telemetry_certificate_expires_at_seconds{job="node-exporter",instance="192.168.1.102:9100",certificate="root"}
+    values: '0x200'
+  promql_expr_test:
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 4m
+    exp_samples:
+    - labels: "{}"
+      value: 0
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiryCritical"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 1
+  - expr: sum(ALERTS{alertstate="firing",alertname="TelemetryCertificateExpiring"})
+      or vector(0)
+    eval_time: 6m
+    exp_samples:
+    - labels: "{}"
+      value: 0
