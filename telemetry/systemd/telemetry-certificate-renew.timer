@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the Pi telemetry certificate hourly and after boot
+
+[Timer]
+OnBootSec=2min
+OnCalendar=hourly
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

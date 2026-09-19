@@ -1,0 +1,43 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: pi-thermal-discovery
+          scrape_interval: 5s
+          scrape_timeout: 3s
+          static_configs:
+            - targets: [127.0.0.1:19100]
+
+processors:
+  # Prometheus adds scrape-health metrics after metric relabeling.
+  # Filter here so the file contains only the selected temperature series.
+  filter/temperature:
+    error_mode: propagate
+    metric_conditions:
+      - metric.name != "node_thermal_zone_temp"
+      - datapoint.attributes["type"] != "cpu-thermal"
+      - datapoint.attributes["zone"] != "0"
+  resource/device:
+    attributes:
+      - key: host.id
+        value: ${env:TELEMETRY_HOST_ID}
+        action: upsert
+      - key: host.name
+        value: ${env:TELEMETRY_HOST_NAME}
+        action: upsert
+
+exporters:
+  file:
+    path: ${env:TELEMETRY_OUTPUT}
+    format: json
+    flush_interval: 1s
+
+service:
+  telemetry:
+    metrics:
+      level: none
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [filter/temperature, resource/device]
+      exporters: [file]
