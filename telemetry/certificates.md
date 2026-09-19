@@ -2,7 +2,7 @@
 
 Status: renewal client verified on `swagman-2` with a disposable issuer on 2026-09-18.
 The real issuer, device credentials, and hourly renewal timer are deployed as of 2026-09-19.
-Expiry alerts and AWS authentication remain pending.
+AWS certificate authentication is deployed; expiry alerts remain pending Alex's monitoring choice.
 See the [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) for those remaining steps.
 Root-key custody is settled: an encrypted file on Alex's Mac, backed up in iCloud Drive, with its password in Apple Passwords.
 Root and intermediate material now exist on the Mac.
@@ -69,7 +69,7 @@ Do not enable the timer before enrollment and live endpoint verification.
 Output reports `certificate_expires_at_seconds`, plus `renewal=not_due` or `renewal=published` on success.
 Failures exit nonzero and retain the live certificate.
 These journal messages are diagnostic evidence, not a configured expiry alert.
-The monitoring integration remains a design decision before unattended deployment is complete.
+The monitoring integration remains a design decision before unattended deployment is complete; using the existing Prometheus/Alertmanager has been proposed and awaits Alex's answer.
 
 The AWS helper must later receive the intermediate explicitly with `--intermediates`.
 Normal renewal assumes the same intermediate and private key.
@@ -99,7 +99,7 @@ Smallstep's default leaf omits the optional basicConstraints field; validation a
 Tests cover successful same-key renewal, early checks, issuer outage/recovery, expiry, wrong identity, invalid client output, interruption, and concurrent invocation.
 They exercise the wrapper directly; installed systemd scheduling and the real issuer remain separate acceptance checks.
 
-Latest verification: `python3 telemetry/tests/test_renewal.py` passed all eight tests in 39.625 seconds on the Pi.
+Latest verification: `python3 telemetry/tests/test_renewal.py` passed all eight tests in 42.990 seconds on the Pi as `telemetry` on 2026-09-19.
 `bash -n telemetry/renew-certificate.sh` and `git diff --cached --check` passed.
 On the Pi, `systemd-analyze verify --man=no` accepted both units after substituting only the temporary test script's path for `ExecStart`; no units were installed or enabled.
 The simplification pass and fresh-context standards/spec reviews found no remaining issues in this client slice.
@@ -107,4 +107,8 @@ The simplification pass and fresh-context standards/spec reviews found no remain
 On 2026-09-19, the pinned CLI was installed on the Pi after its archive checksum passed again.
 The Pi generated its private key locally, and the issuer signed its board-serial-bound CSR using an operator token.
 The installed service passed `systemd-analyze verify`, ran as `telemetry` with `Result=success` and `ExecMainStatus=0`, and reported `renewal=not_due` for the new 90-day certificate.
-The hourly timer is enabled; a real due-renewal test and AWS adoption check remain pending.
+The hourly timer is enabled and active.
+A temporary due threshold exercised the installed service against the real issuer: certificate serial and expiry changed, the private key stayed unchanged, and AWS accepted the replacement certificate.
+The normal 30-day renewal threshold was restored after the test.
+With the installed service's issuer URL temporarily pointed at an unavailable local port, renewal failed visibly while the certificate remained byte-identical; restoring the real endpoint allowed the next run to publish a valid replacement.
+The actual installed timer also triggered renewal automatically under a temporary accelerated schedule; its hourly schedule and normal threshold were restored afterward.

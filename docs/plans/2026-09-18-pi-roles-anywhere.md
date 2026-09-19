@@ -1,6 +1,8 @@
 # Pi certificate authentication plan
 
-Status: Roles Anywhere and the private step-ca issuer selected; implementing the separate [issuer plan](2026-09-18-certificate-issuer.md) before AWS integration.
+Status: private issuer and device Roles Anywhere resources deployed; real-expiration SDK refresh, renewed-certificate adoption, and wrong-device rejection verified on 2026-09-19.
+Certificate-expiry alerts remain pending Alex's monitoring choice; S3 ingestion is a separate unit.
+The [authentication runbook](../../telemetry/roles-anywhere.md) records installation, tests, and emergency access removal.
 Read-only AWS discovery completed after Alex renewed the workstation's default CLI session.
 
 ## Outcome

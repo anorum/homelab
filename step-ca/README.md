@@ -1,6 +1,6 @@
 # Private telemetry certificate issuer
 
-Status: issuer deployed on 2026-09-19; live enrollment and pinned-root HTTPS succeeded.
+Status: issuer deployed on 2026-09-19; live enrollment, pinned-root HTTPS, supervised renewal, and encrypted-state recovery succeeded.
 The [issuer plan](../docs/plans/2026-09-18-certificate-issuer.md) defines the remaining acceptance checks.
 Root-key backup recovery passed on 2026-09-19: both files were uploaded to iCloud Drive, evicted locally, downloaded again, and matched the verified originals.
 
@@ -51,12 +51,14 @@ Both test pods were deleted; this checks container execution, not issuer startup
 ## Before deployment is complete
 
 The off-device root-key backup is verified and the issuer rollout passed with one ready replica and its PVC bound.
-The exact `ca.home.alexnorum.com` AdGuard rewrite targets `192.168.1.152`; verify it resolves to that address after GitOps sync.
+The exact `ca.home.alexnorum.com` AdGuard rewrite targets `192.168.1.152`; its rollout and DNS query passed after GitOps sync.
 AdGuard copies its ConfigMap only during pod initialization, so applying the DNS configuration also requires a controlled rollout and a resolution check.
 Verify HTTPS using the pinned root and expected hostname before device enrollment; the Kubernetes HTTPS probes check health, not CA trust.
-The Pi is enrolled and its renewal timer is installed; due-renewal acceptance and the expiry-monitoring integration remain pending.
+The Pi is enrolled and its installed renewal service published a new certificate successfully with the same private key.
+The expiry-monitoring integration remains pending Alex's choice.
 
 The issuer-state recovery procedure must preserve the database together with the matching configuration and intermediate credentials.
 Stop the issuer before taking a cold database archive, encrypt the archive using the existing SOPS/age setup, and store it outside the node holding the PVC.
 Restore into an isolated volume and verify both new enrollment and rejection of a previously consumed token before relying on the backup.
-The exact encrypted archive transport and its recovery test remain part of deployment acceptance; the local database-copy test alone does not establish a working backup.
+The [encrypted recovery procedure](recovery.md) passed against a cold snapshot of the real issuer, including rejection of an unexpired consumed token and acceptance of a fresh token after isolated restore.
+Snapshots are currently manual; the procedure records the decryption-identity dependency and scope of the recovery test.
