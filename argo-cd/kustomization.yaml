@@ -213,9 +213,13 @@ configMapGenerator:
     behavior: merge
     literals:
       - policy.default=role:admin
+  # Server-side diff asks the API server for a dry-run apply, so fields it
+  # defaults (HTTPRoute parentRef group/kind, backendRef weight) no longer show
+  # as perpetual drift. The controller reads this at startup only.
   - name: argocd-cmd-params-cm
     behavior: merge
     literals:
+      - controller.diff.server.side=true
       - server.insecure=true
       - exec.enabled=true
       - server.disable.auth=true
