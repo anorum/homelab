@@ -325,6 +325,10 @@ kind: Application
 metadata:
   name: kafka
   namespace: argocd
+  annotations:
+    # Gateway API defaults on HTTPRoutes read as perpetual drift under
+    # client-side diff. Not global: it broke argo-cd, authentik and grafana.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: default
   source:
@@ -397,6 +401,10 @@ kind: Application
 metadata:
   name: blockade
   namespace: argocd
+  annotations:
+    # Gateway API defaults on HTTPRoutes read as perpetual drift under
+    # client-side diff. Not global: it broke argo-cd, authentik and grafana.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: default
   source:
