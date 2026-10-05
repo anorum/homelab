@@ -132,9 +132,14 @@ postgresql:
     # 512Mi ceiling - 94% of the limit, and Postgres growing its shared buffers
     # under load is normal rather than a fault. This is the identity store for
     # the whole cluster; it should not be the first thing the OOM killer finds.
+    #
+    # CPU: average use is ~0.05 cores, but login/worker bursts hit the old 500m
+    # limit within a 100ms CFS period and ~27% of periods were throttled
+    # (CPUThrottlingHigh). 1000m keeps a ceiling against a runaway query (a
+    # quarter of a 4-core node) while giving bursts room.
     resources:
       limits:
-        cpu: 500m
+        cpu: 1000m
         memory: 768Mi
       requests:
         cpu: 100m
