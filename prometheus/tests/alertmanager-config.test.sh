@@ -40,29 +40,22 @@ route discord alertname=SomethingWithoutSeverity
 route null    alertname=Watchdog severity=none
 route null    alertname=KubeMemoryOvercommit severity=warning
 
-# Discord's Slack-compatible endpoint turns the top-level `text` field into the
-# message content. Embeds (Slack attachments) are invisible to bots reading the
-# channel, so the alert details must also be in message_text.
-msg="$(yq '.receivers[] | select(.name == "discord") | .slack_configs[0].message_text // ""' "$cfg")"
-if [ -n "$msg" ]; then ok "discord message_text is set"; else bad "discord message_text is set"; fi
+# amtool validates with Alertmanager's own parser, but prometheus-operator
+# re-parses this config strictly with its own structs before deploying it, and
+# silently keeps the old config if that fails. Operator v0.89.0 (chart 82.x)
+# slack_config fields, from pkg/alertmanager/types.go. Update on chart bumps.
+op_slack="send_resolved http_config api_url api_url_file app_token app_token_file app_url channel username color title title_link pretext text fields short_fields footer fallback callback_id icon_emoji icon_url image_url thumb_url link_names mrkdwn_in actions timeout"
+unknown=""
+for k in $(yq '.receivers[].slack_configs[]? | keys | .[]' "$cfg"); do
+  case " $op_slack " in *" $k "*) ;; *) unknown="$unknown $k" ;; esac
+done
+if [ -z "$unknown" ]; then ok "slack_configs fields known to prometheus-operator v0.89"; else bad "slack_configs fields unknown to prometheus-operator v0.89:$unknown"; fi
 
-if [ -n "$msg" ]; then
-  # amtool's built-in sample data: firing alerts with labels and annotations.
-  rendered="$(amtool template render --template.glob=/dev/null --template.text="$msg" 2>&1)"
-  rc=$?
-  if [ $rc -eq 0 ] && [ -n "$(echo "$rendered" | tr -d '[:space:]')" ]; then
-    ok "message_text renders non-empty"
-  else
-    bad "message_text renders non-empty (rc=$rc)"; echo "$rendered"
-  fi
-  # amtool's sample alerts carry no labels, so check the template itself.
-  for field in Labels.alertname Labels.severity Labels.namespace Annotations.summary; do
-    case "$msg" in *"$field"*) ok "message_text includes $field" ;; *) bad "message_text includes $field" ;; esac
-  done
-  # Length: Discord caps content at 2000 chars. amtool's sample data is too thin
-  # to test that; a real Alertmanager 0.31.1 run with 12 alerts in one group and
-  # 140-char summaries rendered 1697 chars (8 shown + overflow line).
-fi
+text="$(yq '.receivers[] | select(.name == "discord") | .slack_configs[0].text // ""' "$cfg")"
+for field in Labels.alertname Labels.severity Labels.namespace Annotations.summary; do
+  case "$text" in *"$field"*) ok "discord text includes $field" ;; *) bad "discord text includes $field" ;; esac
+done
+
 
 echo
 echo "$pass passed, $fail failed"
